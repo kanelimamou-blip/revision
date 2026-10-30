@@ -28,6 +28,7 @@ FICHES = {sid: [{"t": t, "cles": pts} for t, pts in f] for sid, f in FICHES.item
 FICHES.update(SYNTH)
 from catalogue import LIBRARY, LIB_HOST
 from catalogue_devoirs import DEVOIRS
+from ressources import RESSOURCES
 from exercices import EXERCISES
 from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
@@ -202,7 +203,7 @@ def build():
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions, "devoirs": DEVOIRS, "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions, "devoirs": DEVOIRS, "ressources": [{"levels": l, "subject": sj, "kind": k, "title": t, "url": u} for l, sj, k, t, u in RESSOURCES], "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

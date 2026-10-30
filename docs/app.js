@@ -98,6 +98,7 @@ function rubriques() {
   const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
     nAnn ? tile("#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs et compositions", `${nAnn} vrais sujets${examOf() ? " et corrigés" : " de ta classe"}`) : "",
+    tile("#ressources", "🌐", "Cours et exercices en ligne", `${ressourcesOf(S.level).length} cours, séries corrigées et devoirs sénégalais`),
     tile("#agenda", "🗓️", "Mon agenda", "Emploi du temps, devoirs à rendre, rappels du soir"),
     tile("#assistant", "💬", "Pose ta question", "Une notion pas claire ? Je réponds avec le cours"),
     tile("#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"),
@@ -286,6 +287,17 @@ function devoirsBlock() {
     <p class="small muted">Vrais devoirs, compositions harmonisées et séries d'exercices donnés dans des établissements et inspections du Sénégal (ce ne sont pas des examens nationaux). Beaucoup ont leur corrigé. Hébergés par ${esc(DATA.libraryHost)}.</p>
     ${subs.map((sub) => `<div class="card"><h2>${esc(sub)}</h2>${list.filter((a) => a.subject === sub).sort((a, b) => String(b.year).localeCompare(String(a.year))).map((a) =>
       `<a class="row lib" href="${esc(a.url)}" target="_blank" rel="noopener"><span>${esc(a.title)}</span><span class="small muted">${a.year ? esc(a.year) + " · " : ""}ouvrir ↗</span></a>`).join("")}</div>`).join("")}`;
+}
+// cours, exercices corrigés et devoirs publiés en ligne par le ministère et des sites scolaires sénégalais
+const ressourcesOf = (level) => (DATA.ressources || []).filter((r) => r.levels.some((l) => l === level || l === family(level) || l === String(level).split(" ")[0]));
+function viewRessources() {
+  const list = ressourcesOf(S.level), subs = [...new Set(list.map((r) => r.subject))];
+  const host = (u) => u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0];
+  $view.innerHTML = `<h1>🌐 Cours et exercices en ligne</h1>
+    <p class="muted">${list.length} documents gratuits pour la ${esc(S.level)} : cours, séries d'exercices avec leurs solutions, devoirs corrigés, QCM et sujets d'examen. Ils sont publiés par le ministère de l'Éducation nationale, l'Office du BAC et des sites scolaires sénégalais qui suivent le programme. Chaque lien s'ouvre dans le navigateur.</p>
+    ${subs.map((sub) => { const mine = list.filter((r) => r.subject === sub), kinds = [...new Set(mine.map((r) => r.kind))];
+      return `<div class="card"><h2>${esc(sub)}</h2>${kinds.map((k) => `<p class="small muted"><b>${esc(k)}</b></p>${mine.filter((r) => r.kind === k).map((r) =>
+        `<a class="row lib" href="${esc(r.url)}" target="_blank" rel="noopener"><span>${esc(r.title)}</span><span class="small muted">${esc(host(r.url))} ↗</span></a>`).join("")}`).join("")}</div>`; }).join("")}`;
 }
 const libraryOf = (level) => (DATA.library || []).filter((a) => matches(a.levels, level));
 function libraryBlock() {
@@ -727,7 +739,7 @@ function render() {
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
   if (!isPremium() && !["accueil", "classe", "premium", "progres"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, ressources: viewRessources, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
