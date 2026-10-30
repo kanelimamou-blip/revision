@@ -21,6 +21,8 @@ FICHES = {**FICHES, **FICHES_AUTRES}
 from catalogue import LIBRARY, LIB_HOST
 from exercices import EXERCISES
 from notions import NOTIONS
+from notions_autres import NOTIONS_AUTRES
+NOTIONS = {**NOTIONS, **NOTIONS_AUTRES}
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
