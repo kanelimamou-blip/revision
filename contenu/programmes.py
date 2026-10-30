@@ -387,13 +387,20 @@ PROGRAMMES = {
     ("C8. Dosages et solutions tampons", ["dosage", "equivalence", "tampon", "demi-equivalence", "titrage"]),
   ],
   "tle-svt": [
-    ("Système nerveux et activité musculaire", ["synapse", "potentiel", "reflexe", "nerveux", "muscle", "contractile", "plaque motrice", "contraction"]),
-    ("Régulation de la glycémie et de la pression artérielle", ["glycemie", "glucagon", "insuline", "pression arterielle"]),
-    ("Immunologie", ["anticorps", "lymphocyte", "immunitaire", "soi", "vih"]),
-    ("Reproduction humaine et régulation hormonale", ["testosterone", "ovulation", "progesterone", "fsh", "pilule"]),
-    ("Génétique : méiose et hérédité", ["meiose", "crossing", "monohybrid", "dihybrid", "test-cross", "hemophilie", "mitose"]),
-    ("Expression de l'information génétique", ["codon", "transcription", "traduction"]),
+    # programme de Terminale S : activité nerveuse, milieu intérieur, immunologie, reproduction, génétique
+    ("Le tissu nerveux et le message nerveux", ["neurone", "potentiel de repos", "potentiel d'action", "fibre", "myelin", "tout ou rien", "refractaire", "oscilloscope"]),
+    ("La synapse et l'intégration nerveuse", ["synapse", "neurotransmetteur", "acetylcholine", "ppse", "ppsi", "sommation", "drogue"]),
+    ("Les réflexes et l'activité musculaire", ["reflexe", "myotatique", "arc reflexe", "muscle", "sarcomere", "actine", "myosine", "atp", "contraction", "plaque motrice", "racine"]),
+    ("Régulation de la glycémie", ["glycemie", "glucagon", "insuline", "glycogene", "diabete", "pancreas"]),
+    ("Régulation de la pression artérielle", ["pression arterielle", "barorecepteur", "sinus carotidien", "bulbe", "sympathique", "parasympathique", "nerf x"]),
+    ("Immunologie", ["anticorps", "lymphocyte", "immunitaire", "soi", "vih", "vaccin", "antigene", "cmh", "phagocytose"]),
+    ("Reproduction humaine et régulation hormonale", ["testosterone", "ovulation", "progesterone", "fsh", "lh", "pilule", "cycle", "ovaire", "testicule", "hcg"]),
+    ("Reproduction chez les plantes à fleurs", ["fleur", "pollen", "ovule", "double fecondation", "albumen", "graine", "fruit", "pollinisation", "sac embryonnaire"]),
+    ("Méiose et brassage génétique", ["meiose", "crossing", "brassage", "haploide", "diploide", "chromatide", "homologue"]),
+    ("Hérédité : monohybridisme, dihybridisme, hérédité humaine", ["monohybrid", "dihybrid", "test-cross", "hemophilie", "allele", "dominant", "recessif", "codominance", "arbre genealogique", "lie au sexe"]),
+    ("Expression de l'information génétique", ["codon", "transcription", "traduction", "arn", "adn", "mutation", "drepanocytose"]),
   ],
+
   "tle-philo": [
     ("La méthode philosophique et les grands auteurs", ["je pense", "caverne", "connais-toi", "dieu est mort", "coeur a ses raisons", "raison"]),
     ("L'homme, la conscience et l'inconscient", ["existence precede", "inconscient", "psychanalyse", "homo faber"]),

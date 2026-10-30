@@ -625,7 +625,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Exploitation de documents (enregistrements, tableaux d'ions) pour expliquer le potentiel de repos et le potentiel d'action.",
   },
-  {"t": "La synapse et l'intégration nerveuse", "p": 0,
+  {"t": "La synapse et l'intégration nerveuse", "p": 1,
    "cles": [
      "Synapse chimique : élément présynaptique (vésicules de neurotransmetteur), fente synaptique, élément postsynaptique (récepteurs).",
      "Étapes : arrivée du potentiel d'action, entrée de Ca²⁺, exocytose du neurotransmetteur, fixation sur les récepteurs, ouverture de canaux, potentiel postsynaptique, puis élimination du neurotransmetteur (dégradation ou recapture).",
@@ -650,7 +650,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Schéma légendé de la synapse et explication de l'effet d'une substance (curare, morphine, cocaïne…).",
   },
-  {"t": "Le réflexe myotatique et l'activité musculaire", "p": 0,
+  {"t": "Le réflexe myotatique et l'activité musculaire", "p": 2,
    "cles": [
      "Réflexe myotatique : contraction d'un muscle en réponse à son propre étirement (réflexe rotulien).",
      "Arc réflexe : récepteur (fuseau neuromusculaire), neurone sensitif (corps cellulaire dans le ganglion spinal), centre nerveux (moelle épinière), motoneurone, effecteur (muscle).",
@@ -677,7 +677,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Schéma de l'arc réflexe et ultrastructure du sarcomère : sujets très fréquents.",
   },
-  {"t": "Régulation de la glycémie", "p": 1,
+  {"t": "Régulation de la glycémie", "p": 3,
    "cles": [
      "Glycémie normale à jeun : environ 1 g/L (0,8 à 1,2 g/L). C'est une constante du milieu intérieur.",
      "Le foie stocke le glucose sous forme de glycogène (glycogénogenèse) et le libère (glycogénolyse) ; il fabrique aussi du glucose (néoglucogenèse).",
@@ -704,7 +704,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Exploitation de courbes de glycémie et d'insulinémie, expériences historiques (ablation, greffe), diabète.",
   },
-  {"t": "Régulation de la pression artérielle", "p": 1,
+  {"t": "Régulation de la pression artérielle", "p": 4,
    "cles": [
      "Pression artérielle (PA) : maximale lors de la systole (≈ 12 cm Hg), minimale lors de la diastole (≈ 8 cm Hg).",
      "PA dépend du débit cardiaque (fréquence × volume d'éjection) et de la résistance des vaisseaux (vasoconstriction ou vasodilatation).",
@@ -729,7 +729,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Schéma du système de régulation (récepteurs, voies, centre, effecteurs) et analyse d'expériences de section-stimulation.",
   },
-  {"t": "Immunologie : le soi, le non-soi et les réponses immunitaires", "p": 2,
+  {"t": "Immunologie : le soi, le non-soi et les réponses immunitaires", "p": 5,
    "cles": [
      "Le soi : molécules propres à l'individu, notamment le CMH (HLA chez l'humain) à la surface des cellules. Le non-soi : antigènes étrangers (microbes, greffons).",
      "Réponse non spécifique (innée) : barrières, inflammation, phagocytose (macrophages, granulocytes).",
@@ -756,7 +756,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Sujet très fréquent : expériences de transfert, schéma de la coopération cellulaire, vaccination, VIH.",
   },
-  {"t": "Reproduction humaine et régulation hormonale", "p": 3,
+  {"t": "Reproduction humaine et régulation hormonale", "p": 6,
    "cles": [
      "Testicule : tubes séminifères (spermatogenèse, continue de la puberté à la mort) et cellules de Leydig (testostérone).",
      "Ovaire : folliculogenèse cyclique (follicule primordial → cavitaire → de De Graaf), ovulation vers le 14e jour, corps jaune.",
@@ -784,7 +784,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Analyse de courbes hormonales et d'expériences (ablation, greffe, injection), schéma bilan des régulations.",
   },
-  {"t": "Méiose, fécondation et brassage génétique", "p": 4,
+  {"t": "Méiose, fécondation et brassage génétique", "p": 8,
    "cles": [
      "Méiose : deux divisions successives qui donnent 4 cellules haploïdes (n) à partir d'une cellule diploïde (2n).",
      "Division réductionnelle (méiose I) : appariement des chromosomes homologues (tétrades), crossing-over en prophase I, séparation des homologues en anaphase I.",
@@ -811,7 +811,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Schémas de méiose à compléter, courbe de quantité d'ADN, explication des brassages.",
   },
-  {"t": "Hérédité : monohybridisme, dihybridisme et hérédité humaine", "p": 4,
+  {"t": "Hérédité : monohybridisme, dihybridisme et hérédité humaine", "p": 9,
    "cles": [
      "Gène : portion d'ADN ; allèles : versions d'un gène. Génotype (allèles) et phénotype (caractère visible).",
      "Dominance : l'allèle dominant s'exprime chez l'hétérozygote ; codominance : les deux s'expriment (groupes sanguins A et B).",
@@ -840,7 +840,7 @@ SYNTH["tle-svt"] = [
    ]),
    "exam": "Un exercice de génétique tombe presque chaque année (souvent 5 à 6 points), avec échiquiers et arbre généalogique.",
   },
-  {"t": "Expression de l'information génétique", "p": 5,
+  {"t": "Expression de l'information génétique", "p": 10,
    "cles": [
      "L'ADN est une double hélice de nucléotides (A, T, G, C) ; A s'apparie avec T, G avec C. Réplication semi-conservative avant chaque division.",
      "Transcription (dans le noyau) : un brin d'ADN (brin transcrit) sert de modèle pour fabriquer l'ARN messager (A–U, T–A, G–C, C–G).",
@@ -3367,3 +3367,21 @@ SYNTH["tle-maths"].append(C("Coniques (série S1)", 18, [
   "c² = 25 − 9 = 16, c = 4 : foyers (±4 ; 0), e = 4/5.",
   "Directrices x = ±25/4.",
 ]), "Série S1 : un exercice sur les coniques (souvent avec les complexes ou la géométrie) peut tomber."))
+
+SYNTH["tle-svt"].insert(7, C("Reproduction chez les plantes à fleurs", 7, [
+  "La fleur complète : sépales (calice), pétales (corolle), étamines (organes mâles : filet + anthère qui produit le pollen), pistil (organe femelle : stigmate, style, ovaire contenant les ovules).",
+  "Formation du grain de pollen dans l'anthère : méiose des cellules mères, puis mitose ; le grain mûr contient une cellule végétative et une cellule reproductrice (qui donnera 2 anthérozoïdes).",
+  "Formation du sac embryonnaire dans l'ovule : méiose puis 3 mitoses ; 8 noyaux dont l'oosphère et 2 noyaux polaires (ou noyau secondaire diploïde).",
+  "Pollinisation : transport du pollen vers le stigmate (vent, insectes) ; directe (autopollinisation) ou croisée.",
+  "Germination du pollen : le tube pollinique traverse le style et apporte les 2 anthérozoïdes au sac embryonnaire.",
+  "Double fécondation (propre aux angiospermes) : anthérozoïde + oosphère → œuf principal (2n) qui donne l'embryon ; anthérozoïde + noyau secondaire → œuf accessoire (3n) qui donne l'albumen.",
+  "Après fécondation : l'ovule devient la graine, l'ovaire devient le fruit.",
+], [("Expliquer la formule chromosomique des tissus de la graine", [
+  "Embryon : œuf principal = n (anthérozoïde) + n (oosphère) = 2n.",
+  "Albumen : n (anthérozoïde) + 2n (noyau secondaire) = 3n.",
+  "Téguments de la graine : tissus de la plante mère, 2n.",
+])], ["Confondre pollinisation (transport du pollen) et fécondation (union des gamètes).", "Oublier la deuxième fécondation qui forme l'albumen triploïde."],
+("Chez le maïs, 2n = 20. Nombre de chromosomes de l'embryon et de l'albumen ?", [
+  "Embryon : 2n = 20 chromosomes.",
+  "Albumen : 3n = 30 chromosomes.",
+]), "Schémas de la fleur, du grain de pollen et du sac embryonnaire ; double fécondation, souvent liée à la génétique (couleur des grains de maïs)."))
