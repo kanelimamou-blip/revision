@@ -72,16 +72,22 @@ const Compte = (() => {
     await batch.commit();
   }
 
-  // Sauvegarde des progrès (regroupée toutes les 3 secondes)
+  // Sauvegarde des progrès : au plus une écriture par minute, et tout de suite quand l'élève quitte l'appli.
+  // Cela garde 10 000 élèves dans le quota gratuit de Firestore (20 000 écritures par jour).
+  let pending = null;
+  function flush() {
+    if (!pending || !user || !db) return;
+    const state = pending; pending = null; clearTimeout(timer); timer = null;
+    const last = (o, n) => Object.fromEntries(Object.entries(o || {}).sort().slice(-n));
+    const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14) };
+    db.collection("users").doc(user.uid).update({ data }).catch(() => {});
+  }
   function save(state) {
     if (!user || !db) return;
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      const last = (o, n) => Object.fromEntries(Object.entries(o || {}).sort().slice(-n));
-      const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14) };
-      db.collection("users").doc(user.uid).update({ data }).catch(() => {});
-    }, 3000);
+    pending = state;
+    if (!timer) timer = setTimeout(flush, 60000);
   }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
 
   // Session de groupe : chaque élève publie sa note, tout le groupe voit le classement se remplir en direct
   function postScore(code, rec) {
