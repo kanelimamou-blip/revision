@@ -131,3 +131,80 @@ MODELE_GUIDED = {
     ]},
   ],
 }
+
+MODELE_ANNALES += [
+  {"id": "bac-type-s2-pc-1", "exam": "BAC", "year": "type 1", "series": "S2, S4, S5", "subject": "Physique-Chimie", "levels": ["Tle S2", "Tle S4", "Tle S5"], "duration": "4 h", "coef": 6, "modele": True,
+   "parts": ["Exercice 1 (4 pts) : estérification", "Exercice 2 (4 pts) : acide faible, pKa et dosage", "Exercice 3 (4 pts) : mouvement d'un projectile",
+             "Exercice 4 (4 pts) : dipôle RC et circuit LC", "Exercice 5 (4 pts) : radioactivité et effet photoélectrique"]},
+  {"id": "bac-type-s2-svt-1", "exam": "BAC", "year": "type 1", "series": "S2, S4, S5", "subject": "SVT", "levels": ["Tle S2", "Tle S4", "Tle S5"], "duration": "4 h", "coef": 6, "modele": True,
+   "parts": ["I. Maîtrise des connaissances (5 pts) : transmission synaptique et contraction musculaire",
+             "II. Compétences méthodologiques (15 pts) : génétique (mono et dihybridisme, gènes liés), régulation hormonale de la reproduction, immunité et VIH"]},
+]
+
+MODELE_GUIDED.update({
+  "bac-type-s2-pc-1": [
+    {"title": "Exercice 1 : estérification (4 pts)", "context": "On mélange 1 mol d'acide éthanoïque CH₃COOH et 1 mol d'éthanol C₂H₅OH avec quelques gouttes d'acide sulfurique, et on chauffe à reflux.", "steps": [
+      ("Le nom de l'ester formé CH₃COOC₂H₅ est :", ["éthanoate d'éthyle", "éthanoate de méthyle", "propanoate d'éthyle", "éthylate d'éthanoyle"], 0, "Ester R-COO-R′ : « alcanoate » de l'acide, « alkyle » de l'alcool.", 0.75),
+      ("Cette réaction est :", ["lente, limitée et athermique", "rapide et totale", "lente et totale", "rapide et exothermique"], 0, "Caractères de l'estérification.", 0.75),
+      ("Le rôle de l'acide sulfurique est :", ["catalyseur", "réactif", "solvant", "indicateur coloré"], 0, "Il accélère la réaction sans changer l'équilibre.", 0.5),
+      ("Avec un alcool primaire en mélange équimolaire, le rendement vaut environ :", ["67 %", "100 %", "33 %", "5 %"], 0, "Résultat expérimental classique (2/3).", 0.75),
+      ("La quantité d'ester obtenue à l'équilibre :", ["0,67 mol", "1 mol", "0,33 mol", "2 mol"], 0, "67 % de 1 mol.", 0.5),
+      ("Pour rendre la réaction totale, on remplace l'acide par :", ["l'anhydride éthanoïque", "l'acide chlorhydrique", "l'eau", "l'éthanal"], 0, "Avec un anhydride (ou un chlorure d'acyle), l'estérification est rapide et totale.", 0.75),
+    ]},
+    {"title": "Exercice 2 : acide faible et dosage (4 pts)", "context": "Une solution d'acide éthanoïque de concentration C = 0,1 mol/L a un pH de 2,9. On en dose 20 mL par une solution d'hydroxyde de sodium à 0,1 mol/L.", "steps": [
+      ("[H₃O⁺] dans la solution vaut environ :", ["1,26 × 10⁻³ mol/L", "0,1 mol/L", "2,9 mol/L", "10⁻¹¹ mol/L"], 0, "[H₃O⁺] = 10^(−2,9).", 0.75),
+      ("L'acide éthanoïque est un acide faible car :", ["[H₃O⁺] < C", "[H₃O⁺] = C", "son pH est inférieur à 7", "il contient de l'oxygène"], 0, "Il n'est que partiellement dissocié.", 0.75),
+      ("Le pKa du couple vaut environ :", ["4,8", "2,9", "7", "9,2"], 0, "Ka = [H₃O⁺]²/(C − [H₃O⁺]) ≈ 1,6 × 10⁻⁵, d'où pKa ≈ 4,8.", 0.75),
+      ("Le volume de soude à l'équivalence est :", ["20 mL", "10 mL", "40 mL", "2 mL"], 0, "Ca Va = Cb VbE, donc VbE = 0,1 × 20 / 0,1.", 0.5),
+      ("À la demi-équivalence, le pH vaut :", ["le pKa, soit 4,8", "7", "2,9", "14"], 0, "[A⁻] = [AH] à la demi-équivalence, donc pH = pKa.", 0.75),
+      ("L'indicateur adapté à ce dosage est :", ["la phénolphtaléine", "l'hélianthine", "le bleu de bromothymol seulement", "aucun"], 0, "Le pH à l'équivalence est basique (vers 8,7) : zone de virage 8,2 à 10.", 0.5),
+    ]},
+    {"title": "Exercice 3 : projectile (4 pts)", "context": "Une bille est lancée horizontalement avec v₀ = 10 m/s depuis une hauteur h = 1,8 m. On néglige l'air ; g = 10 m/s².", "steps": [
+      ("L'accélération de la bille est :", ["g⃗, verticale vers le bas", "nulle", "horizontale", "variable"], 0, "Deuxième loi de Newton : seule force, le poids.", 0.75),
+      ("Le mouvement horizontal est :", ["rectiligne uniforme", "uniformément accéléré", "circulaire", "au repos"], 0, "Aucune force horizontale : vₓ = v₀ constante.", 0.5),
+      ("La durée de la chute est :", ["0,6 s", "0,36 s", "1,8 s", "6 s"], 0, "h = ½ g t², donc t = √(2h/g) = √0,36.", 0.75),
+      ("La bille touche le sol à la distance horizontale :", ["6 m", "10 m", "3,6 m", "18 m"], 0, "x = v₀ t = 10 × 0,6.", 0.75),
+      ("La trajectoire (axe y vers le bas) a pour équation :", ["y = 0,05 x²", "y = 5x²", "y = 0,1 x", "y = x²/10"], 0, "y = (g/(2v₀²)) x² = 10/200 x² : c'est une parabole.", 0.75),
+      ("La vitesse au moment de l'impact vaut :", ["≈ 11,7 m/s", "10 m/s", "6 m/s", "16 m/s"], 0, "v_y = g t = 6 m/s, v = √(10² + 6²) = √136.", 0.5),
+    ]},
+    {"title": "Exercice 4 : dipôle RC et circuit LC (4 pts)", "context": "Un condensateur C = 10 µF se charge à travers R = 1 kΩ sous E = 12 V. Puis, chargé, il est branché sur une bobine L = 0,1 H de résistance négligeable.", "steps": [
+      ("La constante de temps vaut :", ["10 ms", "1 ms", "0,1 s", "10 s"], 0, "τ = RC = 10³ × 10⁻⁵ = 10⁻² s.", 1),
+      ("À t = τ, la tension u_C vaut :", ["63 % de E, soit ≈ 7,6 V", "E", "37 % de E", "E/2"], 0, "u_C(τ) = E(1 − e⁻¹).", 0.75),
+      ("L'énergie stockée en fin de charge :", ["7,2 × 10⁻⁴ J", "1,2 × 10⁻⁴ J", "0,72 J", "6 × 10⁻⁵ J"], 0, "E = ½ C E² = ½ × 10⁻⁵ × 144.", 0.75),
+      ("La période propre du circuit LC vaut :", ["≈ 6,3 ms", "1 ms", "0,1 s", "≈ 63 ms"], 0, "T₀ = 2π√(LC) = 2π√(10⁻⁶) = 2π × 10⁻³ s.", 1),
+      ("Dans le circuit LC idéal, l'énergie totale :", ["se conserve en s'échangeant entre C et L", "diminue", "augmente", "reste dans le condensateur"], 0, "Pas de résistance : oscillations non amorties.", 0.5),
+    ]},
+    {"title": "Exercice 5 : radioactivité et photoélectricité (4 pts)", "context": "Le carbone 14 est radioactif β⁻ ; sa demi-vie vaut 5 730 ans. Une lumière de longueur d'onde 500 nm éclaire une cellule photoélectrique (h = 6,63 × 10⁻³⁴ J·s ; c = 3 × 10⁸ m/s).", "steps": [
+      ("Le noyau fils de ¹⁴₆C par désintégration β⁻ est :", ["¹⁴₇N", "¹⁴₅B", "¹⁰₄Be", "¹³₆C"], 0, "β⁻ : un neutron devient un proton, Z augmente de 1, A ne change pas.", 1),
+      ("Un échantillon dont l'activité a été divisée par 4 a un âge de :", ["11 460 ans", "5 730 ans", "22 920 ans", "2 865 ans"], 0, "Divisée par 4 = 2 demi-vies.", 1),
+      ("L'énergie d'un photon de 500 nm vaut :", ["≈ 3,98 × 10⁻¹⁹ J", "≈ 3,98 × 10⁻¹⁶ J", "≈ 1 × 10⁻¹⁹ J", "6,63 × 10⁻³⁴ J"], 0, "E = hc/λ = 6,63 × 10⁻³⁴ × 3 × 10⁸ / 5 × 10⁻⁷.", 1),
+      ("Soit, en électronvolts (1 eV = 1,6 × 10⁻¹⁹ J) :", ["≈ 2,5 eV", "≈ 4 eV", "≈ 0,4 eV", "≈ 25 eV"], 0, "3,98/1,6.", 0.5),
+      ("L'effet photoélectrique se produit si :", ["l'énergie du photon dépasse le travail d'extraction", "la lumière est assez intense", "la longueur d'onde est grande", "toujours"], 0, "C'est l'énergie de chaque photon qui compte, pas l'intensité.", 0.5),
+    ]},
+  ],
+  "bac-type-s2-svt-1": [
+    {"title": "I. Maîtrise des connaissances (5 pts)", "context": "La commande nerveuse de la contraction musculaire.", "steps": [
+      ("Le potentiel de repos d'une fibre nerveuse vaut environ :", ["−70 mV", "+30 mV", "0 mV", "−7 V"], 0, "Intérieur négatif par rapport à l'extérieur.", 1),
+      ("Le potentiel d'action est dû d'abord à :", ["une entrée massive d'ions Na⁺", "une sortie d'ions Na⁺", "une entrée d'ions Cl⁻", "une sortie de glucose"], 0, "Dépolarisation par ouverture des canaux sodium, puis repolarisation par sortie de K⁺.", 1),
+      ("Le neurotransmetteur de la plaque motrice est :", ["l'acétylcholine", "l'adrénaline", "l'insuline", "la dopamine"], 0, "Libérée dans la fente synaptique, elle se fixe sur des récepteurs de la fibre musculaire.", 1),
+      ("Le message nerveux est codé en :", ["fréquence de potentiels d'action", "amplitude", "durée de chaque PA", "vitesse"], 0, "Loi du tout ou rien : l'amplitude est constante.", 1),
+      ("La contraction est déclenchée par la libération de :", ["Ca²⁺ par le réticulum sarcoplasmique", "ATP par le noyau", "Na⁺ par la myosine", "glucose"], 0, "Le calcium libère les sites de fixation sur l'actine ; l'ATP fournit l'énergie.", 1),
+    ]},
+    {"title": "II.1 Génétique (8 pts)", "context": "Chez la drosophile, on croise une lignée pure aux ailes longues et corps gris avec une lignée pure aux ailes vestigiales et corps noir. Toute la F1 a des ailes longues et un corps gris.", "steps": [
+      ("Les allèles dominants sont :", ["ailes longues et corps gris", "ailes vestigiales et corps noir", "ailes longues et corps noir", "aucun : codominance"], 0, "La F1 homogène montre le phénotype dominant.", 1),
+      ("Pour un seul caractère, le croisement F1 × F1 donne en F2 :", ["3/4 phénotype dominant, 1/4 récessif", "1/2 – 1/2", "tous dominants", "9/16 – 7/16"], 0, "Monohybridisme avec dominance.", 1),
+      ("Si les gènes sont indépendants, la F2 (F1 × F1) donne :", ["9/16, 3/16, 3/16, 1/16", "1/4 de chaque", "3/4 et 1/4", "1/2 et 1/2"], 0, "Brassage interchromosomique : 9 : 3 : 3 : 1.", 1.5),
+      ("Le test-cross consiste à croiser la F1 avec :", ["un double récessif", "un double dominant", "un autre F1", "un parent quelconque"], 0, "Les phénotypes reflètent alors directement les gamètes de la F1.", 1),
+      ("Le test-cross donne 41 % gris-longues, 41 % noirs-vestigiales, 9 % gris-vestigiales, 9 % noirs-longues. On conclut :", ["gènes liés avec recombinaison", "gènes indépendants", "un seul gène", "mutation"], 0, "Proportions parentales majoritaires et non 4 × 25 % : les gènes sont sur le même chromosome, avec crossing-over.", 1.5),
+      ("La distance entre les deux gènes vaut :", ["18 cM", "9 cM", "41 cM", "82 cM"], 0, "% de recombinés = 9 + 9 = 18 %, soit 18 centimorgans.", 2),
+    ]},
+    {"title": "II.2 Reproduction et immunité (7 pts)", "context": "On suit les hormones d'une femme pendant un cycle de 28 jours, puis on étudie un patient séropositif pour le VIH.", "steps": [
+      ("L'ovulation est déclenchée par :", ["un pic de LH", "une chute d'œstrogènes", "la progestérone", "l'insuline"], 0, "Le pic de LH vers le 14e jour, provoqué par le rétrocontrôle positif des œstrogènes.", 1.5),
+      ("Après l'ovulation, la progestérone est sécrétée par :", ["le corps jaune", "l'hypophyse", "l'utérus", "le follicule primaire"], 0, "Le follicule rompu devient corps jaune.", 1),
+      ("Les règles surviennent à cause :", ["de la chute de progestérone et d'œstrogènes", "du pic de LH", "de la hausse de FSH", "de la fécondation"], 0, "Sans fécondation, le corps jaune régresse.", 1),
+      ("Le VIH infecte principalement :", ["les lymphocytes T4", "les globules rouges", "les plaquettes", "les lymphocytes B uniquement"], 0, "Il se fixe sur le récepteur CD4.", 1.5),
+      ("Une personne séropositive :", ["possède des anticorps anti-VIH", "a forcément le sida déclaré", "est guérie", "n'a jamais été infectée"], 0, "Le test détecte les anticorps ; le sida est le stade avancé.", 1),
+      ("La chute des T4 rend l'organisme vulnérable car :", ["ils coordonnent les réponses immunitaires", "ils transportent l'oxygène", "ils fabriquent les globules rouges", "ils digèrent les aliments"], 0, "Sans T4, les LB et LT8 ne sont plus activés : maladies opportunistes.", 1),
+    ]},
+  ],
+})
