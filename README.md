@@ -12,4 +12,8 @@ En ligne : https://kanelimamou-blip.github.io/revision/
 ## Premium
 
 Pendant les 10 premiers jours (essai gratuit, `TRIAL_DAYS` dans `docs/app.js`), tout est débloqué ; ensuite, les 5 premières questions de chaque matière restent gratuites. Le reste et les examens blancs se débloquent avec un code vendu par Wave (prix, numéro Wave et WhatsApp dans `CONFIG` de `contenu/build.py`).
-`python contenu/build.py --codes 100` ajoute des codes : seuls leurs hachages sont publiés (`contenu/code_hashes.txt`), la liste en clair est écrite hors du dépôt.
+`python contenu/build.py --codes 100` ajoute des codes (format `XXXXX-XXXXXX`, contrôlés par un secret). La liste en clair, le secret et les règles Firestore à coller dans la console sont écrits hors du dépôt ; seuls les hachages sont publiés (`contenu/code_hashes.txt`).
+
+## Comptes
+
+`docs/compte.js` : connexion Google (Firebase Auth) et profil Firestore (date de création fixée par le serveur pour l'essai, premium accordé seulement si le code est réclamé une seule fois, progrès sauvegardés). Tant que `FIREBASE_CONFIG` est vide, l'appli fonctionne sans compte.

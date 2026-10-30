@@ -30,18 +30,68 @@ CONFIG = {
 }
 
 
+# Règles Firestore à coller dans la console Firebase (Firestore Database > Règles).
+# Elles contiennent le secret des codes : elles sont écrites hors du dépôt, à côté de la liste des codes.
+# Un code = 5 caractères au hasard + « - » + 6 caractères de contrôle (début du SHA-256 de secret + partie au hasard).
+RULES = """rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function validCode(code) {
+      let p = code.split('-');
+      return p.size() == 2 && p[0].size() == 5
+        && hashing.sha256('SECRET' + p[0]).toHexString().lower()[0:6] == p[1].lower();
+    }
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      // création : date fixée par le serveur et sans premium
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.created == request.time
+        && request.resource.data.premium == false;
+      // la date de création ne change jamais ; le premium ne s'obtient qu'avec un code réclamé par cet élève
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.created == resource.data.created
+        && (request.resource.data.premium == resource.data.premium
+          || (request.resource.data.premium == true
+            && getAfter(/databases/$(db)/documents/claims/$(request.resource.data.code)).data.uid == uid));
+    }
+    // un code ne peut être réclamé qu'une fois (pas de recréation possible)
+    match /claims/{code} {
+      allow read, update, delete: if false;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid && validCode(code);
+    }
+  }
+}
+"""
+PRIVATE = Path("/mnt/project-files/revision")
+SECRET_FILE = PRIVATE / "secret-codes.txt"
+
+
+def secret():
+    if not SECRET_FILE.exists():
+        PRIVATE.mkdir(parents=True, exist_ok=True)
+        SECRET_FILE.write_text(secrets.token_hex(16))
+    return SECRET_FILE.read_text().strip()
+
+
+def make_code(sec):
+    head = "".join(secrets.choice(ALPHABET) for _ in range(5))
+    return head + "-" + hashlib.sha256((sec + head).encode()).hexdigest()[:6].upper()
+
+
 def code_hash(code):
     return hashlib.sha256((SALT + code.strip().upper().replace(" ", "")).encode()).hexdigest()
 
 
 def new_codes(n, dest):
-    codes = ["".join(secrets.choice(ALPHABET) for _ in range(4)) + "-" + "".join(secrets.choice(ALPHABET) for _ in range(4)) for _ in range(n)]
+    sec = secret()
+    codes = [make_code(sec) for _ in range(n)]
     with HASHES.open("a") as f:
         f.writelines(code_hash(c) + "\n" for c in codes)
     dest = Path(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("a") as f:
         f.writelines(c + "\n" for c in codes)
+    (PRIVATE / "firestore.rules").write_text(RULES.replace("SECRET", sec))
     print(f"{n} codes ajoutés dans {dest}")
 
 

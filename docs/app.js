@@ -7,7 +7,7 @@ let DATA = null, CFG = null, timer = null;
 
 const store = {
   load() { try { return JSON.parse(localStorage.getItem("rev") || "{}"); } catch { return {}; } },
-  save() { try { localStorage.setItem("rev", JSON.stringify(S)); } catch {} },
+  save() { try { localStorage.setItem("rev", JSON.stringify(S)); } catch {} Compte.save(S); },
 };
 const S = Object.assign({ level: null, premium: false, stats: {}, sessions: [], days: [] }, store.load());
 
@@ -216,7 +216,10 @@ function viewProgress() {
       <div><p class="small muted">Réussite</p><p class="count">${answered ? Math.round((100 * good) / answered) : 0} %</p></div>
       <div><p class="small muted">Série</p><p class="count">${streak()} 🔥</p></div></div></div>
     <div class="card"><h2>Matières maîtrisées en ${S.level}</h2>${rows}<p class="small muted">Part des questions réussies la dernière fois.</p></div>
-    <div class="card"><h2>Derniers quiz</h2>${last || '<p class="muted">Pas encore de quiz.</p>'}</div>`;
+    <div class="card"><h2>Derniers quiz</h2>${last || '<p class="muted">Pas encore de quiz.</p>'}</div>
+    ${Compte.user ? `<div class="card"><p class="small muted">Connecté avec ${esc(Compte.user.email || Compte.user.displayName || "Google")}</p><button class="btn alt" id="logout">Se déconnecter</button></div>` : ""}`;
+  const lo = document.getElementById("logout");
+  if (lo) lo.onclick = () => Compte.signOut().then(() => { localStorage.removeItem("rev"); location.reload(); });
 }
 
 // ---------- Premium : paiement Wave puis code reçu par WhatsApp
@@ -244,16 +247,18 @@ function viewPremium(reason = "") {
       : `<p class="muted">Le paiement par Wave arrive très bientôt. Si tu as déjà un code, entre-le ci-dessous.</p>`}
     </div>
     <div class="card"><h2>J'ai un code</h2>
-      <input class="code" id="code" placeholder="XXXX-XXXX" autocomplete="off" maxlength="9">
+      <input class="code" id="code" placeholder="XXXXX-XXXXXX" autocomplete="off" maxlength="12">
       <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}`;
   const btn = document.getElementById("unlock");
   if (btn) btn.onclick = async () => {
     const raw = document.getElementById("code").value.trim().toUpperCase().replace(/\s/g, "");
-    const code = raw.length === 8 ? raw.slice(0, 4) + "-" + raw.slice(4) : raw;
-    const ok = CFG.codes.includes(await sha256(CFG.salt + code));
+    const code = raw.length === 11 && !raw.includes("-") ? raw.slice(0, 5) + "-" + raw.slice(5) : raw;
     const m = document.getElementById("codemsg");
+    let ok = CFG.codes.includes(await sha256(CFG.salt + code));
+    // avec les comptes, c'est le serveur qui valide le code et refuse un code déjà utilisé
+    if (ok && Compte.enabled) ok = await Compte.claim(code).then(() => true, () => false);
     if (ok) { S.premium = true; S.code = code; store.save(); m.className = "msg-ok"; m.textContent = "Code accepté !"; setTimeout(render, 700); }
-    else { m.className = "msg-ko"; m.textContent = "Code inconnu. Vérifie les lettres et les chiffres."; }
+    else { m.className = "msg-ko"; m.textContent = "Code inconnu ou déjà utilisé. Vérifie les lettres et les chiffres."; }
   };
 }
 
@@ -265,8 +270,29 @@ function share() {
 
 // ---------- Navigation
 function go(h) { location.hash = h; }
+function viewLogin(err = "") {
+  $view.innerHTML = `<div class="card" style="text-align:center;gap:14px">
+    <h1>Bienvenue sur Révision</h1>
+    <p class="muted">Connecte-toi avec ton compte Google pour garder tes progrès et profiter de ${TRIAL_DAYS} jours d'essai gratuit avec tout débloqué.</p>
+    <button class="btn" id="google">Se connecter avec Google</button>
+    ${err ? `<p class="msg-ko small">${esc(err)}</p>` : ""}</div>`;
+  document.getElementById("google").onclick = () => Compte.signIn().then(applyProfile).then(render)
+    .catch(() => viewLogin("La connexion n'a pas abouti. Réessaie."));
+}
+// le profil en ligne fait foi pour l'essai et le premium ; les progrès les plus complets sont gardés
+function applyProfile(p) {
+  if (!p) return;
+  S.trialStart = p.created.toISOString().slice(0, 10);
+  S.premium = p.premium;
+  const d = p.data || {};
+  if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [] });
+  if (!S.level && d.level) S.level = d.level;
+  try { localStorage.setItem("rev", JSON.stringify(S)); } catch {}
+}
+
 function render() {
   clearInterval(timer);
+  if (Compte.enabled && !Compte.user) return viewLogin();
   const [tab, arg] = (location.hash.slice(1) || "accueil").split("/");
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
@@ -282,5 +308,5 @@ document.getElementById("install").onclick = () => { if (deferred) { deferred.pr
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 Promise.all([fetch("data/questions.json", { cache: "no-cache" }).then((r) => r.json()), fetch("data/config.json", { cache: "no-cache" }).then((r) => r.json())])
-  .then(([d, c]) => { DATA = d; CFG = c; render(); })
+  .then(async ([d, c]) => { DATA = d; CFG = c; applyProfile(await Compte.start().catch(() => null)); render(); })
   .catch(() => { $view.innerHTML = `<div class="card"><p>Impossible de charger les questions. Vérifie ta connexion puis recharge la page.</p></div>`; });
