@@ -173,10 +173,9 @@ function viewHome() {
     <div class="grid">${subs}</div>
     <div class="btns">
       <a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}</a>
-      <button class="btn alt" id="share">Partager l'appli à un camarade</button>
+      <a class="btn alt" href="#partager">Partager l'appli à un camarade (lien ou QR code)</a>
     </div>`;
   bindQuestion($view.querySelector("#daily"), daily, () => {});
-  $view.querySelector("#share").onclick = share;
   const tx = $view.querySelector("#tuto-x");
   if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };
 }
@@ -651,7 +650,7 @@ function viewPremium(reason = "", pay = "wave") {
 // Partage : sur Android, la vidéo de présentation part avec le lien (WhatsApp l'affiche directement) ;
 // sinon, le lien seul, dont l'aperçu montre l'image de présentation.
 async function share() {
-  const url = location.href.split("#")[0];
+  const url = location.href.split("#")[0].split("?")[0] + "?qr";
   const text = `Je révise le BAC et le BFEM avec cette appli : 1 300 QCM corrigés, sujets officiels, cours et devoirs. 10 jours gratuits 👉 ${url}`;
   try {
     const blob = await fetch("tuto.mp4").then((r) => r.blob());
@@ -660,6 +659,29 @@ async function share() {
   } catch (e) { if (e && e.name === "AbortError") return; }
   if (navigator.share) navigator.share({ title: "Révision BAC BFEM", text, url }).catch(() => {});
   else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+}
+
+// Partager : QR code à faire scanner en face, ou à envoyer en image avec le lien
+function viewPartager() {
+  const url = location.href.split("#")[0].split("?")[0] + "?qr";
+  $view.innerHTML = `<h1>Partager l'appli</h1>
+    <div class="card" style="text-align:center"><img src="icons/qr.png" alt="QR code de l'appli" style="width:100%;max-width:320px;background:#fff;padding:10px;border-radius:12px">
+      <p class="small muted">En face : ton camarade vise ce code avec l'appareil photo de son téléphone. L'appli s'ouvre avec les étapes pour l'installer et créer son compte.</p></div>
+    <button class="btn" id="sqr">Envoyer le QR code et le lien (WhatsApp…)</button>
+    <button class="btn alt" id="slink">Envoyer seulement le lien</button>
+    <div class="card small"><p>Le lien de l'appli :</p><p><b style="word-break:break-all">${esc(url)}</b></p><button class="btn alt small" id="cp">Copier le lien</button></div>
+    <p class="small muted">Chaque camarade a ses 10 jours d'essai gratuit avec son propre compte.</p>`;
+  const text = `Je révise le BAC et le BFEM avec cette appli : QCM corrigés, sujets du BAC, cours et devoirs. 10 jours gratuits. Ouvre le lien ou scanne le QR code 👉 ${url}`;
+  document.getElementById("sqr").onclick = async () => {
+    try {
+      const blob = await fetch("icons/qr.png").then((r) => r.blob());
+      const files = [new File([blob], "qr-revision.png", { type: "image/png" })];
+      if (navigator.canShare && navigator.canShare({ files })) return await navigator.share({ files, text, title: "Révision BAC BFEM" });
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    share();
+  };
+  document.getElementById("slink").onclick = share;
+  document.getElementById("cp").onclick = (e) => navigator.clipboard?.writeText(url).then(() => { e.target.textContent = "Lien copié ✓"; }).catch(() => {});
 }
 
 // ---------- Navigation
@@ -723,12 +745,12 @@ function render() {
   if (tab === "admin" && globalThis.viewAdmin) { viewAdmin(arg); window.scrollTo(0, 0); return; }
   if (S.suspended) { $view.innerHTML = `<div class="card"><h1>Compte suspendu</h1><p>Ton compte est suspendu pour le moment. Contacte-nous pour le réactiver.</p>${CFG.wave_number || CFG.whatsapp ? `<p class="small muted">WhatsApp : ${esc(CFG.wave_number || CFG.whatsapp)}</p>` : ""}</div>`; return; }
   document.getElementById("exam-tag").textContent = S.level || "";
-  if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
+  if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
-  if (!isPremium() && !["accueil", "classe", "premium", "progres"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
+  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);

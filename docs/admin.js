@@ -9,15 +9,15 @@
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = ["erreurs", "comptes", "qr"].includes(arg) ? arg : "chiffres";
+    const onglet = ["activite", "erreurs", "comptes", "qr"].includes(arg) ? arg : "chiffres";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["chiffres", "Chiffres"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
     document.getElementById("reload").onclick = () => { users = errors = null; viewAdmin(arg); };
     const box = document.getElementById("adm");
     if (onglet === "qr") {
-      box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.svg" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
-        <p class="small muted">La personne ouvre l'appareil photo de son téléphone et vise le code : l'appli s'ouvre avec les étapes pour l'installer. Monte la luminosité de ton écran.</p></div>`;
+      box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.png" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
+        <p class="small muted">La personne ouvre l'appareil photo de son téléphone et vise le code : l'appli s'ouvre avec les étapes pour l'installer. Monte la luminosité de ton écran.</p><a class="btn alt" href="#partager">Envoyer ce QR code ou le lien</a></div>`;
       document.getElementById("reload").hidden = true;
       return;
     }
@@ -26,6 +26,7 @@
       if (onglet === "erreurs" && !errors) errors = await Compte.adminErrors();
     } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Vérifie que les règles Firestore à jour sont publiées.</p></div>`; return; }
     if (onglet === "chiffres") return chiffres(box);
+    if (onglet === "activite") return activite(box);
     if (onglet === "comptes") return comptes(box);
     return journal(box);
   }
@@ -37,6 +38,22 @@
       ${tile(n((u) => ago(u.created, 1)), "inscrits aujourd'hui")}${tile(n((u) => ago(u.created, 7)), "inscrits cette semaine")}${tile(n((u) => ago(u.created, 30)), "inscrits ce mois")}${tile(n((u) => u.premium), "premium")}${tile(n((u) => u.suspended), "suspendus")}</div>
       <div class="card"><h2>Par classe</h2><ul class="steps">${Object.entries(niveaux).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${esc(k)} : <b>${v}</b></li>`).join("")}</ul></div>
       <p class="small muted">« Actif » = a ouvert l'appli (mise à jour au plus toutes les 12 heures).</p>`;
+  }
+
+  // nouveaux comptes et dernières connexions, avec les inscriptions des 14 derniers jours
+  const depuis = (d) => { if (!d) return "—"; const m = Math.round((Date.now() - d.getTime()) / 6e4); return m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} j`; };
+  function activite(box) {
+    const jours = [...Array(14)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 13 + i); return d; });
+    const parJour = (k) => jours.map((d) => users.filter((u) => u[k] && u[k] >= d && u[k] - d < 864e5).length);
+    const ins = parJour("created"), vus = parJour("lastSeen"), max = Math.max(1, ...ins, ...vus);
+    const barres = (v, t) => `<div style="display:flex;align-items:flex-end;gap:3px;height:90px">${v.map((n, i) => `<div style="flex:1;text-align:center" title="${jours[i].toLocaleDateString("fr-FR")} : ${n}"><span class="small">${n || ""}</span><div style="height:${(70 * n) / max}px;min-height:2px;background:var(--accent,#7c5cff);border-radius:3px"></div></div>`).join("")}</div><p class="small muted">${t}</p>`;
+    const ligne = (u, k, t) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><span><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""}<br><span class="muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}</span></span><span class="muted" style="text-align:right">${t}<br>${depuis(u[k])}</span></div>`;
+    const nouveaux = users.filter((u) => u.created).sort((a, b) => b.created - a.created).slice(0, 30);
+    const connexions = users.filter((u) => u.lastSeen).sort((a, b) => b.lastSeen - a.lastSeen).slice(0, 30);
+    box.innerHTML = `<div class="card"><h2>Inscriptions par jour (14 jours)</h2>${barres(ins, "Du plus ancien (à gauche) à aujourd'hui (à droite).")}</div>
+      <div class="card"><h2>Dernière connexion par jour (14 jours)</h2>${barres(vus, "Chaque compte compte une fois, le jour de sa dernière ouverture de l'appli.")}</div>
+      <div class="card"><h2>🆕 Nouveaux comptes</h2>${nouveaux.map((u) => ligne(u, "created", "inscrit")).join("") || '<p class="muted">Aucun compte pour l\'instant.</p>'}</div>
+      <div class="card"><h2>🟢 Dernières connexions</h2>${connexions.map((u) => ligne(u, "lastSeen", "vu")).join("") || '<p class="muted">Aucune connexion enregistrée.</p>'}</div>`;
   }
 
   function comptes(box) {
