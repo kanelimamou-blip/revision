@@ -201,8 +201,63 @@ function viewAnnales() {
       ${a.parts ? `<ul class="steps small">${a.parts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
       <div class="row"><a class="btn" style="flex:1" href="${esc(a.sujet)}" target="_blank" rel="noopener">Sujet (PDF)</a>
       <a class="btn alt" style="flex:1" href="${esc(a.corrige)}" target="_blank" rel="noopener">Corrigé (PDF)</a></div>
+      ${a.guided ? `<a class="btn hi-btn" href="#sujet/${a.id}">Faire ce sujet en mode guidé, corrigé à chaque étape${isPremium() ? "" : " 🔒"}</a>` : ""}
       <p class="small muted">Fichiers hébergés par ${esc(DATA.annalesHost)}.</p></div>`).join("")
     : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
+}
+
+// ---------- Sujet guidé : un vrai sujet, étape par étape, corrigé tout de suite
+const pts = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
+function viewGuided(id) {
+  const an = (DATA.annales || []).find((x) => x.id === id && x.guided);
+  if (!an) return go("annales");
+  if (!isPremium()) return viewPremium("Les sujets guidés font partie du pack premium.");
+  const steps = an.guided.flatMap((p, pi) => p.steps.map((st) => ({ ...st, pi })));
+  const max = steps.reduce((n, st) => n + st.pts, 0);
+  let k = -1, got = 0;
+  const byPart = an.guided.map(() => 0);
+  function intro() {
+    $view.innerHTML = `<div class="card"><p class="tag-src">Sujet guidé</p><h1>${esc(an.exam)} ${an.year} · ${esc(an.subject)}</h1>
+      <p class="muted">Séries ${esc(an.series)}${an.duration ? " · " + esc(an.duration) : ""}${an.coef ? " · coefficient " + an.coef : ""}</p>
+      <p>Tu fais le vrai sujet question après question. À chaque étape, tu réponds puis tu vois tout de suite le corrigé et les points gagnés.</p>
+      <p class="small muted">${steps.length} étapes, ${pts(max)} points sur 20 (les tableaux et les tracés de courbes ne sont pas notés ici). Énoncé reformulé ; l'original est en PDF dans les annales.</p>
+      <button class="btn" id="go">Commencer</button></div>`;
+    document.getElementById("go").onclick = () => { k = 0; step(); };
+  }
+  function step() {
+    const st = steps[k], part = an.guided[st.pi];
+    $view.innerHTML = `<div class="progress"><span>${esc(an.exam)} ${an.year} · étape ${k + 1} / ${steps.length}</span><span><b>${pts(got)}</b> / ${pts(max)} pts</span></div>
+      <div class="bar"><i style="width:${(100 * k) / steps.length}%"></i></div>
+      <div class="card"><h2>${esc(part.title)}</h2><p class="small">${esc(part.context)}</p></div>
+      <div class="card" id="qc"><p class="tag-src">${pts(st.pts)} point${st.pts > 1 ? "s" : ""}</p>${questionBlock(st)}</div>
+      <button class="btn" id="next" hidden>${k + 1 < steps.length ? "Étape suivante" : "Voir ma note"}</button>`;
+    const qc = document.getElementById("qc");
+    qc.querySelectorAll(".choice").forEach((b) => b.onclick = () => {
+      const ok = +b.dataset.i === st.a;
+      qc.querySelectorAll(".choice").forEach((x) => { x.disabled = true; if (+x.dataset.i === st.a) x.classList.add("ok"); });
+      if (!ok) b.classList.add("ko");
+      if (ok) { got += st.pts; byPart[st.pi] += st.pts; }
+      const ex = qc.querySelector(".expl");
+      ex.innerHTML = `<b class="${ok ? "msg-ok" : "msg-ko"}">${ok ? `Juste : +${pts(st.pts)} pt` : "Faux : 0 pt"}</b><br><b>Corrigé :</b> ${esc(st.e)}`;
+      ex.hidden = false;
+      document.getElementById("next").hidden = false;
+      if (!S.days.includes(today())) { S.days.push(today()); store.save(); }
+    });
+    document.getElementById("next").onclick = () => (k + 1 < steps.length ? (k++, step()) : finish());
+    window.scrollTo(0, 0);
+  }
+  function finish() {
+    const note = Math.round((20 * got) / max * 10) / 10;
+    S.sessions.push({ t: `Sujet guidé ${an.exam} ${an.year}`, score: got, total: max, d: today() }); store.save();
+    $view.innerHTML = `<div class="card" style="text-align:center"><p class="muted">${esc(an.exam)} ${an.year} · ${esc(an.subject)} · séries ${esc(an.series)}</p>
+      <p class="score">${pts(note)} / 20</p><p>${pts(got)} points sur ${pts(max)} notés</p></div>
+      <div class="card">${an.guided.map((p, i) => `<div class="row small"><span>${esc(p.title)}</span><b>${pts(byPart[i])} / ${pts(p.steps.reduce((n, x) => n + x.pts, 0))}</b></div>`).join("")}</div>
+      <div class="btns"><a class="btn alt" href="${esc(an.corrige)}" target="_blank" rel="noopener">Corrigé officiel complet (PDF)</a>
+      <button class="btn" id="again">Recommencer</button><a class="btn alt" href="#annales">Autres annales</a></div>`;
+    document.getElementById("again").onclick = () => { k = 0; got = 0; byPart.fill(0); step(); };
+    window.scrollTo(0, 0);
+  }
+  intro();
 }
 
 // ---------- Progrès
@@ -319,7 +374,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);

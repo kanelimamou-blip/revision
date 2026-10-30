@@ -98,3 +98,54 @@ SUBJECTS_ANNALES = [
     ("Quel est le reste de 2023 dans la division par 7 ?", ["0", "1", "3", "6"], 0, "2023 = 7 × 289.", S1_23 + ", exercice 2"),
   ]),
 ]
+
+# Sujets guidés : l'énoncé est reformulé étape par étape, chaque réponse est corrigée tout de suite.
+# Étape : (question, [4 choix], indice de la bonne réponse, corrigé détaillé, points du barème officiel)
+GUIDED = {
+  "bac-2019-s2-maths": [
+    {"title": "Exercice 1 : probabilités et suite (4,5 pts)",
+     "context": "Une classe de Première S2 compte 45 élèves ; 30 ont eu la moyenne au premier devoir de maths. "
+                "Un élève qui a eu la moyenne à un devoir l'a au suivant avec la probabilité 1/2 ; "
+                "un élève qui ne l'a pas eue l'a au suivant avec la probabilité 1/3. "
+                "Eₙ : « l'élève a eu la moyenne au n-ième devoir », pₙ = P(Eₙ).",
+     "steps": [
+       ("Combien vaut p₁ ?", ["1/3", "2/3", "30/100", "1/2"], 1, "p₁ = 30/45 = 2/3.", 0.5),
+       ("Que valent P(E₂ | E₁) et P(E₂ | Ē₁) ?", ["1/2 et 1/3", "1/3 et 1/2", "1/2 et 2/3", "2/3 et 1/3"], 0, "Ce sont les données de l'énoncé : 1/2 si l'élève avait la moyenne, 1/3 sinon.", 0.5),
+       ("En déduire p₂.", ["5/6", "4/9", "1/3", "7/18"], 1, "Formule des probabilités totales : p₂ = (2/3)(1/2) + (1/3)(1/3) = 1/3 + 1/9 = 4/9.", 0.5),
+       ("Pour tout n ≥ 1, pₙ₊₁ est égal à :", ["(1/2)pₙ + 1/3", "(1/6)pₙ + 1/3", "(5/6)pₙ", "(1/6)pₙ + 1/2"], 1, "pₙ₊₁ = (1/2)pₙ + (1/3)(1 − pₙ) = (1/2 − 1/3)pₙ + 1/3 = (1/6)pₙ + 1/3.", 0.75),
+       ("On pose uₙ = pₙ − 2/5. La suite (uₙ) est géométrique de :", ["raison 1/6 et u₁ = 4/15", "raison 1/3 et u₁ = 2/3", "raison 1/6 et u₁ = 2/5", "raison 6 et u₁ = 4/15"], 0, "uₙ₊₁ = (1/6)pₙ + 1/3 − 2/5 = (1/6)pₙ − 1/15 = (1/6)(pₙ − 2/5) = (1/6)uₙ, et u₁ = 2/3 − 2/5 = 4/15.", 1),
+       ("Alors, pour tout n ≥ 1, pₙ est égal à :", ["2/5 + (4/15)(1/6)ⁿ⁻¹", "(4/15)(1/6)ⁿ", "2/5 − (1/6)ⁿ", "2/3 (1/6)ⁿ⁻¹"], 0, "uₙ = u₁ qⁿ⁻¹ = (4/15)(1/6)ⁿ⁻¹, puis pₙ = uₙ + 2/5.", 1),
+       ("Quelle est la limite de pₙ ?", ["0", "2/5", "2/3", "+∞"], 1, "Comme 0 < 1/6 < 1, (1/6)ⁿ⁻¹ tend vers 0, donc pₙ tend vers 2/5.", 0.25),
+     ]},
+    {"title": "Exercice 2 : nombres complexes (5,5 pts)",
+     "context": "f(z) = z⁵ + 2z⁴ + 2z³ − z² − 2z − 2 et (E) : f(z) = 0. "
+                "Dans la partie B, A, B, C, D ont pour affixes −1/2 + i√3/2, −1 + i, −1 − i et −1/2 − i√3/2.",
+     "steps": [
+       ("Le polynôme Q tel que f(z) = (z³ − 1)Q(z) est :", ["z² + 2z + 2", "z² − 2z + 2", "z² + 2", "z² + z + 1"], 0, "En développant (z³ − 1)(z² + 2z + 2) = z⁵ + 2z⁴ + 2z³ − z² − 2z − 2.", 0.5),
+       ("Les solutions de (E) sont :", ["1, −1/2 ± i√3/2 et −1 ± i", "1 et −1 ± i", "±1 et ± i", "−1/2 ± i√3/2 seulement"], 0, "z³ = 1 donne 1 et e^(±2iπ/3) = −1/2 ± i√3/2 ; z² + 2z + 2 = 0 a pour discriminant −4, d'où −1 ± i.", 0.5),
+       ("La forme trigonométrique de −1 + i est :", ["√2 (cos 3π/4 + i sin 3π/4)", "√2 (cos π/4 + i sin π/4)", "2 (cos 3π/4 + i sin 3π/4)", "√2 (cos 5π/4 + i sin 5π/4)"], 0, "|−1 + i| = √2 et le point est dans le 2e quadrant sur la bissectrice : argument 3π/4. De même −1 − i = √2 e^(−3iπ/4).", 1),
+       ("Quelle est la nature du quadrilatère ABCD ?", ["Un trapèze isocèle", "Un parallélogramme", "Un carré", "Un losange"], 0, "(AD) et (BC) sont verticales donc parallèles, mais AD = √3 et BC = 2 ; la figure est symétrique par rapport à l'axe réel : trapèze isocèle.", 0.5),
+       ("La rotation r de centre Ω(1) qui envoie A sur D a pour écriture :", ["z′ = e^(iπ/3)(z − 1) + 1", "z′ = e^(−iπ/3)(z − 1) + 1", "z′ = e^(iπ/3) z", "z′ = −z + 2"], 0, "z_A − 1 = √3 e^(5iπ/6) et z_D − 1 = √3 e^(−5iπ/6) : l'angle vaut −5π/3, c'est-à-dire π/3 modulo 2π.", 0.5),
+       ("uₙ = (z_A)ⁿ. Quel est le plus petit n ≥ 1 tel que uₙ soit réel ?", ["2", "3", "4", "6"], 1, "z_A = e^(2iπ/3) : (z_A)ⁿ est réel quand 2nπ/3 est un multiple de π, soit n multiple de 3.", 1),
+       ("Forme algébrique de u₂₀₁₉ :", ["1", "−1", "−1/2 + i√3/2", "i"], 0, "2019 = 3 × 673 et (z_A)³ = 1, donc u₂₀₁₉ = 1.", 0.5),
+     ]},
+    {"title": "Problème : étude de fonction (10 pts)",
+     "context": "g(x) = −1 + x e^(x/2) et f(x) = −x + 2 + (2x − 4) e^(x/2), pour x réel. "
+                "Repère orthonormé, unité graphique 2 cm.",
+     "steps": [
+       ("Limites de g en −∞ et en +∞ :", ["−1 et +∞", "0 et +∞", "−∞ et +∞", "−1 et 0"], 0, "En −∞, x e^(x/2) tend vers 0 (croissances comparées), donc g → −1. En +∞, g → +∞.", 0.75),
+       ("Sens de variation de g :", ["Décroissante sur ]−∞ ; −2], croissante sur [−2 ; +∞[", "Croissante sur ℝ", "Décroissante sur ℝ", "Croissante sur ]−∞ ; 0], décroissante après"], 0, "g′(x) = e^(x/2) + (x/2) e^(x/2) = (1 + x/2) e^(x/2), du signe de x + 2.", 1),
+       ("g(x) = 0 a une unique solution α. Quel encadrement est juste ?", ["0,70 < α < 0,71", "0,60 < α < 0,70", "0,71 < α < 0,72", "1 < α < 2"], 0, "g(0,70) ≈ −0,007 < 0 et g(0,71) ≈ 0,013 > 0, et g est continue et strictement croissante sur [−2 ; +∞[ (et négative avant −2).", 0.75),
+       ("Signe de g(x) :", ["g < 0 sur ]−∞ ; α[ et g > 0 sur ]α ; +∞[", "g > 0 sur ℝ", "g < 0 sur ℝ", "g > 0 sur ]−∞ ; α["], 0, "Conséquence des variations et de g(α) = 0.", 0.5),
+       ("Exprimer f′(x) :", ["f′(x) = g(x)", "f′(x) = −g(x)", "f′(x) = 2g(x)", "f′(x) = x e^(x/2)"], 0, "f′(x) = −1 + 2 e^(x/2) + (x − 2) e^(x/2) = −1 + x e^(x/2) = g(x).", 0.5),
+       ("Sens de variation de f :", ["Décroissante sur ]−∞ ; α], croissante sur [α ; +∞[", "Croissante sur ℝ", "Croissante puis décroissante", "Décroissante sur ℝ"], 0, "f′ = g est négative avant α et positive après.", 0.5),
+       ("Comme α e^(α/2) = 1, f(α) est égal à :", ["4 − α − 4/α", "2 − α", "4 + α − 4/α", "−α + 2/α"], 0, "e^(α/2) = 1/α, donc f(α) = −α + 2 + (2α − 4)/α = 4 − α − 4/α.", 0.5),
+       ("Un encadrement de f(α) :", ["−2,42 < f(α) < −2,34", "−2,3 < f(α) < −2,2", "−1,5 < f(α) < −1,4", "2,34 < f(α) < 2,42"], 0, "x ↦ 4 − x − 4/x est croissante sur ]0 ; 2[ ; avec 0,70 < α < 0,71 : 4 − 0,70 − 4/0,70 ≈ −2,414 et 4 − 0,71 − 4/0,71 ≈ −2,344.", 0.5),
+       ("En +∞ : limites de f(x) et de f(x)/x ?", ["+∞ et +∞ (branche parabolique de direction (Oy))", "+∞ et 0", "0 et 0", "+∞ et 2"], 0, "(2x − 4) e^(x/2) l'emporte : f → +∞ et f(x)/x → +∞.", 0.75),
+       ("Limite de f en −∞ :", ["+∞", "−∞", "2", "0"], 0, "−x + 2 → +∞ et (2x − 4) e^(x/2) → 0.", 0.25),
+       ("Asymptote à la courbe en −∞ :", ["y = −x + 2", "y = 2", "y = x", "x = −2"], 0, "f(x) − (−x + 2) = (2x − 4) e^(x/2) → 0 en −∞.", 0.5),
+       ("Par parties, I(x) = ∫₀ˣ (2t − 4) e^(t/2) dt vaut :", ["(4x − 16) e^(x/2) + 16", "(4x − 8) e^(x/2) + 8", "(2x − 4) e^(x/2)", "(4x − 16) e^(x/2)"], 0, "u = 2t − 4, v = 2e^(t/2) : I(x) = [(4t − 8)e^(t/2)]₀ˣ − ∫₀ˣ 4e^(t/2) dt = (4x − 8)e^(x/2) + 8 − 8e^(x/2) + 8.", 0.75),
+       ("λ < 0. Aire en cm² entre la courbe, y = 2 − x et les droites x = λ et x = 0, puis sa limite en −∞ :", ["(16λ − 64)e^(λ/2) + 64, limite 64 cm²", "(4λ − 16)e^(λ/2) + 16, limite 16 cm²", "64 e^(λ/2), limite 0", "16λ, limite −∞"], 0, "Sur [λ ; 0], f(x) ≤ 2 − x. L'aire vaut −∫_λ^0 (2x − 4)e^(x/2) dx = I(λ) unités d'aire, et 1 u.a. = 2 × 2 = 4 cm². Quand λ → −∞, l'aire tend vers 64 cm² (aire finie entre la courbe et son asymptote).", 0.75),
+     ]},
+  ],
+}

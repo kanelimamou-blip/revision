@@ -11,7 +11,7 @@ import random
 import secrets
 from pathlib import Path
 
-from annales import ANNALES, HOST
+from annales import ANNALES, GUIDED, HOST
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
@@ -108,6 +108,20 @@ def build():
             order = list(range(4))
             random.Random(qid).shuffle(order)
             questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, **({"src": src[0]} if src else {})})
+    # sujets guidés : mêmes choix mélangés que les questions, attachés à leur annale
+    for an in ANNALES:
+        parts = GUIDED.get(an["id"])
+        if not parts:
+            continue
+        an["guided"] = []
+        for k, part in enumerate(parts):
+            steps = []
+            for j, (q, choices, a, ex, pts) in enumerate(part["steps"]):
+                assert len(choices) == 4 and 0 <= a < 4, (an["id"], q)
+                order = list(range(4))
+                random.Random(f'{an["id"]}-{k}-{j}').shuffle(order)
+                steps.append({"q": q, "c": [choices[i] for i in order], "a": order.index(a), "e": ex, "pts": pts})
+            an["guided"].append({"title": part["title"], "context": part["context"], "steps": steps})
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST}, ensure_ascii=False, separators=(",", ":")))
