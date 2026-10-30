@@ -230,6 +230,9 @@ PROGRAMMES = {
     ("Droites et cercles dans le plan", ["droite", "cercle"]),
     ("Trigonométrie", ["sin", "cos"]),
     ("Pourcentages et statistiques", ["%", "moyenne", "coefficient multiplicateur"]),
+    ("Polynômes et fractions rationnelles", ["polynome", "degre", "racine", "fraction rationnelle", "factoris", "division euclidienne"]),
+    ("Transformations du plan", ["translation", "homothetie", "symetrie", "rotation", "image d'un point"]),
+    ("Géométrie dans l'espace", ["espace", "plan", "parallele", "orthogonal", "pyramide", "cube"]),
   ],
   "2nde-pc": [
     ("Structure de l'atome", ["noyau", "numero atomique", "atome", "couche", "formule electronique", "¹²"]),
@@ -238,6 +241,8 @@ PROGRAMMES = {
     ("Réaction chimique", ["reaction", "reactif", "conserve"]),
     ("Mouvement et principe d'inertie", ["mouvement", "inertie", "vitesse"]),
     ("Forces : poids et gravitation", ["poids", "gravitation", "lune"]),
+    ("Le courant électrique : intensité et tension", ["courant", "intensite", "tension", "ampere", "volt", "loi des noeuds", "dipole"]),
+    ("Réflexion et réfraction de la lumière", ["reflexion", "refraction", "indice", "snell", "descartes", "miroir", "prisme"]),
   ],
   "2nde-svt": [
     ("La cellule : structure et organites", ["cellule", "membrane", "mitochondrie", "chloroplaste", "unicellulaire", "bacterie", "microscope", "grossissement", "objectif"]),
@@ -279,6 +284,11 @@ PROGRAMMES = {
     ("Produit scalaire et vecteurs", ["produit scalaire", "vecteurs"]),
     ("Trigonométrie", ["cos", "sin"]),
     ("Probabilités", ["probabilite"]),
+    ("Généralités sur les fonctions", ["ensemble de definition", "parite", "fonction paire", "fonction impaire", "composee", "majoree", "sens de variation"]),
+    ("Barycentre", ["barycentre", "points ponderes", "isobarycentre", "coefficients"]),
+    ("Angles orientés et rotations", ["angle oriente", "rotation", "mesure principale", "radian"]),
+    ("Dénombrement", ["combinaison", "arrangement", "factorielle", "permutation", "denombr"]),
+    ("Statistiques", ["moyenne", "variance", "ecart type", "mediane", "quartile"]),
   ],
   "1ere-pc": [
     ("Travail, énergie et puissance", ["travail", "energie", "puissance", "kwh", "chaleur"]),
@@ -288,12 +298,17 @@ PROGRAMMES = {
     ("Chimie organique : hydrocarbures et polymères", ["alcane", "alcene", "methane", "ch₃", "polyethylene", "combustion"]),
     ("Alcools et acides carboxyliques", ["alcool", "carboxyl"]),
     ("Oxydoréduction", ["oxydation", "reducteur"]),
+    ("Calorimétrie", ["chaleur", "calorimetre", "capacite thermique", "chaleur massique", "chaleur latente", "equilibre thermique"]),
+    ("Condensateurs", ["condensateur", "capacite", "armature", "dielectrique"]),
+    ("Amplificateur opérationnel", ["amplificateur", "ao", "inverseur", "suiveur", "sommateur"]),
+    ("Piles, électrolyse et dosages d'oxydoréduction", ["pile", "electrolyse", "daniell", "permanganate", "dosage", "equivalence"]),
   ],
   "1ere-svt": [
     ("Tectonique des plaques et géologie", ["plaque", "dorsale", "subduction", "lithosphere", "magma", "montagne", "volcanisme", "seisme", "croute", "la terre a"]),
     ("Système nerveux et réflexes", ["reflexe", "neurone", "synapse", "nerveux"]),
     ("Le muscle et l'énergie", ["muscle", "biceps", "respiration cellulaire", "fermentation"]),
     ("Milieu intérieur : sang, glycémie, rein", ["glycogene", "plaquette", "rein", "nephron", "uree", "coagulation", "glycemie", "coeur", "cœur", "sang"]),
+    ("Roches magmatiques et métamorphiques", ["magma", "granite", "basalte", "roche", "metamorph", "cristaux"]),
   ],
   "1ere-francais": [
     ("Le XVIIe siècle : classicisme et théâtre", ["trois unites", "phedre", "tragedie", "le cid", "corneille"]),
