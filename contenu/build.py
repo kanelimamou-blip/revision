@@ -22,6 +22,7 @@ from fiches import FICHES
 from fiches_autres import FICHES_AUTRES
 FICHES = {**FICHES, **FICHES_AUTRES}
 from catalogue import LIBRARY, LIB_HOST
+from catalogue_devoirs import DEVOIRS
 from exercices import EXERCISES
 from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
@@ -187,11 +188,11 @@ def build():
                               "guided": guided("ch-" + ch["id"], [{"title": ch["title"], "context": exo["context"], "steps": exo["steps"]}])})
     assert set(PROGRAMMES) <= {s[0] for s in SUBJECTS}
     assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) | set(EXTRA_CHAPITRES) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
-    for e in LIBRARY:
+    for e in LIBRARY + DEVOIRS:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions, "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions, "devoirs": DEVOIRS, "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

@@ -75,11 +75,11 @@ function viewLevel() {
 const notionsOf = (level) => subjectsOf(level).flatMap((s) => ((DATA.notions || {})[s.id] || []).map((c) => ({ ...c, sid: s.id, sname: s.name })));
 const exercisesOf = (level) => (DATA.exercises || []).filter((e) => matches(e.levels, level));
 function rubriques() {
-  const nAnn = annalesOf(S.level).length + libraryOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length;
+  const nAnn = annalesOf(S.level).length + libraryOf(S.level).length + devoirsOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length;
   const exam = examOf() ? examOf()[0] : "BAC", nNot = notionsOf(S.level).length;
   const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
-    nAnn ? tile("#annales", "📚", `Sujets du ${exam}`, `${nAnn} vrais sujets et corrigés`) : "",
+    nAnn ? tile("#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs et compositions", `${nAnn} vrais sujets${examOf() ? " et corrigés" : " de ta classe"}`) : "",
     tile("#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"),
     tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
     tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas` : "Bientôt pour ta classe"),
@@ -254,6 +254,17 @@ function viewErrors() {
 
 // ---------- Annales : vrais sujets, avec leur structure et le lien vers le PDF original
 const annalesOf = (level) => (DATA.annales || []).filter((a) => matches(a.levels, level));
+const devoirsOf = (level) => (DATA.devoirs || []).filter((a) => matches(a.levels, level));
+// Devoirs et compositions d'établissements pour les classes sans examen national, rangés par matière puis par année
+function devoirsBlock() {
+  const list = devoirsOf(S.level);
+  if (!list.length) return "";
+  const subs = [...new Set(list.map((a) => a.subject))];
+  return `<h2>Devoirs et compositions : ${list.length} sujets</h2>
+    <p class="small muted">Vrais devoirs, compositions harmonisées et séries d'exercices donnés dans des établissements et inspections du Sénégal (ce ne sont pas des examens nationaux). Beaucoup ont leur corrigé. Hébergés par ${esc(DATA.libraryHost)}.</p>
+    ${subs.map((sub) => `<div class="card"><h2>${esc(sub)}</h2>${list.filter((a) => a.subject === sub).sort((a, b) => String(b.year).localeCompare(String(a.year))).map((a) =>
+      `<a class="row lib" href="${esc(a.url)}" target="_blank" rel="noopener"><span>${esc(a.title)}</span><span class="small muted">${a.year ? esc(a.year) + " · " : ""}ouvrir ↗</span></a>`).join("")}</div>`).join("")}`;
+}
 const libraryOf = (level) => (DATA.library || []).filter((a) => matches(a.levels, level));
 function libraryBlock() {
   const list = libraryOf(S.level);
@@ -354,8 +365,9 @@ function viewDevoir(arg) {
 }
 function viewAnnales() {
   const list = annalesOf(S.level);
-  $view.innerHTML = `<h1>Sujets du ${examOf() ? esc(examOf()[0]) : "BAC"}</h1>
-    <p class="muted">Vrais sujets officiels du ${examOf() ? esc(examOf()[0]) : "BAC"}. Les questions sourcées de l'appli en sont tirées.</p>
+  $view.innerHTML = `${examOf() ? `<h1>Sujets du ${esc(examOf()[0])}</h1>
+    <p class="muted">Vrais sujets officiels du ${esc(examOf()[0])}. Les questions sourcées de l'appli en sont tirées.</p>` : `<h1>Devoirs et compositions</h1>
+    <p class="muted">Ta classe n'a pas d'examen national : voici de vrais devoirs et compositions de ${esc(S.level)} pour t'entraîner.</p>`}
     ${list.length ? list.map((a) => `<div class="card">
       <div class="row"><h2>${esc(a.exam)} ${a.year}</h2><span class="tag">${esc(a.subject)}</span></div>
       <p class="small muted">Séries ${esc(a.series)}${a.duration ? " · " + esc(a.duration) : ""}${a.coef ? " · coefficient " + a.coef : ""}</p>
@@ -366,7 +378,8 @@ function viewAnnales() {
       <p class="small muted">Fichiers hébergés par ${esc(DATA.annalesHost)}.</p></div>`).join("")
     : ""}
     ${libraryBlock()}
-    ${list.length || libraryOf(S.level).length ? "" : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
+    ${devoirsBlock()}
+    ${list.length || libraryOf(S.level).length || devoirsOf(S.level).length ? "" : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
 }
 
 // ---------- Exercices corrigés : sujets guidés et exercices pas à pas de la classe
