@@ -14,7 +14,7 @@ const FIREBASE_CONFIG = {
 const Compte = (() => {
   const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
   const enabled = !!FIREBASE_CONFIG;
-  let auth = null, db = null, user = null, doc = null, timer = null;
+  let auth = null, db = null, user = null, doc = null, timer = null, ready = false;
 
   const load = (src) => new Promise((ok, ko) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
 
@@ -27,6 +27,7 @@ const Compte = (() => {
     auth = firebase.auth(); db = firebase.firestore();
     await auth.getRedirectResult().catch(() => null);
     user = await new Promise((ok) => { const off = auth.onAuthStateChanged((u) => { off(); ok(u); }); });
+    ready = true;
     return user ? profile() : null;
   }
 
@@ -73,5 +74,5 @@ const Compte = (() => {
     }, 3000);
   }
 
-  return { enabled, start, signIn, signOut, claim, save, get user() { return user; } };
+  return { enabled, start, signIn, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

@@ -292,7 +292,8 @@ function applyProfile(p) {
 
 function render() {
   clearInterval(timer);
-  if (Compte.enabled && !Compte.user) return viewLogin();
+  // hors connexion (Firebase injoignable), l'appli reste utilisable en local
+  if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
   const [tab, arg] = (location.hash.slice(1) || "accueil").split("/");
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
