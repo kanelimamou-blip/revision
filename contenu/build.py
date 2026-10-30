@@ -26,7 +26,8 @@ from q_plus_lycee import EXTRA_LYCEE
 from q_chapitres import CHAPITRE_FORCE, EXTRA_CHAPITRES
 from q_programme import QCM_CH
 from q_svt_plus import QCM_SVT
-for _sid, _chs in QCM_SVT.items():
+from q_tle_plus import QCM_TLE
+for _sid, _chs in [*QCM_SVT.items(), *QCM_TLE.items()]:
     for _t, _qs in _chs.items():
         QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
 from fiches import FICHES
@@ -52,7 +53,9 @@ for _mod, _var in [("notions_3e", "N3"), ("notions_tle_maths", "NTM"), ("notions
 # matières ajoutées : maths des séries L et G, espagnol LV2
 from matieres_plus import SUBJECTS_PLUS, PROG_PLUS, QCM_PLUS, N_PLUS
 PROGRAMMES.update(PROG_PLUS)
-QCM_CH.update(QCM_PLUS)
+for _sid, _chs in QCM_PLUS.items():
+    for _t, _qs in _chs.items():
+        QCM_CH.setdefault(_sid, {}).setdefault(_t, [])[:0] = _qs
 for _sid, _lst in N_PLUS.items():
     NOTIONS.setdefault(_sid, []).extend(_lst)
 # notions supplémentaires L et G après la notion principale de chaque chapitre
@@ -185,6 +188,8 @@ def build():
         # QCM rangés par chapitre : le chapitre est imposé
         force = {q: t for t, qs in QCM_CH.get(sid, {}).items() for q, *_ in qs}
         items = items + [x for qs in QCM_CH.get(sid, {}).values() for x in qs]
+        # pas deux fois la même question dans une matière
+        _vus = set(); items = [x for x in items if not (x[0] in _vus or _vus.add(x[0]))]
         fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
         assert set(levels) <= set(LEVELS) | fams, (sid, levels)
         subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items)), "fiche": sid in FICHES, "notions": len(NOTIONS.get(sid, []))})
