@@ -12,6 +12,9 @@ import secrets
 from pathlib import Path
 
 from annales import ANNALES, GUIDED, HOST
+from q_plus import EXTRA
+from fiches import FICHES
+from catalogue import LIBRARY, LIB_HOST
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
@@ -98,9 +101,10 @@ def new_codes(n, dest):
 def build():
     questions, subjects = [], []
     for sid, levels, name, items in SUBJECTS:
+        items = items + EXTRA.get(sid, [])
         fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
         assert set(levels) <= set(LEVELS) | fams, (sid, levels)
-        subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items))})
+        subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items)), "fiche": sid in FICHES})
         for i, (q, choices, a, ex, *src) in enumerate(items):
             assert len(choices) == 4 and 0 <= a < 4, (sid, q)
             qid = f"{sid}-{i + 1}"
@@ -122,9 +126,12 @@ def build():
                 random.Random(f'{an["id"]}-{k}-{j}').shuffle(order)
                 steps.append({"q": q, "c": [choices[i] for i in order], "a": order.index(a), "e": ex, "pts": pts})
             an["guided"].append({"title": part["title"], "context": part["context"], "steps": steps})
+    assert set(EXTRA) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
+    for e in LIBRARY:
+        assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

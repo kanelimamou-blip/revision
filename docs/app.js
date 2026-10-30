@@ -2,7 +2,7 @@
 // Révision BAC et BFEM : quiz, examen blanc, erreurs à revoir, progrès, accès premium par code
 const $view = document.getElementById("view");
 const LETTERS = "ABCD";
-const QUIZ_LEN = 10, EXAM_LEN = 20, EXAM_MIN = 20;
+const QUIZ_LEN = 20, EXAM_LEN = 30, EXAM_MIN = 30;
 let DATA = null, CFG = null, timer = null;
 
 const store = {
@@ -96,7 +96,8 @@ function viewHome() {
     <h2>Choisis une matière</h2>
     <div class="grid">${subs}</div>
     <div class="btns">
-      ${annalesOf(S.level).length ? `<a class="btn" href="#annales">Annales officielles : ${annalesOf(S.level).length} vrais sujets du ${examOf() ? examOf()[0] : "BAC"}</a>` : ""}
+      ${subjectsOf(S.level).some((s) => s.fiche) ? `<a class="btn alt" href="#fiches">Synthèses de cours : l'essentiel à retenir</a>` : ""}
+      ${annalesOf(S.level).length + libraryOf(S.level).length ? `<a class="btn" href="#annales">Annales officielles : ${annalesOf(S.level).length + libraryOf(S.level).length} vrais sujets du ${examOf() ? examOf()[0] : "BAC"}</a>` : ""}
       <a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}</a>
       <button class="btn alt" id="share">Partager l'appli à un camarade</button>
     </div>`;
@@ -117,7 +118,9 @@ function bindQuestion(root, q, done, showExpl = true) {
     if (showExpl) {
       if (!ok) b.classList.add("ko");
       const ex = root.querySelector(".expl");
-      ex.innerHTML = `<b class="${ok ? "msg-ok" : "msg-ko"}">${ok ? "Bonne réponse !" : "Pas tout à fait."}</b> ${esc(q.e)}${srcLine(q)}`;
+      ex.innerHTML = ok ? `<b class="msg-ok">Bonne réponse !</b> ${esc(q.e)}${srcLine(q)}`
+        : `<b class="msg-ko">Pas tout à fait.</b><br>Tu as répondu : <s>${esc(q.c[i])}</s><br>La bonne réponse est <b>${LETTERS[q.a]} : ${esc(q.c[q.a])}</b>
+          <p><b>Pourquoi :</b> ${esc(q.e)}</p><p class="small muted">Cette question est gardée dans « Mes erreurs » pour la refaire plus tard.</p>${srcLine(q)}`;
       ex.hidden = false;
     } else b.classList.add("ok");
     record(q, ok); done(ok, i);
@@ -191,10 +194,36 @@ function viewErrors() {
 
 // ---------- Annales : vrais sujets, avec leur structure et le lien vers le PDF original
 const annalesOf = (level) => (DATA.annales || []).filter((a) => matches(a.levels, level));
+const libraryOf = (level) => (DATA.library || []).filter((a) => matches(a.levels, level));
+function libraryBlock() {
+  const list = libraryOf(S.level);
+  if (!list.length) return "";
+  const years = [...new Set(list.map((a) => a.year))].sort((a, b) => b - a);
+  return `<h2>Bibliothèque : ${list.length} sujets de ${years[years.length - 1]} à ${years[0]}</h2>
+    <p class="small muted">Les sujets officiels, année par année. Chaque lien ouvre la page du sujet (PDF à télécharger, souvent avec le corrigé), hébergée par ${esc(DATA.libraryHost)}.</p>
+    ${years.map((y) => `<div class="card"><h2>${list[0].exam} ${y}</h2>${list.filter((a) => a.year === y).map((a) =>
+      `<a class="row lib" href="${esc(a.url)}" target="_blank" rel="noopener"><span>${esc(a.subject)}</span><span class="small muted">${a.series ? "Séries " + esc(a.series) + " · " : ""}ouvrir ↗</span></a>`).join("")}</div>`).join("")}`;
+}
+
+// ---------- Synthèses de cours : l'essentiel à retenir, gratuit, avant les quiz
+function viewFiches() {
+  const subs = subjectsOf(S.level).filter((s) => s.fiche);
+  $view.innerHTML = `<h1>Synthèses de cours</h1><p class="muted">L'essentiel du programme de ${esc(S.level)} à retenir, matière par matière. Lis la fiche, puis entraîne-toi avec le quiz.</p>
+    <div class="grid">${subs.map((s) => `<a class="subj" href="#fiche/${s.id}" style="text-decoration:none;color:inherit"><b>${esc(s.name)}</b><span class="small muted">${DATA.fiches[s.id].length} parties</span></a>`).join("")}</div>
+    ${subs.length ? "" : `<div class="card"><p>Les synthèses de ta classe arrivent bientôt.</p></div>`}`;
+}
+function viewFiche(sid) {
+  const s = DATA.subjects.find((x) => x.id === sid), f = DATA.fiches && DATA.fiches[sid];
+  if (!s || !f) return go("fiches");
+  $view.innerHTML = `<p class="tag-src">Synthèse de cours · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
+    ${f.map(([t, pts]) => `<div class="card"><h2>${esc(t)}</h2><ul class="steps">${pts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join("")}
+    <a class="btn" href="#quiz/${s.id}">M'entraîner sur ${esc(s.name)}</a>
+    <a class="btn alt" href="#fiches">Autres synthèses</a>`;
+}
 function viewAnnales() {
   const list = annalesOf(S.level);
   $view.innerHTML = `<h1>Annales officielles</h1>
-    <p class="muted">Vrais sujets de l'Office du Bac (UCAD). Les questions « Annales » de l'appli en sont tirées, avec leur source.</p>
+    <p class="muted">Vrais sujets officiels du ${examOf() ? esc(examOf()[0]) : "BAC"}. Les questions sourcées de l'appli en sont tirées.</p>
     ${list.length ? list.map((a) => `<div class="card">
       <div class="row"><h2>${esc(a.exam)} ${a.year}</h2><span class="tag">${esc(a.subject)}</span></div>
       <p class="small muted">Séries ${esc(a.series)}${a.duration ? " · " + esc(a.duration) : ""}${a.coef ? " · coefficient " + a.coef : ""}</p>
@@ -203,7 +232,9 @@ function viewAnnales() {
       <a class="btn alt" style="flex:1" href="${esc(a.corrige)}" target="_blank" rel="noopener">Corrigé (PDF)</a></div>
       ${a.guided ? `<a class="btn hi-btn" href="#sujet/${a.id}">Faire ce sujet en mode guidé, corrigé à chaque étape${isPremium() ? "" : " 🔒"}</a>` : ""}
       <p class="small muted">Fichiers hébergés par ${esc(DATA.annalesHost)}.</p></div>`).join("")
-    : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
+    : ""}
+    ${libraryBlock()}
+    ${list.length || libraryOf(S.level).length ? "" : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
 }
 
 // ---------- Sujet guidé : un vrai sujet, étape par étape, corrigé tout de suite
@@ -374,7 +405,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, fiches: viewFiches, fiche: () => viewFiche(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
