@@ -17,6 +17,16 @@ METHODES = {
     "Décrire avec le vocabulaire précis et des chiffres.",
     "Expliquer en reliant les facteurs naturels et humains.",
   ]),
+  "maths": ("Résoudre un exercice de mathématiques", [
+    "Lire tout l'énoncé et noter les données utiles.",
+    "Choisir la formule ou la propriété du cours qui répond à la question.",
+    "Calculer proprement, vérifier l'ordre de grandeur et conclure par une phrase avec l'unité.",
+  ]),
+  "espagnol": ("Faire un exercice de langue en espagnol", [
+    "Repérer le temps, la personne et les mots-indices de la phrase.",
+    "Appliquer la règle (conjugaison, accord, place des pronoms).",
+    "Relire en vérifiant les accents écrits et les signes ¡ ¿.",
+  ]),
   "anglais": ("Faire un exercice de grammaire", [
     "Repérer les indices de la phrase (sujet, mots de temps, structure).",
     "Choisir la règle qui convient et l'appliquer.",
@@ -112,7 +122,11 @@ PE = {
 }
 
 CIBLES = ["6e-francais", "6e-histoire", "6e-geo", "6e-anglais", "5e-francais", "5e-histoire", "5e-geo", "5e-anglais",
-          "4e-francais", "4e-histoire", "4e-geo", "4e-anglais", "2nde-francais", "2nde-hg", "2nde-anglais"]
+          "4e-francais", "4e-histoire", "4e-geo", "4e-anglais", "2nde-francais", "2nde-hg", "2nde-anglais",
+          "1ere-maths-l", "1ere-maths-g", "tle-maths-l", "tle-maths-g",
+          "4e-espagnol", "3e-espagnol", "2nde-espagnol", "1ere-espagnol", "tle-espagnol"]
+from matieres_plus import PE_PLUS
+PE.update(PE_PLUS)
 
 
 def auto_synth(notions, programmes):
@@ -128,6 +142,8 @@ def auto_synth(notions, programmes):
             piege, exam = PE[n["id"]]
             if fam == "hg":
                 fam_n = "geo" if n["id"] in ("2nde-durable", "2nde-afrique-pop") else "histoire"
+            elif "maths" in fam:
+                fam_n = "maths"
             else:
                 fam_n = fam
             ex_t, ex_l = n["exemples"][0]

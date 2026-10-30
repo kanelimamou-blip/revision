@@ -161,6 +161,7 @@
     [/francais/, "Bien lire, bien écrire et bien parler : indispensable pour les études et tous les métiers.", ["journaliste", "avocat", "enseignant"]],
     [/anglais/, "Communiquer avec le monde, lire sur internet et poursuivre ses études.", ["traducteur", "guide touristique", "commercial international"]],
     [/histoire|geo|hg/, "Comprendre son pays, le monde et l'actualité.", ["enseignant", "journaliste", "diplomate"]],
+    [/espagnol/, "Parler une langue de plus de 20 pays : études, tourisme, commerce et coopération avec l'Espagne et l'Amérique latine.", ["guide touristique", "traducteur", "diplomate"]],
     [/philo/, "Penser par soi-même et argumenter avec rigueur.", ["juriste", "enseignant", "journaliste"]],
     [/eco|compta/, "Comprendre l'argent, l'entreprise et l'économie du pays.", ["comptable", "gestionnaire", "banquier"]]];
   globalThis.pourquoiCard = (title, sid = "") => {
