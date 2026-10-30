@@ -63,6 +63,19 @@ service cloud.firestore {
           || (request.resource.data.premium == true
             && getAfter(/databases/$(db)/documents/claims/$(request.resource.data.code)).data.uid == uid));
     }
+    // sessions de groupe : chaque élève connecté écrit seulement sa propre note, le groupe lit le classement
+    match /sessions/{code}/scores/{uid} {
+      allow read: if request.auth != null && code.size() <= 12;
+      allow create, update: if request.auth != null && request.auth.uid == uid && code.size() <= 12
+        && request.resource.data.keys().hasOnly(['name', 'note', 'score', 'total', 'level', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && request.resource.data.note is number && request.resource.data.note >= 0 && request.resource.data.note <= 20
+        && request.resource.data.score is int && request.resource.data.total is int
+        && request.resource.data.score >= 0 && request.resource.data.score <= request.resource.data.total && request.resource.data.total <= 50
+        && request.resource.data.level is string && request.resource.data.level.size() <= 20
+        && request.resource.data.at == request.time;
+      allow delete: if false;
+    }
     // un code ne peut être réclamé qu'une fois (pas de recréation possible)
     match /claims/{code} {
       allow read, update, delete: if false;

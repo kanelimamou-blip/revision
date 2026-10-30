@@ -83,5 +83,17 @@ const Compte = (() => {
     }, 3000);
   }
 
-  return { enabled, start, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  // Session de groupe : chaque élève publie sa note, tout le groupe voit le classement se remplir en direct
+  function postScore(code, rec) {
+    if (!user || !db) return Promise.reject(new Error("hors ligne"));
+    return db.collection("sessions").doc(code).collection("scores").doc(user.uid)
+      .set({ ...rec, at: firebase.firestore.FieldValue.serverTimestamp() });
+  }
+  function listenScores(code, cb, err) {
+    if (!user || !db) return () => {};
+    return db.collection("sessions").doc(code).collection("scores").limit(50)
+      .onSnapshot((snap) => cb(snap.docs.map((d) => ({ ...d.data(), me: d.id === user.uid }))), err);
+  }
+
+  return { enabled, start, postScore, listenScores, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

@@ -85,7 +85,7 @@ function rubriques() {
     nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
     tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
     tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
-    tile("#duo", "🤝", "Session à deux", "Défie un camarade de ta classe"),
+    tile("#duo", "👥", "Session de groupe", "De 2 à 10 élèves, classement en direct"),
     tile("#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`),
   ].join("");
 }
@@ -93,7 +93,7 @@ function programme() {
   const n = Math.min(TRIAL_DAYS, Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5) + 1);
   const weakest = subjectsOf(S.level).filter((s) => !/annales/.test(s.id)).sort((a, b) => mastery(a.id) - mastery(b.id))[0];
   const third = n % 3 === 1 ? ["exo", "#exercices", "Fais un exercice corrigé"] : n % 3 === 2 ? (() => { const ch = (DATA.notions || {})[weakest && weakest.id] || [];
-    return ch.length ? ["fiche", `#notion/${ch[Math.floor(n / 3) % ch.length].id}`, `Apprends un chapitre de ${weakest.name} : ${ch[Math.floor(n / 3) % ch.length].title}`] : ["fiche", weakest ? `#fiche/${weakest.id}` : "#fiches", "Lis une synthèse de cours"]; })() : ["duo", "#duo", "Fais une session à deux avec un camarade"];
+    return ch.length ? ["fiche", `#notion/${ch[Math.floor(n / 3) % ch.length].id}`, `Apprends un chapitre de ${weakest.name} : ${ch[Math.floor(n / 3) % ch.length].title}`] : ["fiche", weakest ? `#fiche/${weakest.id}` : "#fiches", "Lis une synthèse de cours"]; })() : ["duo", "#duo", "Fais une session de groupe avec tes camarades"];
   const missions = [["challenge", "#challenge", "Fais le challenge du jour (toutes matières)"],
     ["qcm", weakest ? `#quiz/${weakest.id}` : "#qcm-list", `QCM dans ta matière la plus faible${weakest ? " : " + weakest.name : ""}`], third];
   const done = missions.filter(([t]) => doneToday(t)).length;
@@ -200,10 +200,12 @@ function runQuiz(title, qs, back, { exam = false, duo = null, solo = false, onEn
     $view.innerHTML = `<div class="card" style="text-align:center"><p class="muted">${esc(title)}</p><p class="score">${note} / 20</p>
       <p>${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} sur ${total}</p><p><b>${mot}</b></p></div>
       ${!isPremium() ? `<div class="card"><p>Il y a encore beaucoup de questions dans cette matière, avec l'examen blanc chronométré.</p><a class="btn hi-btn" href="#premium">Débloquer tout pour ${fcfa(CFG.price_fcfa)}</a></div>` : ""}
-      ${duo ? `<a class="btn hi-btn" href="https://wa.me/?text=${encodeURIComponent(`Session à deux ${duo} (${S.level}) : j'ai eu ${note}/20 (${score}/${total}). Et toi ? ${duoLink(duo)}`)}" target="_blank" rel="noopener">Envoyer ma note à mon camarade</a>` : ""}
+      ${duo ? `<div class="card"><h2>Classement du groupe ${esc(duo)}</h2><div id="board"><p class="small muted">Chargement du classement…</p></div></div>
+        <a class="btn hi-btn" href="https://wa.me/?text=${encodeURIComponent(`Session de groupe ${duo} (${S.level}) : j'ai eu ${note}/20 (${score}/${total}). À toi ! ${duoLink(duo)}`)}" target="_blank" rel="noopener">Envoyer ma note au groupe sur WhatsApp</a>` : ""}
       ${onEnd ? onEnd(score, total, answers) : ""}
       <div class="btns"><button class="btn" id="again">Recommencer</button><a class="btn alt" href="${back}">Retour</a></div>${fixes}`;
     document.getElementById("again").onclick = () => render();
+    if (duo) groupBoard(duo, { name: myName(), note, score, total, level: S.level });
     window.scrollTo(0, 0);
   }
   step();
@@ -327,7 +329,7 @@ function viewQcmList() {
     <a class="btn alt" href="#erreurs">Revoir mes erreurs</a>`;
 }
 
-// ---------- Session à deux : deux camarades de la même classe reçoivent les mêmes questions dans le même ordre
+// ---------- Session de groupe : de 2 à 10 camarades de la même classe reçoivent les mêmes questions dans le même ordre
 const DUO_LEN = 10;
 function seeded(str) { let h = 1779033703; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 3432918353), (h = (h << 13) | (h >>> 19)); return () => { h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
 function duoQuestions(code, level) {
@@ -335,24 +337,41 @@ function duoQuestions(code, level) {
   const a = pool.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a.slice(0, DUO_LEN);
 }
+const GROUP_MAX = 10;
+const myName = () => (S.pseudo || (Compte.user && Compte.user.displayName) || "").split(" ")[0].slice(0, 30);
+function groupBoard(code, rec) {
+  const el = () => document.getElementById("board");
+  if (!Compte.user) { if (el()) el().innerHTML = `<p class="small muted">Connecte-toi pour apparaître dans le classement du groupe.</p>`; return; }
+  const off = (msg) => { if (el()) el().innerHTML = `<p class="small muted">${msg} Envoyez-vous vos notes sur WhatsApp.</p>`; };
+  Compte.postScore(code, { ...rec, name: rec.name || "Élève" }).catch(() => off("Le classement en direct n'est pas disponible pour le moment."));
+  const stop = Compte.listenScores(code, (rows) => {
+    if (!el()) return stop();
+    rows.sort((a, b) => b.note - a.note || (a.at && b.at ? a.at.toMillis() - b.at.toMillis() : 0));
+    const top = rows.slice(0, GROUP_MAX);
+    el().innerHTML = `${barChart(top.map((r, i) => [`${["🥇", "🥈", "🥉"][i] || i + 1 + "."} ${r.name}${r.me ? " (toi)" : ""}`, r.note * 5, pts(r.note) + "/20"]))}
+      <p class="small muted">${rows.length} élève${rows.length > 1 ? "s ont" : " a"} fini. Le classement se met à jour tout seul quand les autres terminent.</p>`;
+  }, () => off("Le classement en direct n'est pas disponible pour le moment."));
+}
 const duoLink = (code) => `${location.href.split("#")[0]}#duo/${code}~${encodeURIComponent(S.level)}`;
 function viewDuo(arg) {
   if (arg) {
     const [code, lv] = decodeURIComponent(arg).split("~");
     if (lv && lv !== S.level && DATA.levels.includes(lv)) { S.level = lv; store.save(); }
     markDone("duo");
-    return runQuiz(`Session à deux · ${code}`, duoQuestions(code, S.level), "#duo", { duo: code });
+    return runQuiz(`Session de groupe · ${code}`, duoQuestions(code, S.level), "#duo", { duo: code });
   }
-  $view.innerHTML = `<h1>Session à deux</h1>
-    <p class="muted">Toi et un camarade de ${esc(S.level)} répondez aux mêmes ${DUO_LEN} questions, dans le même ordre, chacun sur son téléphone. À la fin, envoyez-vous vos notes et revoyez ensemble les corrections.</p>
-    <div class="card"><h2>Créer une session</h2><p class="small muted">Tu reçois un code et un lien à envoyer à ton camarade sur WhatsApp.</p><button class="btn" id="new">Créer une session</button><div id="made"></div></div>
+  $view.innerHTML = `<h1>Session de groupe</h1>
+    <p class="muted">De 2 à ${GROUP_MAX} camarades de ${esc(S.level)} répondent aux mêmes ${DUO_LEN} questions, dans le même ordre, chacun sur son téléphone. À la fin, le classement du groupe s'affiche en direct, puis vous revoyez ensemble les corrections.</p>
+    <div class="card"><h2>Ton prénom dans le classement</h2><input class="field" id="pseudo" maxlength="30" value="${esc(myName())}" placeholder="Ton prénom"></div>
+    <div class="card"><h2>Créer une session</h2><p class="small muted">Tu reçois un code et un lien à envoyer au groupe WhatsApp de ta classe.</p><button class="btn" id="new">Créer une session</button><div id="made"></div></div>
     <div class="card"><h2>Rejoindre une session</h2><p class="small muted">Entre le code reçu. Vous devez être dans la même classe et la même série.</p>
       <input class="field" id="code" maxlength="5" placeholder="Code (ex. K7P2Q)" autocapitalize="characters"><button class="btn alt" id="join">Rejoindre</button></div>`;
+  document.getElementById("pseudo").onchange = (e) => { S.pseudo = e.target.value.trim().slice(0, 30); store.save(); };
   document.getElementById("new").onclick = () => {
     const code = Array.from(crypto.getRandomValues(new Uint8Array(5)), (x) => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x % 32]).join("");
-    const text = `Session à deux sur Révision (${S.level}) : on répond aux mêmes ${DUO_LEN} questions. Code ${code}. Ouvre ce lien : ${duoLink(code)}`;
+    const text = `Session de groupe sur Révision (${S.level}) : on répond tous aux mêmes ${DUO_LEN} questions, classement en direct. Code ${code}. Ouvre ce lien : ${duoLink(code)}`;
     document.getElementById("made").innerHTML = `<p>Code de la session : <b class="count">${code}</b></p>
-      <a class="btn alt" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_blank" rel="noopener">Envoyer le lien sur WhatsApp</a>
+      <a class="btn alt" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_blank" rel="noopener">Envoyer le lien au groupe sur WhatsApp</a>
       <a class="btn" href="#duo/${code}~${encodeURIComponent(S.level)}">Commencer la session</a>`;
   };
   document.getElementById("join").onclick = () => {
