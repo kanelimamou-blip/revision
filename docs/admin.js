@@ -4,7 +4,7 @@
 (() => {
   const fmt = (d) => (d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "—");
   const ago = (d, j) => d && Date.now() - d.getTime() < j * 864e5;
-  let users = null, errors = null, filtre = "";
+  let users = null, errors = null, partages = {}, filtre = "";
 
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
@@ -13,7 +13,7 @@
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
       <div class="row onglets">${[["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
-    document.getElementById("reload").onclick = () => { users = errors = null; viewAdmin(arg); };
+    document.getElementById("reload").onclick = () => { users = errors = null; partages = {}; viewAdmin(arg); };
     const box = document.getElementById("adm");
     if (onglet === "qr") {
       box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.png" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
@@ -22,7 +22,7 @@
       return;
     }
     try {
-      if (!users) users = await Compte.adminUsers();
+      if (!users) { users = await Compte.adminUsers(); partages = await Compte.adminDevices().catch(() => ({})); }
       if (onglet === "erreurs" && !errors) errors = await Compte.adminErrors();
     } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Vérifie que les règles Firestore à jour sont publiées.</p></div>`; return; }
     if (onglet === "chiffres") return chiffres(box);
@@ -31,11 +31,15 @@
     return journal(box);
   }
 
+  // « même téléphone que … » : comptes ouverts sur le même téléphone (un seul essai gratuit pour eux tous)
+  const meme = (u) => { const a = partages[u.uid]; if (!a || !a.length) return ""; const noms = a.map((x) => { const v = users.find((y) => y.uid === x); return v ? v.name || v.email : "compte supprimé"; });
+    return `<br><span style="color:var(--hi-ink);background:var(--hi);padding:0 4px;border-radius:4px">📱 même téléphone que ${esc(noms.join(", "))}</span>`; };
+
   function chiffres(box) {
     const n = (f) => users.filter(f).length, tile = (v, t) => `<div class="card" style="text-align:center"><p class="score">${v}</p><p class="small muted">${t}</p></div>`;
     const niveaux = {}; users.forEach((u) => { const k = (u.level || "sans classe").split(" ")[0]; niveaux[k] = (niveaux[k] || 0) + 1; });
     box.innerHTML = `<div class="grid">${tile(users.length, "comptes inscrits")}${tile(n((u) => ago(u.lastSeen, 1)), "actifs aujourd'hui")}${tile(n((u) => ago(u.lastSeen, 7)), "actifs cette semaine")}${tile(n((u) => ago(u.lastSeen, 30)), "actifs ce mois")}
-      ${tile(n((u) => ago(u.created, 1)), "inscrits aujourd'hui")}${tile(n((u) => ago(u.created, 7)), "inscrits cette semaine")}${tile(n((u) => ago(u.created, 30)), "inscrits ce mois")}${tile(n((u) => u.premium), "premium")}${tile(n((u) => u.suspended), "suspendus")}</div>
+      ${tile(n((u) => ago(u.created, 1)), "inscrits aujourd'hui")}${tile(n((u) => ago(u.created, 7)), "inscrits cette semaine")}${tile(n((u) => ago(u.created, 30)), "inscrits ce mois")}${tile(n((u) => u.premium), "premium")}${tile(n((u) => u.suspended), "suspendus")}${tile(n((u) => (partages[u.uid] || []).length), "comptes sur un téléphone partagé")}</div>
       <div class="card"><h2>Par classe</h2><ul class="steps">${Object.entries(niveaux).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${esc(k)} : <b>${v}</b></li>`).join("")}</ul></div>
       <p class="small muted">« Actif » = a ouvert l'appli (mise à jour au plus toutes les 12 heures).</p>`;
   }
@@ -47,7 +51,7 @@
     const parJour = (k) => jours.map((d) => users.filter((u) => u[k] && u[k] >= d && u[k] - d < 864e5).length);
     const ins = parJour("created"), vus = parJour("lastSeen"), max = Math.max(1, ...ins, ...vus);
     const barres = (v, t) => `<div style="display:flex;align-items:flex-end;gap:3px;height:90px">${v.map((n, i) => `<div style="flex:1;text-align:center" title="${jours[i].toLocaleDateString("fr-FR")} : ${n}"><span class="small">${n || ""}</span><div style="height:${(70 * n) / max}px;min-height:2px;background:var(--accent,#7c5cff);border-radius:3px"></div></div>`).join("")}</div><p class="small muted">${t}</p>`;
-    const ligne = (u, k, t) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><span><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""}<br><span class="muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}</span></span><span class="muted" style="text-align:right">${t}<br>${depuis(u[k])}</span></div>`;
+    const ligne = (u, k, t) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><span><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""}<br><span class="muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}${meme(u)}</span></span><span class="muted" style="text-align:right">${t}<br>${depuis(u[k])}</span></div>`;
     const nouveaux = users.filter((u) => u.created).sort((a, b) => b.created - a.created).slice(0, 30);
     const connexions = users.filter((u) => u.lastSeen).sort((a, b) => b.lastSeen - a.lastSeen).slice(0, 30);
     box.innerHTML = `<div class="card"><h2>Inscriptions par jour (14 jours)</h2>${barres(ins, "Du plus ancien (à gauche) à aujourd'hui (à droite).")}</div>
@@ -61,7 +65,7 @@
     box.innerHTML = `<input class="field" id="af" type="search" placeholder="Chercher un nom ou un e-mail" value="${esc(filtre)}" aria-label="Chercher un compte">
       <p class="small muted">${liste.length} compte${liste.length > 1 ? "s" : ""}</p>
       ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? " · ⭐ premium" : ""}</p>
-        <p class="small muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}</p>
+        <p class="small muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
         <button class="btn alt small" data-sus="${esc(u.uid)}" data-on="${u.suspended ? 0 : 1}">${u.suspended ? "Réactiver le compte" : "Suspendre le compte"}</button></div>`).join("")}`;
     const f = document.getElementById("af"); f.oninput = () => { filtre = f.value.trim().toLowerCase(); comptes(box); const g = document.getElementById("af"); g.focus(); g.setSelectionRange(g.value.length, g.value.length); };
     box.querySelectorAll("[data-sus]").forEach((b) => (b.onclick = async () => {

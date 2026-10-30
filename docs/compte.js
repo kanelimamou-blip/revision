@@ -44,7 +44,32 @@ const Compte = (() => {
     const seen = doc.lastSeen && doc.lastSeen.toDate ? doc.lastSeen.toDate() : null;
     if (!seen || Date.now() - seen.getTime() > 12 * 3600e3)
       ref.update({ lastSeen: firebase.firestore.FieldValue.serverTimestamp(), name: user.displayName || doc.name || "", email: user.email || "" }).catch((e) => logError("Mise à jour du profil refusée : " + (e.code || e.message)));
-    return { suspended: !!doc.suspended, created: doc.created ? doc.created.toDate() : new Date(), premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+    // un seul essai gratuit par téléphone : un nouveau compte sur le même téléphone reprend la date du premier
+    const created = doc.created ? doc.created.toDate() : new Date(), first = await device();
+    return { suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+  }
+
+  // Identifiant secret du téléphone, tiré au hasard au premier lancement (gardé aussi dans le cache de l'appli)
+  async function deviceId() {
+    let id = null;
+    try { id = localStorage.getItem("rdev"); } catch (e) {}
+    const c = await caches.open("rprefs").catch(() => null);
+    if (!id && c) id = await c.match("dev").then((r) => (r ? r.text() : null)).catch(() => null);
+    if (!id || !/^[a-z0-9]{20}$/.test(id)) id = [...crypto.getRandomValues(new Uint8Array(20))].map((b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
+    try { localStorage.setItem("rdev", id); } catch (e) {}
+    if (c) c.put("dev", new Response(id)).catch(() => {});
+    return id;
+  }
+  // Rattache le compte au téléphone ; renvoie la date du premier compte ouvert sur ce téléphone
+  async function device() {
+    try {
+      const ref = db.collection("devices").doc(await deviceId());
+      const snap = await ref.get();
+      if (!snap.exists) { await ref.set({ first: firebase.firestore.FieldValue.serverTimestamp(), uids: [user.uid] }); return null; }
+      const d = snap.data();
+      if (!(d.uids || []).includes(user.uid)) await ref.update({ uids: firebase.firestore.FieldValue.arrayUnion(user.uid) });
+      return d.first && d.first.toDate ? d.first.toDate() : null;
+    } catch (e) { return null; }
   }
 
   async function signIn() {
@@ -129,8 +154,14 @@ const Compte = (() => {
     const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();
     return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at) }));
   }
+  // téléphones partagés : {uid: [autres uid du même téléphone]}
+  async function adminDevices() {
+    const snap = await db.collection("devices").limit(5000).get(), out = {};
+    snap.docs.forEach((d) => { const u = d.data().uids || []; if (u.length > 1) u.forEach((x) => { out[x] = [...new Set([...(out[x] || []), ...u.filter((y) => y !== x)])]; }); });
+    return out;
+  }
   const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();
