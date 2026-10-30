@@ -11,5 +11,5 @@ En ligne : https://kanelimamou-blip.github.io/revision/
 
 ## Premium
 
-Les 5 premières questions de chaque matière sont gratuites. Le reste et les examens blancs se débloquent avec un code vendu par Wave (prix, numéro Wave et WhatsApp dans `CONFIG` de `contenu/build.py`).
+Pendant les 10 premiers jours (essai gratuit, `TRIAL_DAYS` dans `docs/app.js`), tout est débloqué ; ensuite, les 5 premières questions de chaque matière restent gratuites. Le reste et les examens blancs se débloquent avec un code vendu par Wave (prix, numéro Wave et WhatsApp dans `CONFIG` de `contenu/build.py`).
 `python contenu/build.py --codes 100` ajoute des codes : seuls leurs hachages sont publiés (`contenu/code_hashes.txt`), la liste en clair est écrite hors du dépôt.

@@ -22,7 +22,12 @@ const subjectsOf = (level) => DATA.subjects.filter((s) => matches(s.levels, leve
 const inLevel = (q) => subjectsOf(S.level).some((s) => s.id === q.s);
 const examOf = () => CFG.exams[String(S.level).split(" ")[0]] || null;
 const blancName = () => (examOf() ? "Examen blanc" : "Devoir blanc");
-const open = (q) => S.premium || q.free;
+// Essai gratuit : tout est débloqué pendant TRIAL_DAYS jours à partir de la première ouverture
+const TRIAL_DAYS = 10;
+if (!S.trialStart) { S.trialStart = today(); store.save(); }
+const trialLeft = () => Math.max(0, TRIAL_DAYS - Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5));
+const isPremium = () => S.premium || trialLeft() > 0;
+const open = (q) => isPremium() || q.free;
 const qsOf = (sid) => DATA.questions.filter((q) => q.s === sid);
 const subjName = (sid) => (DATA.subjects.find((s) => s.id === sid) || {}).name || "";
 
@@ -70,10 +75,11 @@ function viewHome() {
   const subs = subjectsOf(S.level).map((s) => `
     <a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit">
       <b>${esc(s.name)}</b>
-      <span class="small muted">${S.premium ? s.count : s.free} questions${S.premium ? "" : ` · <span class="lock">🔒 ${s.count - s.free} premium</span>`}</span>
+      <span class="small muted">${isPremium() ? s.count : s.free} questions${isPremium() ? "" : ` · <span class="lock">🔒 ${s.count - s.free} premium</span>`}</span>
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   $view.innerHTML = `
+    ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     <div class="card">
       <div class="row">${ex ? `<div><p class="small muted">${ex[0]} ${ex[1].slice(0, 4)}, date indicative</p><p class="count">J−${days}</p></div>`
         : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
@@ -88,7 +94,7 @@ function viewHome() {
     <div class="grid">${subs}</div>
     <div class="btns">
       ${annalesOf(S.level).length ? `<a class="btn" href="#annales">Annales officielles : ${annalesOf(S.level).length} vrais sujets du ${examOf() ? examOf()[0] : "BAC"}</a>` : ""}
-      <a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${S.premium ? "" : " 🔒"}</a>
+      <a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}</a>
       <button class="btn alt" id="share">Partager l'appli à un camarade</button>
     </div>`;
   bindQuestion($view.querySelector("#daily"), daily, () => {});
@@ -151,7 +157,7 @@ function runQuiz(title, qs, back, { exam = false } = {}) {
         <p class="small muted">${esc(q.e)}</p>${srcLine(q)}</div>`; }).join("")}</div>` : "";
     $view.innerHTML = `<div class="card" style="text-align:center"><p class="muted">${esc(title)}</p><p class="score">${note} / 20</p>
       <p>${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} sur ${total}</p><p><b>${mot}</b></p></div>
-      ${!S.premium ? `<div class="card"><p>Il y a encore beaucoup de questions dans cette matière, avec l'examen blanc chronométré.</p><a class="btn hi-btn" href="#premium">Débloquer tout pour ${fcfa(CFG.price_fcfa)}</a></div>` : ""}
+      ${!isPremium() ? `<div class="card"><p>Il y a encore beaucoup de questions dans cette matière, avec l'examen blanc chronométré.</p><a class="btn hi-btn" href="#premium">Débloquer tout pour ${fcfa(CFG.price_fcfa)}</a></div>` : ""}
       <div class="btns"><button class="btn" id="again">Recommencer</button><a class="btn alt" href="${back}">Retour</a></div>${fixes}`;
     document.getElementById("again").onclick = () => render();
     window.scrollTo(0, 0);
@@ -165,7 +171,7 @@ function viewQuiz(sid) {
   runQuiz(`${S.level} · ${s.name}`, shuffle(qsOf(sid).filter(open)).slice(0, QUIZ_LEN), "#accueil");
 }
 function viewExam() {
-  if (!S.premium) return viewPremium(`Le ${blancName().toLowerCase()} fait partie du pack premium.`);
+  if (!isPremium()) return viewPremium(`${examOf() ? "L'examen blanc" : "Le devoir blanc"} fait partie du pack premium.`);
   const qs = shuffle(DATA.questions.filter(inLevel)).slice(0, EXAM_LEN);
   runQuiz(`${blancName()} ${S.level}`, qs, "#accueil", { exam: true });
 }
@@ -220,6 +226,7 @@ function viewPremium(reason = "") {
   const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par Wave pour le pack premium Révision BAC BFEM. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
+    ${!S.premium ? `<div class="card"><p>${trialLeft() > 0 ? `🎁 Ton essai gratuit de ${TRIAL_DAYS} jours est en cours : encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b> avec tout débloqué.` : `Ton essai gratuit de ${TRIAL_DAYS} jours est terminé.`}</p></div>` : ""}
     ${S.premium ? `<div class="card"><p class="msg-ok">Ton pack premium est actif. Toutes les questions et les examens blancs sont débloqués.</p><a class="btn" href="#accueil">Réviser</a></div>` : `
     <div class="card">
       <p class="count">${fcfa(CFG.price_fcfa)}</p><p class="muted">Payé une seule fois, valable jusqu'à l'examen.</p>
