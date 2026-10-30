@@ -79,7 +79,7 @@ const Compte = (() => {
     if (!pending || !user || !db) return;
     const state = pending; pending = null; clearTimeout(timer); timer = null;
     const last = (o, n) => Object.fromEntries(Object.entries(o || {}).sort().slice(-n));
-    const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14) };
+    const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14), edt: state.edt || {}, todo: (state.todo || []).slice(-100) };
     db.collection("users").doc(user.uid).update({ data }).catch(() => {});
   }
   function save(state) {

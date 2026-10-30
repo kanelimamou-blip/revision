@@ -98,6 +98,7 @@ function rubriques() {
   const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
     nAnn ? tile("#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs et compositions", `${nAnn} vrais sujets${examOf() ? " et corrigés" : " de ta classe"}`) : "",
+    tile("#agenda", "🗓️", "Mon agenda", "Emploi du temps, devoirs à rendre, rappels du soir"),
     tile("#assistant", "💬", "Pose ta question", "Une notion pas claire ? Je réponds avec le cours"),
     tile("#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"),
     tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
@@ -148,6 +149,7 @@ function viewHome() {
         : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
       <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
     </div>
+    ${agendaCard()}
     ${tutoCard()}
     ${programme()}
     <h2>Rubriques</h2>
@@ -708,6 +710,9 @@ function applyProfile(p) {
   const d = p.data || {};
   if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [], daily: d.daily || {}, challenges: d.challenges || {}, done: d.done || {} });
   if (!S.level && d.level) S.level = d.level;
+  // emploi du temps et devoirs : retrouvés en se connectant sur un autre téléphone
+  if (!Object.keys(S.edt || {}).length && d.edt) S.edt = d.edt;
+  if (!(S.todo || []).length && d.todo) S.todo = d.todo;
   try { localStorage.setItem("rev", JSON.stringify(S)); } catch {}
 }
 
@@ -719,7 +724,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);

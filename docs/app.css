@@ -109,3 +109,10 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; margi
 .ask { display: flex; gap: 8px; position: sticky; bottom: 72px; background: var(--bg); padding: 6px 0; }
 .ask input { flex: 1; min-width: 0; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; }
 .card.mini { margin: 8px 0 0; padding: 10px; }
+.onglets, .days { gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.onglets .btn, .days .btn { width: auto; flex: 1; margin: 0; padding: 8px 6px; }
+.btn.on { background: var(--accent); color: var(--accent-ink); }
+.slot, .sugg { align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.slot .btn, .sugg .btn, .todo .btn.small { width: auto; margin: 0; padding: 6px 10px; flex: none; }
+.card select, .card input[type=time], .card input[type=date], .card input:not([type]) { width: 100%; padding: 10px; margin: 4px 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; box-sizing: border-box; }
+.todo.late { border-left: 4px solid #d33; }
