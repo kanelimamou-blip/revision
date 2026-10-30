@@ -31,6 +31,22 @@ const standalone = matchMedia("(display-mode: standalone)").matches || navigator
 const isPremium = () => S.premium || trialLeft() > 0;
 const open = (q) => isPremium() || q.free;
 const qsOf = (sid) => DATA.questions.filter((q) => q.s === sid);
+// Tirage sans répétition : d'abord les questions jamais vues, puis celles ratées, puis les plus anciennes ;
+// l'ordre des réponses est mélangé à chaque fois pour qu'on ne retienne pas « c'est la B ».
+function pickFresh(pool, n) {
+  const now = Date.now(), score = (q) => { const st = S.stats[q.id]; if (!st) return Math.random();
+    const ageDays = (now - (st.t || 0)) / 864e5; return (st.last === false ? 2 : 4) + (st.ok + st.ko) - Math.min(ageDays, 30) / 10 + Math.random(); };
+  return pool.map((q) => [score(q), q]).sort((a, b) => a[0] - b[0]).slice(0, n).map(([, q]) => remix(q));
+}
+function remix(q) {
+  const order = shuffle([0, 1, 2, 3]);
+  return { ...q, c: order.map((i) => q.c[i]), a: order.indexOf(q.a) };
+}
+// Questions de la base + questions générées (nombres nouveaux à chaque fois) pour les abonnés et pendant l'essai
+function mixQuestions(sid, pool, n, chapters = null) {
+  const g = isPremium() && typeof genQuestions === "function" ? genQuestions(sid, Math.round(n * 0.4), chapters) : [];
+  return shuffle([...pickFresh(pool, n - g.length), ...g]);
+}
 const subjName = (sid) => (DATA.subjects.find((s) => s.id === sid) || {}).name || "";
 
 function mastery(sid) {
@@ -39,7 +55,8 @@ function mastery(sid) {
 }
 function record(q, ok) {
   const st = S.stats[q.id] || { ok: 0, ko: 0 };
-  st[ok ? "ok" : "ko"]++; st.last = ok; S.stats[q.id] = st;
+  if (q.gen) { const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d; store.save(); return; }
+  st[ok ? "ok" : "ko"]++; st.last = ok; st.t = Date.now(); S.stats[q.id] = st;
   if (!S.days.includes(today())) S.days.push(today());
   const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d;
   store.save();
@@ -233,12 +250,12 @@ function chooseMode(title, sub, start) {
 function viewQuiz(sid) {
   const s = DATA.subjects.find((x) => x.id === sid);
   if (!s) return go("accueil");
-  const qs = shuffle(qsOf(sid).filter(open)).slice(0, QUIZ_LEN);
+  const qs = mixQuestions(sid, qsOf(sid).filter(open), QUIZ_LEN);
   chooseMode(`QCM · ${s.name}`, `${qs.length} questions de ${S.level}`, (solo) => { markDone("qcm"); runQuiz(`${S.level} · ${s.name}`, qs, "#qcm-list", { solo }); });
 }
 function viewExam() {
   if (!isPremium()) return viewPremium(`${examOf() ? "L'examen blanc" : "Le devoir blanc"} fait partie du pack premium.`);
-  const qs = shuffle(DATA.questions.filter(inLevel)).slice(0, EXAM_LEN);
+  const qs = pickFresh(DATA.questions.filter(inLevel), EXAM_LEN);
   runQuiz(`${blancName()} ${S.level}`, qs, "#accueil", { exam: true });
 }
 function viewErrors() {
@@ -333,9 +350,9 @@ function viewDevoir(arg) {
   const count = (i) => all.filter((q) => q.ch === i).length;
   const saved = (S.devoir || {})[s.id] || [];
   $view.innerHTML = `<p class="tag-src">Préparer un devoir · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
-    <p class="muted">Coche les chapitres de ton devoir. Tu peux en choisir un seul ou plusieurs.</p>
+    <p class="muted">Coche les chapitres de ton devoir. Tu peux en choisir un seul ou plusieurs.${(GEN[s.id] || []).length ? " « + ∞ » : des exercices nouveaux sont fabriqués à chaque fois sur ce chapitre." : ""}</p>
     <div class="card"><label class="row small"><span><input type="checkbox" id="all"> <b>Tout le programme</b></span></label>
-      ${chs.map((t, i) => `<label class="row chk"><span><input type="checkbox" class="ch" value="${i}"${saved.includes(i) ? " checked" : ""}> ${i + 1}. ${esc(t)}</span><span class="small muted">${count(i)} q.</span></label>`).join("")}</div>
+      ${chs.map((t, i) => `<label class="row chk"><span><input type="checkbox" class="ch" value="${i}"${saved.includes(i) ? " checked" : ""}> ${i + 1}. ${esc(t)}</span><span class="small muted">${count(i)} q.${(GEN[s.id] || []).some(([c]) => c === t) ? " + ∞" : ""}</span></label>`).join("")}</div>
     <div class="card"><h2>Nombre de questions</h2><div class="row">${[10, 20, 30].map((n) => `<button class="btn alt small nb${n === 20 ? " on" : ""}" data-n="${n}" style="flex:1">${n}</button>`).join("")}</div></div>
     <div id="revoir"></div>
     <p id="dmsg" class="small msg-ko"></p>
@@ -357,10 +374,10 @@ function viewDevoir(arg) {
     const sel = picked(), pool = all.filter((q) => sel.includes(q.ch) && open(q));
     const m = document.getElementById("dmsg");
     if (!sel.length) { m.textContent = "Coche au moins un chapitre."; return; }
-    if (!pool.length) { m.textContent = isPremium() ? "Pas encore de questions sur ces chapitres. Choisis-en d'autres." : "Ces chapitres sont dans le pack premium."; return; }
-    const qs = pool.slice(); for (let i = qs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [qs[i], qs[j]] = [qs[j], qs[i]]; }
-    const title = `Devoir de ${s.name}`, sub = `${Math.min(n, qs.length)} questions sur : ${sel.map((i) => chs[i]).join(", ")}.`;
-    chooseMode(title, sub, (solo) => { markDone("qcm"); runQuiz(title, qs.slice(0, n), `#devoir/${s.id}`, { solo }); });
+    if (!pool.length && !(isPremium() && (GEN[s.id] || []).some(([c]) => sel.map((i) => chs[i]).includes(c)))) { m.textContent = isPremium() ? "Pas encore de questions sur ces chapitres. Choisis-en d'autres." : "Ces chapitres sont dans le pack premium."; return; }
+    const qs = mixQuestions(s.id, pool, n, sel.map((i) => chs[i]));
+    const title = `Devoir de ${s.name}`, sub = `${qs.length} questions sur : ${sel.map((i) => chs[i]).join(", ")}.`;
+    chooseMode(title, sub, (solo) => { markDone("qcm"); runQuiz(title, qs, `#devoir/${s.id}`, { solo }); });
   };
 }
 function viewAnnales() {
