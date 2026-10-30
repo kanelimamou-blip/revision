@@ -338,17 +338,28 @@ PROGRAMMES = {
   ],
   # ------------------------------------------------------------------ Terminale
   "tle-maths": [
-    ("Limites et continuité", ["limite"]),
-    ("Dérivation et étude de fonctions", ["derivee", "f′(x)", "asymptote", "f(x) = ln(x + 1"]),
-    ("Logarithme et exponentielle", ["ln(", "eˣ", "e²ˣ", "exp"]),
-    ("Suites numériques", ["suite", "1 + 2 +"]),
-    ("Primitives et intégrales", ["primitive", "integrale"]),
-    ("Équations différentielles", ["differentielle", "y''"]),
-    ("Nombres complexes et transformations", ["module", "argument", "exponentielle de i", "p(z)", "z ↦", "z⁵", "z_a", "1 + i", "2 + i", "barycentre", "homothetie", "rotation", "complexe"]),
-    ("Probabilités et dénombrement", ["probabilit", "binomiale", "independants", "facons", "p(a"]),
-    ("Arithmétique (séries S1 et S3)", ["base", "reste", "pgcd", "congru", "12u", "cartes"]),
-    ("Géométrie dans l'espace", ["tetraedre", "espace", "a(0 ; 0", "y = (7/6)"]),
+    # programme officiel de Terminale S (S1 et S2) ; les chapitres marqués S1 sont surtout pour les séries S1 et S3
+    ("Limites de fonctions", ["limite", "asymptote", "forme indeterminee", "gendarmes"]),
+    ("Continuité et théorème des valeurs intermédiaires", ["continu", "valeurs intermediaires", "bijection", "reciproque", "solution unique"]),
+    ("Dérivabilité et calcul de dérivées", ["derivable", "derivee", "tangente", "accroissements finis", "nombre derive"]),
+    ("Étude complète d'une fonction", ["variation", "extremum", "centre de symetrie", "point d'inflexion", "etude de fonction", "courbe"]),
+    ("Fonction logarithme népérien", ["ln", "logarithme"]),
+    ("Fonction exponentielle et fonctions puissances", ["exp", "e^", "eˣ", "croissances comparees", "puissance"]),
+    ("Suites numériques", ["suite", "recurrence", "arithmetique", "geometrique", "convergente", "adjacentes"]),
+    ("Primitives", ["primitive"]),
+    ("Calcul intégral et aires", ["integrale", "∫", "aire", "integration par parties", "valeur moyenne"]),
+    ("Équations différentielles", ["equation differentielle", "y'", "y''", "y′", "y″"]),
+    ("Nombres complexes : forme algébrique et équations", ["complexe", "conjugue", "module", "partie reelle", "imaginaire", "discriminant"]),
+    ("Nombres complexes : forme trigonométrique, exponentielle et géométrie", ["argument", "forme exponentielle", "forme trigonometrique", "moivre", "euler", "racine n-ieme", "e^(iθ)"]),
+    ("Transformations du plan : similitudes", ["similitude", "rotation", "homothetie", "translation"]),
+    ("Dénombrement", ["combinaison", "arrangement", "permutation", "factorielle", "denombr", "tirage"]),
+    ("Probabilités et variables aléatoires", ["probabilite", "binomiale", "esperance", "variance", "variable aleatoire", "conditionnelle", "independant"]),
+    ("Statistiques à deux variables", ["covariance", "correlation", "regression", "nuage", "ajustement"]),
+    ("Arithmétique (séries S1 et S3)", ["pgcd", "congru", "bezout", "gauss", "premier", "divis", "diophant"]),
+    ("Géométrie dans l'espace", ["plan", "espace", "produit vectoriel", "sphere", "tetraedre", "parametrique"]),
+    ("Coniques (série S1)", ["conique", "parabole", "ellipse", "hyperbole", "foyer", "directrice", "excentricite"]),
   ],
+
   "tle-pc": [
     # programme officiel de Terminale S : 15 chapitres de physique (P1-P15) et 8 de chimie (C1-C8)
     ("P1. Cinématique du point", ["cinematique", "vitesse moyenne", "equation horaire", "uniformement", "acceleration constante", "trajectoire"]),

@@ -49,7 +49,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Au BAC, l'étude de fonction commence presque toujours par les limites aux bornes et les asymptotes (1 à 2 points). Justifie chaque forme indéterminée levée.",
   },
-  {"t": "Continuité et théorème des valeurs intermédiaires", "p": 0,
+  {"t": "Continuité et théorème des valeurs intermédiaires", "p": 1,
    "cles": [
      "f est continue en a si lim (x→a) f(x) = f(a). Les polynômes, fractions rationnelles, racines, ln, exp, sin, cos sont continues sur leur ensemble de définition.",
      "Sommes, produits, quotients (dénominateur non nul) et composées de fonctions continues sont continues.",
@@ -82,7 +82,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Question classique de l'étude de fonction : « Montrer que l'équation f(x) = 0 admet une solution unique α ; donner un encadrement de α ». Puis α sert à étudier le signe d'une fonction auxiliaire.",
   },
-  {"t": "Dérivabilité et calcul de dérivées", "p": 1,
+  {"t": "Dérivabilité et calcul de dérivées", "p": 2,
    "cles": [
      "f est dérivable en a si le taux (f(a + h) − f(a))/h a une limite finie quand h → 0 ; cette limite est f′(a).",
      "Tangente au point d'abscisse a : y = f′(a)(x − a) + f(a).",
@@ -116,7 +116,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Tombe dans chaque problème : calcul de f′, équation de tangente, et souvent l'étude de la dérivabilité en une borne. L'inégalité des accroissements finis revient dans les suites u(n+1) = f(u(n)) (série S1 surtout).",
   },
-  {"t": "Étude complète d'une fonction", "p": 1,
+  {"t": "Étude complète d'une fonction", "p": 3,
    "cles": [
      "Plan type : ensemble de définition → limites et asymptotes → dérivée et son signe → tableau de variations → points particuliers (tangentes, intersections avec les axes) → courbe.",
      "f′ > 0 sur un intervalle → f strictement croissante ; f′ < 0 → strictement décroissante ; f′ s'annule en changeant de signe → extremum local.",
@@ -152,7 +152,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "C'est le problème du BAC (8 à 10 points sur 20). Il enchaîne souvent : fonction auxiliaire g, étude de f, courbe, puis calcul d'aire avec une intégrale et parfois une suite.",
   },
-  {"t": "Fonction logarithme népérien", "p": 2,
+  {"t": "Fonction logarithme népérien", "p": 4,
    "cles": [
      "ln est définie sur ]0 ; +∞[, ln 1 = 0, ln e = 1, (ln x)′ = 1/x : ln est strictement croissante.",
      "ln(ab) = ln a + ln b ; ln(a/b) = ln a − ln b ; ln(1/a) = −ln a ; ln(aⁿ) = n ln a ; ln √a = (1/2) ln a.",
@@ -184,7 +184,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Fonctions du type f(x) = x − ln x, (ln x)/x, x ln x − x… Les limites par croissances comparées et les équations avec conditions d'existence reviennent chaque année.",
   },
-  {"t": "Fonction exponentielle et fonctions puissances", "p": 2,
+  {"t": "Fonction exponentielle et fonctions puissances", "p": 5,
    "cles": [
      "exp est la réciproque de ln : y = eˣ ⟺ x = ln y (y > 0). eˣ > 0 pour tout réel x, e⁰ = 1, e¹ = e ≈ 2,718.",
      "eᵃ⁺ᵇ = eᵃ eᵇ ; eᵃ⁻ᵇ = eᵃ/eᵇ ; e⁻ᵃ = 1/eᵃ ; (eᵃ)ⁿ = eⁿᵃ ; ln(eˣ) = x ; e^(ln x) = x pour x > 0.",
@@ -215,7 +215,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Fonctions du type f(x) = (x + 1)e⁻ˣ, x − 1 + e⁻ˣ… avec asymptote oblique, calcul d'aire par intégration par parties. Les équations par changement de variable X = eˣ sont fréquentes.",
   },
-  {"t": "Suites numériques", "p": 3,
+  {"t": "Suites numériques", "p": 6,
    "cles": [
      "Suite arithmétique : u(n+1) = u(n) + r ; u(n) = u(0) + nr ; somme de termes consécutifs = nombre de termes × (premier + dernier)/2.",
      "Suite géométrique : u(n+1) = q u(n) ; u(n) = u(0) qⁿ ; somme = premier terme × (1 − q^(nombre de termes))/(1 − q) si q ≠ 1.",
@@ -249,7 +249,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Un exercice de 4 à 5 points ou la dernière partie du problème : récurrence, suite auxiliaire géométrique, somme de termes, limite. En S1, suites définies par une intégrale ou par u(n+1) = f(u(n)) avec accroissements finis.",
   },
-  {"t": "Primitives", "p": 4,
+  {"t": "Primitives", "p": 7,
    "cles": [
      "F est une primitive de f sur I si F′ = f sur I. Deux primitives diffèrent d'une constante. Il existe une unique primitive prenant une valeur donnée en un point.",
      "Primitives usuelles : xⁿ → xⁿ⁺¹/(n + 1) (n ≠ −1) ; 1/x → ln|x| ; 1/x² → −1/x ; 1/√x → 2√x ; eˣ → eˣ ; cos x → sin x ; sin x → −cos x.",
@@ -280,7 +280,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Sert surtout dans les calculs d'intégrales et d'aires. Une question « vérifier que F est une primitive de f » se règle simplement en dérivant F.",
   },
-  {"t": "Calcul intégral et aires", "p": 4,
+  {"t": "Calcul intégral et aires", "p": 8,
    "cles": [
      "∫ₐᵇ f(x) dx = F(b) − F(a), où F est une primitive de f.",
      "Relation de Chasles : ∫ₐᶜ f = ∫ₐᵇ f + ∫ᵇᶜ f. Linéarité : ∫ (αf + βg) = α∫f + β∫g.",
@@ -314,7 +314,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Dernière partie du problème : aire du domaine entre la courbe, l'asymptote et deux droites, souvent avec une intégration par parties, puis limite quand une borne tend vers l'infini.",
   },
-  {"t": "Équations différentielles", "p": 5,
+  {"t": "Équations différentielles", "p": 9,
    "cles": [
      "y′ = ay (a réel) : solutions y(x) = C e^(ax), C réel.",
      "y′ = ay + b (a ≠ 0) : solutions y(x) = C e^(ax) − b/a. La solution constante est −b/a.",
@@ -347,7 +347,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Souvent un exercice court (3 points) ou le début du problème : trouver une solution particulière puis la fonction f qui sera étudiée. Lien direct avec les circuits RC, RL et LC en physique.",
   },
-  {"t": "Nombres complexes : forme algébrique et équations", "p": 6,
+  {"t": "Nombres complexes : forme algébrique et équations", "p": 10,
    "cles": [
      "z = a + ib, i² = −1. Re(z) = a, Im(z) = b. Conjugué : z̄ = a − ib ; z z̄ = a² + b².",
      "Module |z| = √(a² + b²) ; |zz′| = |z||z′| ; |z/z′| = |z|/|z′|.",
@@ -378,7 +378,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "L'exercice de complexes (4 à 5 points) commence presque toujours par la résolution d'une équation de degré 2 ou 3, puis place les points solutions et étudie le triangle ou le quadrilatère formé.",
   },
-  {"t": "Nombres complexes : forme trigonométrique, exponentielle et géométrie", "p": 6,
+  {"t": "Nombres complexes : forme trigonométrique, exponentielle et géométrie", "p": 11,
    "cles": [
      "z = r(cos θ + i sin θ) = r e^(iθ), avec r = |z| et θ = arg z (à 2π près).",
      "arg(zz′) = arg z + arg z′ ; arg(z/z′) = arg z − arg z′ ; arg(zⁿ) = n arg z. Formule de Moivre : (cos θ + i sin θ)ⁿ = cos nθ + i sin nθ.",
@@ -410,7 +410,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Questions types : écrire sous forme exponentielle, calculer une puissance, prouver la nature d'un triangle, déterminer un ensemble de points. En S1, linéarisation et calcul de cos(π/12) par deux méthodes.",
   },
-  {"t": "Transformations du plan : similitudes", "p": 6,
+  {"t": "Transformations du plan : similitudes", "p": 12,
    "cles": [
      "Translation de vecteur u⃗(b) : z′ = z + b. Homothétie de centre Ω(ω) et de rapport k réel : z′ − ω = k(z − ω).",
      "Rotation de centre Ω(ω) et d'angle θ : z′ − ω = e^(iθ)(z − ω).",
@@ -441,7 +441,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Surtout en S1 et S3 : exercice de géométrie avec similitudes, suites de points M(n+1) = s(M(n)) et distances qui forment une suite géométrique.",
   },
-  {"t": "Dénombrement", "p": 7,
+  {"t": "Dénombrement", "p": 13,
    "cles": [
      "Principe multiplicatif : si un choix se fait en p étapes avec n₁, n₂, …, n_p possibilités, il y a n₁ × n₂ × … × n_p résultats.",
      "p-listes (tirages successifs avec remise, ordre compte) : nᵖ.",
@@ -469,7 +469,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Base de tout l'exercice de probabilités : bien identifier le type de tirage dès la première question.",
   },
-  {"t": "Probabilités et variables aléatoires", "p": 7,
+  {"t": "Probabilités et variables aléatoires", "p": 14,
    "cles": [
      "Équiprobabilité : P(A) = nombre de cas favorables / nombre de cas possibles. P(Ā) = 1 − P(A).",
      "P(A ∪ B) = P(A) + P(B) − P(A ∩ B).",
@@ -503,7 +503,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Un exercice par sujet (4 à 5 points) : tirages dans une urne, loi de X, espérance, puis répétition de l'expérience avec la loi binomiale et « au moins une fois » : 1 − (1 − p)ⁿ.",
   },
-  {"t": "Statistiques à deux variables", "p": 7,
+  {"t": "Statistiques à deux variables", "p": 15,
    "cles": [
      "Nuage de points Mᵢ(xᵢ ; yᵢ) ; point moyen G(x̄ ; ȳ).",
      "Variance : V(x) = (1/n) Σ xᵢ² − x̄². Covariance : cov(x, y) = (1/n) Σ xᵢyᵢ − x̄ȳ.",
@@ -530,7 +530,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Surtout en série S2 et L : un exercice de 4 à 5 points avec tableau, nuage, coefficient de corrélation, droite de régression et estimation.",
   },
-  {"t": "Arithmétique", "p": 8,
+  {"t": "Arithmétique (séries S1 et S3)", "p": 16,
    "cles": [
      "Division euclidienne : a = bq + r avec 0 ≤ r < |b|.",
      "Congruences : a ≡ b [n] ⟺ n divise a − b. Elles se conservent par somme, produit et puissance.",
@@ -562,7 +562,7 @@ SYNTH["tle-maths"] = [
    ]),
    "exam": "Séries S1 et S3 uniquement : un exercice de 4 à 5 points (équations diophantiennes, congruences, codage).",
   },
-  {"t": "Géométrie dans l'espace", "p": 9,
+  {"t": "Géométrie dans l'espace", "p": 17,
    "cles": [
      "Produit scalaire : u⃗ · v⃗ = xx′ + yy′ + zz′ ; ‖u⃗‖ = √(x² + y² + z²) ; u⃗ ⟂ v⃗ ⟺ u⃗ · v⃗ = 0.",
      "Représentation paramétrique d'une droite passant par A et dirigée par u⃗ : x = xA + ta, y = yA + tb, z = zA + tc (t réel).",
@@ -3348,3 +3348,22 @@ SYNTH["2nde-svt"] = [
   ("Pourquoi les sols du nord du Sénégal s'appauvrissent-ils ?", ["Peu de pluie et peu de végétation, donc peu d'humus.", "Le vent emporte la terre fine (érosion éolienne)."]),
   "Questions sur la pédologie et la protection des sols."),
 ]
+
+SYNTH["tle-maths"].append(C("Coniques (série S1)", 18, [
+  "Définition par foyer et directrice : M est sur la conique de foyer F, de directrice D et d'excentricité e si MF = e × d(M, D).",
+  "e = 1 : parabole ; 0 < e < 1 : ellipse ; e > 1 : hyperbole.",
+  "Parabole y² = 2px : foyer F(p/2 ; 0), directrice x = −p/2.",
+  "Ellipse x²/a² + y²/b² = 1 (a > b > 0) : c² = a² − b², foyers (±c ; 0), e = c/a, sommets (±a ; 0) et (0 ; ±b) ; MF + MF′ = 2a.",
+  "Hyperbole x²/a² − y²/b² = 1 : c² = a² + b², foyers (±c ; 0), e = c/a, asymptotes y = ±(b/a)x ; |MF − MF′| = 2a.",
+  "Directrices de l'ellipse et de l'hyperbole : x = ±a²/c.",
+  "Reconnaître une conique : mettre l'équation sous forme réduite par complétion des carrés.",
+], [("Trouver la nature et les éléments d'une conique d'équation donnée", [
+  "Regrouper les termes en x et en y et compléter les carrés.",
+  "Diviser pour obtenir la forme réduite (= 1).",
+  "Identifier a, b, puis calculer c, e, les foyers, les sommets et les directrices.",
+])], ["Confondre c² = a² − b² (ellipse) et c² = a² + b² (hyperbole).", "Oublier de déplacer le centre après la complétion des carrés."],
+("Nature et éléments de 9x² + 25y² = 225.", [
+  "On divise par 225 : x²/25 + y²/9 = 1 : ellipse avec a = 5, b = 3.",
+  "c² = 25 − 9 = 16, c = 4 : foyers (±4 ; 0), e = 4/5.",
+  "Directrices x = ±25/4.",
+]), "Série S1 : un exercice sur les coniques (souvent avec les complexes ou la géométrie) peut tomber."))

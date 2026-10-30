@@ -97,13 +97,13 @@ const GEN = (() => {
     "tle-maths": [
       ["Suites numériques", (r) => { const u0 = ri(r, 1, 5), q = pick(r, [2, 3]), n = ri(r, 3, 6);
         return { q: `(uₙ) est géométrique, u₀ = ${u0} et q = ${q}. Calcule u${"₀₁₂₃₄₅₆₇₈₉"[n]}.`, ok: String(u0 * q ** n), faux: [String(u0 * q ** (n - 1)), String(u0 + n * q), String((u0 * q) ** n)], e: `uₙ = u₀ × qⁿ = ${u0} × ${q}^${n} = ${u0 * q ** n}.` }; }],
-      ["Nombres complexes et transformations", (r) => { const [a, b, c] = tri(r), sa = pick(r, [1, -1]), sb = pick(r, [1, -1]);
+      ["Nombres complexes : forme algébrique et équations", (r) => { const [a, b, c] = tri(r), sa = pick(r, [1, -1]), sb = pick(r, [1, -1]);
         return { q: `Module de z = ${m(sa * a)} ${sb > 0 ? "+" : "−"} ${b}i :`, ok: String(c), faux: [String(a + b), String(c * c), `√${a + b}`], e: `|z| = √(a² + b²) = √(${a * a} + ${b * b}) = √${c * c} = ${c}.` }; }],
-      ["Probabilités et dénombrement", (r) => { const n = ri(r, 2, 4), p = pick(r, [0.1, 0.2, 0.3, 0.4, 0.5]), q0 = (1 - p) ** n;
+      ["Probabilités et variables aléatoires", (r) => { const n = ri(r, 2, 4), p = pick(r, [0.1, 0.2, 0.3, 0.4, 0.5]), q0 = (1 - p) ** n;
         return { q: `X suit la loi binomiale B(${n} ; ${nf(p, 1)}). Calcule P(X ≥ 1).`, ok: nf(1 - q0, 4), faux: [nf(q0, 4), nf(n * p, 2), nf(1 - p ** n, 4)], e: `P(X ≥ 1) = 1 − P(X = 0) = 1 − ${nf(1 - p, 1)}^${n} = 1 − ${nf(q0, 4)} = ${nf(1 - q0, 4)}.` }; }],
-      ["Primitives et intégrales", (r) => { const a = ri(r, 1, 6), b = ri(r, 0, 6), t = ri(r, 1, 4), I = a * t * t / 2 + b * t;
+      ["Calcul intégral et aires", (r) => { const a = ri(r, 1, 6), b = ri(r, 0, 6), t = ri(r, 1, 4), I = a * t * t / 2 + b * t;
         return { q: `Calcule ∫₀^${t} (${a}x + ${b}) dx.`.replace("^", "").replace(/∫₀(\d)/, (_, d) => `∫₀${"⁰¹²³⁴⁵⁶⁷⁸⁹"[d]}`), ok: nf(I), faux: [nf(a * t + b), nf(a * t * t + b * t), nf(I + b)], e: `Une primitive est ${nf(a / 2)}x² + ${b}x ; on calcule ${nf(a / 2)} × ${t * t} + ${b} × ${t} − 0 = ${nf(I)}.` }; }],
-      ["Logarithme et exponentielle", (r) => { const k = pick(r, [2, 3, 5, 7, 10]), a = ri(r, 2, 4);
+      ["Fonction exponentielle et fonctions puissances", (r) => { const k = pick(r, [2, 3, 5, 7, 10]), a = ri(r, 2, 4);
         return { q: `Résous e^(${a}x) = ${k}.`, ok: a === 1 ? `x = ln ${k}` : `x = (ln ${k}) / ${a}`, faux: [`x = ${k}/${a}`, `x = e^${k}`, `x = ${a} ln ${k}`], e: `On passe au logarithme : ${a}x = ln ${k}${a === 1 ? "" : `, donc x = (ln ${k}) / ${a}`}.` }; }],
     ],
     "3e-pc": [
