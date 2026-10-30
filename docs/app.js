@@ -141,7 +141,7 @@ function viewHome() {
   const subs = subjectsOf(S.level).map((s) => `
     <a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit">
       <b>${esc(s.name)}</b>
-      <span class="small muted">${s.count} questions${isPremium() ? "" : ` · <span class="lock">🔒</span>`}</span>
+      <span class="small muted">${s.count} questions${(GEN[s.id] || []).length ? " + ∞ à nombres nouveaux" : ""}${isPremium() ? "" : ` · <span class="lock">🔒</span>`}</span>
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   $view.innerHTML = `
@@ -417,7 +417,7 @@ function viewExercices() {
 function viewQcmList() {
   $view.innerHTML = `<h1>QCM corrigés</h1><p class="muted">Pour chaque question, tu vois si ton choix est juste, la bonne réponse et l'explication. Les erreurs sont gardées pour les revoir.</p>
     <div class="grid">${subjectsOf(S.level).map((s) => `<a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit"><b>${esc(s.name)}</b>
-      <span class="small muted">${isPremium() ? s.count : s.free} questions</span><span class="bar"><i style="width:${mastery(s.id)}%"></i></span></a>`).join("")}</div>
+      <span class="small muted">${isPremium() ? s.count : s.free} questions${isPremium() && (GEN[s.id] || []).length ? " + ∞" : ""}</span><span class="bar"><i style="width:${mastery(s.id)}%"></i></span></a>`).join("")}</div>
     <a class="btn alt" href="#erreurs">Revoir mes erreurs</a>`;
 }
 
