@@ -41,6 +41,11 @@ from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
 from programmes import PROGRAMMES
 NOTIONS = {**NOTIONS, **NOTIONS_AUTRES}
+# notions qui complètent tout le programme, classe par classe (une par chapitre sans notion)
+import importlib
+for _mod, _var in [("notions_3e", "N3")]:
+    for _sid, _lst in getattr(importlib.import_module(_mod), _var).items():
+        NOTIONS.setdefault(_sid, []).extend(_lst)
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
@@ -202,6 +207,8 @@ def build():
             exercises.append({"id": "ch-" + ch["id"], "levels": subj[sid][1], "subject": subj[sid][2], "free": i == 0, "chapter": ch["id"],
                               "title": ch["title"], "src": "Exercice d'application du cours",
                               "guided": guided("ch-" + ch["id"], [{"title": ch["title"], "context": exo["context"], "steps": exo["steps"]}])})
+    for sid in notions:
+        notions[sid].sort(key=lambda n: n["pch"])
     assert set(PROGRAMMES) <= {s[0] for s in SUBJECTS}
     assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) | set(EXTRA_CHAPITRES) | set(QCM_CH) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
     for sid, chs in SYNTH.items():
