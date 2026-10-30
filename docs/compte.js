@@ -1,7 +1,15 @@
 "use strict";
 // Comptes élèves : connexion Google (Firebase Auth), essai et premium enregistrés en ligne (Firestore).
 // Sans configuration Firebase, l'appli garde le fonctionnement local (Compte.enabled = false).
-const FIREBASE_CONFIG = null; // rempli avec le bloc firebaseConfig du projet « Revision »
+// Configuration publique du projet Firebase « Revision » (pas secrète : la sécurité vient des règles Firestore)
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBVN2IYDi7Sz5z2FdJox4pJbsIUdyz5Bis",
+  authDomain: "revision-981b3.firebaseapp.com",
+  projectId: "revision-981b3",
+  storageBucket: "revision-981b3.firebasestorage.app",
+  messagingSenderId: "565000904373",
+  appId: "1:565000904373:web:c7026a0072470aeb0728fc",
+};
 
 const Compte = (() => {
   const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
