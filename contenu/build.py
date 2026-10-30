@@ -20,7 +20,11 @@ from q_plus_lycee import EXTRA_LYCEE
 from q_chapitres import CHAPITRE_FORCE, EXTRA_CHAPITRES
 from fiches import FICHES
 from fiches_autres import FICHES_AUTRES
+from syntheses import SYNTH
 FICHES = {**FICHES, **FICHES_AUTRES}
+# une synthèse = liste de chapitres ; les anciennes fiches (titre, points) gardent seulement « l'essentiel »
+FICHES = {sid: [{"t": t, "cles": pts} for t, pts in f] for sid, f in FICHES.items()}
+FICHES.update(SYNTH)
 from catalogue import LIBRARY, LIB_HOST
 from catalogue_devoirs import DEVOIRS
 from exercices import EXERCISES
@@ -188,6 +192,8 @@ def build():
                               "guided": guided("ch-" + ch["id"], [{"title": ch["title"], "context": exo["context"], "steps": exo["steps"]}])})
     assert set(PROGRAMMES) <= {s[0] for s in SUBJECTS}
     assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) | set(EXTRA_CHAPITRES) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
+    for sid, chs in SYNTH.items():
+        assert all("p" not in c or 0 <= c["p"] < len(PROGRAMMES[sid]) for c in chs), sid
     for e in LIBRARY + DEVOIRS:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []

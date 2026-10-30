@@ -297,17 +297,38 @@ function libraryBlock() {
 function viewFiches() {
   const subs = subjectsOf(S.level).filter((s) => s.fiche);
   $view.innerHTML = `<h1>Synthèses de cours</h1><p class="muted">L'essentiel du programme de ${esc(S.level)} à retenir, matière par matière. Lis la fiche, puis entraîne-toi avec le quiz.</p>
-    <div class="grid">${subs.map((s) => `<a class="subj" href="#fiche/${s.id}" style="text-decoration:none;color:inherit"><b>${esc(s.name)}</b><span class="small muted">${DATA.fiches[s.id].length} parties</span></a>`).join("")}</div>
+    <div class="grid">${subs.map((s) => `<a class="subj" href="#fiche/${s.id}" style="text-decoration:none;color:inherit"><b>${esc(s.name)}</b><span class="small muted">${DATA.fiches[s.id].length} chapitres</span></a>`).join("")}</div>
     ${subs.length ? "" : `<div class="card"><p>Les synthèses de ta classe arrivent bientôt.</p></div>`}`;
 }
-function viewFiche(sid) {
-  const s = DATA.subjects.find((x) => x.id === sid), f = DATA.fiches && DATA.fiches[sid];
+function viewFiche(arg) {
+  const [sid, k] = arg.split("~"), s = DATA.subjects.find((x) => x.id === sid), f = DATA.fiches && DATA.fiches[sid];
   if (!s || !f) return go("fiches");
   markDone("fiche");
-  $view.innerHTML = `<p class="tag-src">Synthèse de cours · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
-    ${f.map(([t, pts]) => `<div class="card"><h2>${esc(t)}</h2><ul class="steps">${pts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join("")}
-    <a class="btn" href="#quiz/${s.id}">M'entraîner sur ${esc(s.name)}</a>
-    <a class="btn alt" href="#fiches">Autres synthèses</a>`;
+  if (k === undefined) {
+    $view.innerHTML = `<p class="tag-src">Synthèse de cours · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
+      <p class="muted">${f.length} chapitres. Chaque chapitre : l'essentiel à savoir${f.some((c) => c.methodes) ? ", les méthodes pas à pas, les pièges, un exemple corrigé et ce qui tombe à l'examen" : ""}.</p>
+      <div class="card">${f.map((c, i) => `<a class="row lib" href="#fiche/${sid}~${i}"><span>${i + 1}. ${esc(c.t)}</span><span class="small muted">lire ›</span></a>`).join("")}</div>
+      <a class="btn" href="#quiz/${s.id}">M'entraîner sur ${esc(s.name)}</a>
+      <a class="btn alt" href="#fiches">Autres synthèses</a>`;
+    return;
+  }
+  const i = +k, c = f[i];
+  if (!c) return go("fiche/" + sid);
+  const nots = ((DATA.notions || {})[sid] || []).filter((n) => c.p !== undefined && n.pch === c.p);
+  const prog = (DATA.programmes || {})[sid];
+  $view.innerHTML = `<p class="tag-src">${esc(s.name)} · chapitre ${i + 1} / ${f.length}</p><h1>${esc(c.t)}</h1>
+    <div class="card notion-key"><h2>📌 L'essentiel</h2><ul class="steps">${c.cles.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
+    ${(c.methodes || []).map(([t, st]) => `<div class="card"><h2>🛠️ Méthode : ${esc(t)}</h2><ol class="steps">${st.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`).join("")}
+    ${c.pieges ? `<div class="card"><h2>⚠️ Pièges à éviter</h2><ul class="steps">${c.pieges.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
+    ${c.exemple ? `<div class="card"><h2>💡 Exemple corrigé</h2><p><b>${esc(c.exemple[0])}</b></p><ol class="steps">${c.exemple[1].map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>` : ""}
+    ${c.exam ? `<div class="card"><h2>🎯 À l'examen</h2><p>${esc(c.exam)}</p></div>` : ""}
+    ${prog && c.p !== undefined ? `<button class="btn hi-btn" id="train">✏️ M'entraîner sur ce chapitre</button>` : `<a class="btn hi-btn" href="#quiz/${s.id}">✏️ M'entraîner sur ${esc(s.name)}</a>`}
+    ${nots.map((n) => `<a class="btn alt" href="#notion/${n.id}">📖 Cours détaillé : ${esc(n.title)}${isPremium() || n.free ? "" : " 🔒"}</a>`).join("")}
+    ${f[i + 1] ? `<a class="btn alt" href="#fiche/${sid}~${i + 1}">Chapitre suivant : ${esc(f[i + 1].t)}</a>` : ""}
+    <a class="btn alt" href="#fiche/${sid}">Tous les chapitres</a>`;
+  const b = document.getElementById("train");
+  if (b) b.onclick = () => { S.devoir = { ...(S.devoir || {}), [sid]: [c.p] }; store.save(); go("devoir/" + sid); };
+  window.scrollTo(0, 0);
 }
 // ---------- Notions de cours : chapitre détaillé (cours, énoncé, exemples, illustration) + exercice corrigé
 function viewNotions() {
