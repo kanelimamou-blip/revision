@@ -52,7 +52,7 @@ from programmes import PROGRAMMES
 NOTIONS = {**NOTIONS, **NOTIONS_AUTRES}
 # notions qui complètent tout le programme, classe par classe (une par chapitre sans notion)
 import importlib
-for _mod, _var in [("notions_3e", "N3"), ("notions_tle_maths", "NTM"), ("notions_tle_pc", "NTP"), ("notions_tle_autres", "NTA"), ("notions_2nde", "N2"), ("notions_1ere", "N1"), ("notions_g", "NG"), ("notions_6e", "N6"), ("notions_5e", "N5"), ("notions_4e", "N4"), ("notions_lg", "NLG"), ("notions_tle_com", "NTC")]:
+for _mod, _var in [("notions_3e", "N3"), ("notions_tle_maths", "NTM"), ("notions_tle_pc", "NTP"), ("notions_tle_autres", "NTA"), ("notions_2nde", "N2"), ("notions_1ere", "N1"), ("notions_g", "NG"), ("notions_6e", "N6"), ("notions_5e", "N5"), ("notions_4e", "N4"), ("notions_lg", "NLG"), ("notions_tle_com", "NTC"), ("notions_tle_com2", "NTC2")]:
     for _sid, _lst in getattr(importlib.import_module(_mod), _var).items():
         NOTIONS.setdefault(_sid, []).extend(_lst)
 # matières ajoutées : maths des séries L et G, espagnol LV2
