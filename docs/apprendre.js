@@ -340,5 +340,5 @@
       ].join("")}</div>`;
   }
 
-  Object.assign(ROUTES, { apprendre: viewApprendre, plan: viewPlan, diagnostic: viewDiagnostic, jourj: (a) => { const p = location.hash.split("/"); viewJourJ(a, p[2]); }, methodes: viewMethodes, carte: viewCarte, dictee: viewDictee, prononciation: viewPrononciation, profil: viewProfil, "hors-ligne": viewHorsLigne });
+  Object.assign(ROUTES, { apprendre: viewApprendre, plan: viewPlan, diagnostic: viewDiagnostic, jourj: (a) => { const p = (a || "").split("/"); viewJourJ(p[0] || undefined, p[1]); }, methodes: viewMethodes, carte: viewCarte, dictee: viewDictee, prononciation: viewPrononciation, profil: viewProfil, "hors-ligne": viewHorsLigne });
 })();

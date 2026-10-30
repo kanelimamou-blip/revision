@@ -54,6 +54,7 @@ for _sid, _lst in N_PLUS.items():
     NOTIONS.setdefault(_sid, []).extend(_lst)
 # synthèses chapitre par chapitre là où il n'y avait qu'une fiche générale (gardée en fin de synthèse)
 from syntheses_auto import auto_synth
+from formules import formulaire
 for _sid, _chs in auto_synth(NOTIONS, PROGRAMMES).items():
     FICHES[_sid] = _chs + [c for c in FICHES.get(_sid, []) if "p" not in c]
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
@@ -229,7 +230,7 @@ def build():
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": [{k: v for k, v in a.items() if k not in ("sujet", "corrige")} for a in ANNALES], "fiches": FICHES, "exercises": exercises, "notions": notions,  "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": [{k: v for k, v in a.items() if k not in ("sujet", "corrige")} for a in ANNALES], "fiches": FICHES, "exercises": exercises, "notions": notions,  "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}, "formules": formulaire(FICHES, notions, PROGRAMMES)}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

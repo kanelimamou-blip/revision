@@ -174,12 +174,6 @@
   const CIT = [["Armez-vous de science jusqu'aux dents.", "Cheikh Anta Diop"], ["L'éducation est l'arme la plus puissante que l'on puisse utiliser pour changer le monde.", "Nelson Mandela"], ["Cela semble toujours impossible, jusqu'à ce qu'on le fasse.", "Nelson Mandela"], ["En Afrique, quand un vieillard meurt, c'est une bibliothèque qui brûle.", "Amadou Hampâté Bâ"], ["Il faut oser inventer l'avenir.", "Thomas Sankara"], ["Ceux qui sont morts ne sont jamais partis.", "Birago Diop, Souffles"], ["Petit à petit, l'oiseau fait son nid.", "Proverbe"], ["Ndank ndank mooy jàpp golo ci ñaay : doucement, doucement, on attrape le singe dans la forêt.", "Proverbe wolof"], ["Si tu veux aller vite, marche seul ; si tu veux aller loin, marchons ensemble.", "Proverbe africain"], ["Le savoir est comme un baobab : une seule personne ne peut pas l'embrasser.", "Proverbe africain"], ["La patience est un arbre dont la racine est amère, mais dont les fruits sont très doux.", "Proverbe africain"], ["Je suis petit, mais je fais de mon mieux.", "Wangari Maathai, d'après la légende du colibri"], ["Un enfant, un enseignant, un livre et un stylo peuvent changer le monde.", "Malala Yousafzai"], ["Quand tu ne sais pas où tu vas, regarde d'où tu viens.", "Proverbe africain"], ["L'eau chaude n'oublie pas qu'elle a été froide.", "Proverbe africain"]];
   globalThis.citationCard = () => { const [c, a] = CIT[Math.floor(Date.now() / 864e5) % CIT.length]; return `<div class="card quote"><p class="small muted">Citation du jour</p><p><b>« ${c} »</b></p><p class="small muted">${a}</p></div>`; };
 
-  // ---------- 57. Formulaire
-  const FORM = {
-    college: [["Maths", ["Pythagore : dans un triangle rectangle, hypoténuse² = somme des carrés des deux autres côtés.", "Thalès : AM/AB = AN/AC = MN/BC si (MN) // (BC).", "cos = adjacent/hypoténuse ; sin = opposé/hypoténuse ; tan = opposé/adjacent.", "(a + b)² = a² + 2ab + b² ; (a − b)² = a² − 2ab + b² ; (a + b)(a − b) = a² − b².", "Aires : rectangle L × l ; triangle b × h ÷ 2 ; disque πR².", "Volumes : pavé L × l × h ; cylindre πR²h ; cône et pyramide (aire de base × h) ÷ 3 ; boule 4πR³/3.", "Fonction affine f(x) = ax + b ; a = (f(x₂) − f(x₁)) / (x₂ − x₁).", "Vitesse moyenne v = d ÷ t."]], ["PC", ["Loi d'Ohm : U = R × I.", "Puissance : P = U × I ; énergie E = P × t.", "Poids : P = m × g (g ≈ 10 N/kg).", "Masse volumique : ρ = m ÷ V.", "Vergence : C = 1/f (f en mètres).", "Quantité de matière : n = m ÷ M ; concentration C = n ÷ V.", "Résistances : série R = R₁ + R₂ ; parallèle 1/R = 1/R₁ + 1/R₂."]]],
-    lycee: [["Maths", ["Second degré : Δ = b² − 4ac ; racines (−b ± √Δ) / 2a ; somme −b/a, produit c/a.", "Dérivées : (xⁿ)′ = nxⁿ⁻¹ ; (uv)′ = u′v + uv′ ; (u/v)′ = (u′v − uv′)/v² ; (eᵘ)′ = u′eᵘ ; (ln u)′ = u′/u.", "Tangente : y = f′(a)(x − a) + f(a).", "Suites : arithmétique uₙ = u₀ + nr ; géométrique uₙ = u₀qⁿ ; somme géométrique u₀(1 − qⁿ⁺¹)/(1 − q).", "Logarithme : ln(ab) = ln a + ln b ; ln(aⁿ) = n ln a ; eˡⁿ ˣ = x.", "Intégrale : ∫ₐᵇ f = F(b) − F(a) ; valeur moyenne (1/(b − a))∫ₐᵇ f.", "Complexes : |a + ib| = √(a² + b²) ; z = r e^(iθ) ; i² = −1.", "Probabilités : P(A ∪ B) = P(A) + P(B) − P(A ∩ B) ; binomiale P(X = k) = C(n,k) pᵏ(1 − p)ⁿ⁻ᵏ ; E(X) = np.", "Produit scalaire : u·v = xx′ + yy′ = ‖u‖‖v‖cos θ."]], ["PC", ["Newton : ΣF = m a ; poids P = mg ; chute libre y = ½gt².", "Énergie cinétique Ec = ½mv² ; potentielle Ep = mgh ; travail W = F·d·cos α.", "Mouvement circulaire : a = v²/R ; force de Lorentz F = |q|vB ; R = mv/(|q|B).", "Dipôle RC : τ = RC ; uC(t) = E(1 − e^(−t/τ)) ; énergie ½CU².", "Bobine : E = ½LI² ; oscillateur LC : T₀ = 2π√(LC).", "Pendule élastique : T₀ = 2π√(m/k) ; pendule simple T₀ = 2π√(ℓ/g).", "Ondes : λ = v T = c/ν ; interfrange i = λD/a ; énergie d'un photon E = hν.", "Radioactivité : N(t) = N₀e^(−λt) ; λ = ln2/T.", "Acide-base : pH = −log[H₃O⁺] ; pH = pKa + log([A⁻]/[AH]) ; équivalence CaVa = CbVbE."]]],
-  };
-
   // ---------- 76. Gestion du stress
   const STRESS = [["La veille de l'examen", ["Revois seulement tes fiches, pas de nouveau chapitre.", "Prépare ton sac : convocation, pièce d'identité, stylos, calculatrice, règle, eau.", "Dors au moins 8 heures : le cerveau range ce que tu as appris pendant le sommeil."]], ["Le jour J", ["Mange quelque chose avant de partir et arrive en avance.", "Lis tout le sujet, commence par l'exercice que tu maîtrises le mieux.", "Bloqué ? Passe à la question suivante et reviens-y à la fin."]], ["Pendant les révisions", ["Travaille par blocs de 25 minutes avec 5 minutes de pause (minuteur ci-dessous).", "Bouge un peu chaque jour : marche, football, danse.", "Parle à quelqu'un si l'angoisse devient trop forte : un parent, un professeur, un ami."]]];
 
@@ -190,16 +184,29 @@
     $view.innerHTML = `<h1>Les cours dans la vie</h1><p class="muted">Des problèmes du quotidien sénégalais avec les maths et la physique de l'école. Les nombres changent à chaque fois.</p>
       <div class="grid rub">${THEMES.map((t) => `<a class="subj tile" href="#vie/${t.id}"><span class="ico">${t.i}</span><b>${t.t}</b><span class="small muted">${t.d}</span></a>`).join("")}</div>
       <h2>Mes outils</h2>
-      <div class="grid rub">${[["flash", "🃏", "Fiches flash", "Retourne les cartes, révise l'essentiel"], ["formules", "📐", "Formulaire", "Toutes les formules de maths et PC"], ["moyenne", "🧮", "Simulateur de moyenne", "Combien me faut-il pour avoir mon examen ?"], ["minuteur", "⏲️", "Minuteur Pomodoro", "25 min de travail, 5 min de pause"], ["journal", "📓", "Mon journal", "Ce que j'ai compris aujourd'hui"], ["stress", "🌬️", "Gérer le stress", "Respiration, sommeil, jour J"]].map(([id, i, t, d]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${i}</span><b>${t}</b><span class="small muted">${d}</span></a>`).join("")}</div>`;
+      <div class="grid rub">${[["flash", "🃏", "Fiches flash", "Retourne les cartes, révise l'essentiel"], ["formules", "📐", "Formulaire", "Toutes les formules, chapitre par chapitre"], ["moyenne", "🧮", "Simulateur de moyenne", "Combien me faut-il pour avoir mon examen ?"], ["minuteur", "⏲️", "Minuteur Pomodoro", "25 min de travail, 5 min de pause"], ["journal", "📓", "Mon journal", "Ce que j'ai compris aujourd'hui"], ["stress", "🌬️", "Gérer le stress", "Respiration, sommeil, jour J"]].map(([id, i, t, d]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${i}</span><b>${t}</b><span class="small muted">${d}</span></a>`).join("")}</div>`;
   }
 
   let pomo = null;
   function viewOutils(arg) {
     clearInterval(pomo);
     const back = `<a class="btn alt" href="#vie">Retour aux outils</a>`;
-    if (arg === "formules") {
-      const lyc = /2nde|1ère|Tle/.test(S.level), f = FORM[lyc ? "lycee" : "college"];
-      $view.innerHTML = `<h1>Formulaire</h1><p class="muted">${lyc ? "Lycée" : "Collège"} · garde-le ouvert pendant tes exercices.</p>${f.map(([m, l]) => `<div class="card"><h2>${m}</h2><ul class="steps">${l.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}${back}`;
+    // formulaire et fiches flash : même logique que le reste de l'appli, matière par matière et chapitre par chapitre
+    const pick = (sids, cur, base) => sids.length > 1 ? `<div class="row onglets">${sids.map((s) => `<a class="btn alt small${s.id === cur ? " on" : ""}" href="#outils/${base}/${s.id}">${esc(s.name)}</a>`).join("")}</div>` : "";
+    const nota = (sid, p) => ((DATA.notions || {})[sid] || []).find((n) => n.pch === p);
+    if (arg && arg.startsWith("formules")) {
+      const subs = subjectsOf(S.level).filter((s) => (DATA.formules || {})[s.id]), sid = arg.split("/")[1], cur = subs.find((s) => s.id === sid) || subs[0];
+      if (!cur) { $view.innerHTML = `<h1>Formulaire</h1><div class="card"><p>Pas de formules pour ta classe.</p></div>${back}`; return; }
+      const chs = DATA.formules[cur.id], nb = chs.reduce((a, c) => a + c.f.length, 0);
+      $view.innerHTML = `<h1>Formulaire</h1><p class="muted">${esc(cur.name)} · ${chs.length} chapitres, ${nb} formules, dans l'ordre du programme. Garde-le ouvert pendant tes exercices.</p>${pick(subs, cur.id, "formules")}
+        <input class="field" id="fq" type="search" placeholder="Chercher dans toutes les matières (ex. : vitesse, Thalès)" aria-label="Chercher une formule">
+        <div id="fl">${subs.flatMap((sb) => DATA.formules[sb.id].map((c) => { const n = nota(sb.id, c.p); return `<div class="card fch" data-s="${sb.id}"${sb.id === cur.id ? "" : " hidden"}><h2>${sb.id === cur.id ? "" : `<span class="small muted">${esc(sb.name)} · </span>`}${c.p + 1}. ${esc(c.t)}</h2><ul class="steps">${c.f.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${n ? `<a class="small" href="#notion/${n.id}">📖 Revoir le cours de ce chapitre</a>` : ""}</div>`; })).join("")}</div>
+        <p class="small muted" id="fv" hidden>Aucune formule trouvée.</p>${back}`;
+      const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      document.getElementById("fq").oninput = (e) => { const q = norm(e.target.value.trim()); let any = false;
+        document.querySelectorAll("#fl .fch").forEach((card) => { let vis = 0; if (!q && card.dataset.s !== cur.id) { card.hidden = true; return; } const tit = norm(card.querySelector("h2").textContent).includes(q);
+          card.querySelectorAll("li").forEach((li) => { const ok = !q || tit || norm(li.textContent).includes(q); li.hidden = !ok; vis += ok; }); card.hidden = !vis; any = any || !!vis; });
+        document.getElementById("fv").hidden = any; };
       return;
     }
     if (arg === "stress") {
@@ -241,14 +248,18 @@
       $view.querySelectorAll("input").forEach((x) => (x.oninput = calc)); calc();
       return;
     }
-    if (arg === "flash") {
-      const subs = subjectsOf(S.level).filter((s) => !/annales/.test(s.id) && (DATA.fiches || {})[s.id]);
-      const cards = subs.flatMap((s) => DATA.fiches[s.id].flatMap((c) => c.cles.map((k) => ({ s: s.name, t: c.t, k }))));
+    if (arg && arg.startsWith("flash")) {
+      const subs = subjectsOf(S.level).filter((s) => !/annales/.test(s.id) && (DATA.fiches || {})[s.id]), [, sid, chp] = arg.split("/"), cur = subs.find((s) => s.id === sid);
+      const chList = cur ? (DATA.programmes[cur.id] || []).map((t, p) => ({ t, p })).filter((c) => DATA.fiches[cur.id].some((f) => f.p === c.p)) : [];
+      const cards = (cur ? [cur] : subs).flatMap((s) => DATA.fiches[s.id].filter((c) => chp === undefined || c.p === +chp).flatMap((c) => c.cles.map((k) => ({ s: s.name, t: c.t, k }))));
       if (!cards.length) { $view.innerHTML = `<h1>Fiches flash</h1><div class="card"><p>Pas encore de fiches pour ta classe.</p></div>${back}`; return; }
+      const choix = `<div class="row onglets"><a class="btn alt small${cur ? "" : " on"}" href="#outils/flash">Tout</a>${subs.map((s) => `<a class="btn alt small${cur && s.id === cur.id ? " on" : ""}" href="#outils/flash/${s.id}">${esc(s.name)}</a>`).join("")}</div>
+        ${cur ? `<select class="field" id="fch" aria-label="Chapitre"><option value="">Tous les chapitres</option>${chList.map((c) => `<option value="${c.p}"${String(c.p) === chp ? " selected" : ""}>${c.p + 1}. ${esc(c.t)}</option>`).join("")}</select>` : ""}`;
       let i = Math.floor(Math.random() * cards.length), flip = false;
       const draw = () => { const c = cards[i], cut = c.k.indexOf(" : "), front = cut > 3 && cut < 70 ? c.k.slice(0, cut) + " : ?" : `${c.t} : que dois-tu retenir ?`;
-        $view.innerHTML = `<h1>Fiches flash</h1><p class="small muted">${esc(c.s)} · ${esc(c.t)}</p><button class="card flash" id="fc" style="width:100%;min-height:180px;text-align:center;font:inherit;cursor:pointer"><p class="small muted">${flip ? "Réponse" : "Question · touche pour retourner"}</p><p><b>${esc(flip ? c.k : front)}</b></p></button>
-          <div class="btns"><button class="btn" id="nx">Carte suivante</button></div><p class="small muted">${cards.length} cartes pour ta classe, tirées des synthèses.</p>${back}`;
+        $view.innerHTML = `<h1>Fiches flash</h1>${choix}<p class="small muted">${esc(c.s)} · ${esc(c.t)}</p><button class="card flash" id="fc" style="width:100%;min-height:180px;text-align:center;font:inherit;cursor:pointer"><p class="small muted">${flip ? "Réponse" : "Question · touche pour retourner"}</p><p><b>${esc(flip ? c.k : front)}</b></p></button>
+          <div class="btns"><button class="btn" id="nx">Carte suivante</button></div><p class="small muted">${cards.length} cartes${chp !== undefined ? " pour ce chapitre" : cur ? ` en ${esc(cur.name)}` : " pour ta classe"}, tirées des synthèses.</p>${back}`;
+        const sel = document.getElementById("fch"); if (sel) sel.onchange = () => go(`outils/flash/${cur.id}${sel.value === "" ? "" : "/" + sel.value}`);
         document.getElementById("fc").onclick = () => { flip = !flip; draw(); };
         document.getElementById("nx").onclick = () => { i = Math.floor(Math.random() * cards.length); flip = false; draw(); }; };
       draw();

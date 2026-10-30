@@ -1,4 +1,4 @@
-const CACHE = "revision-v39";
+const CACHE = "revision-v40";
 const SHELL = ["./", "index.html", "app.css", "app.js", "compte.js", "generateurs.js", "generateurs_plus.js", "generateurs_lettres.js", "exos_gen.js", "assistant.js", "agenda.js", "vie.js", "apprendre.js", "manifest.webmanifest", "data/questions.json", "data/config.json", "icons/icon-192.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("revision-") && k !== CACHE).map((k) => caches.delete(k))))); self.clients.claim(); });

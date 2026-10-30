@@ -712,7 +712,7 @@ function render() {
   clearInterval(timer);
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
-  const [tab, arg] = (location.hash.slice(1) || "accueil").split("/");
+  const [tab, ...rest] = (location.hash.slice(1) || "accueil").split("/"), arg = rest.length ? rest.join("/") : undefined;
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
