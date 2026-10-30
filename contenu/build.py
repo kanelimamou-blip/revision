@@ -20,6 +20,7 @@ from fiches_autres import FICHES_AUTRES
 FICHES = {**FICHES, **FICHES_AUTRES}
 from catalogue import LIBRARY, LIB_HOST
 from exercices import EXERCISES
+from notions import NOTIONS
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
@@ -109,7 +110,7 @@ def build():
         items = items + EXTRA.get(sid, []) + EXTRA_COLLEGE.get(sid, []) + EXTRA_LYCEE.get(sid, [])
         fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
         assert set(levels) <= set(LEVELS) | fams, (sid, levels)
-        subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items)), "fiche": sid in FICHES})
+        subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items)), "fiche": sid in FICHES, "notions": len(NOTIONS.get(sid, []))})
         for i, (q, choices, a, ex, *src) in enumerate(items):
             assert len(choices) == 4 and 0 <= a < 4, (sid, q)
             qid = f"{sid}-{i + 1}"
@@ -136,12 +137,24 @@ def build():
     for ex in EXERCISES:
         assert set(ex["levels"]) <= set(LEVELS) | fams, ex["id"]
         exercises.append({**{k: v for k, v in ex.items() if k != "parts"}, "guided": guided(ex["id"], ex["parts"])})
+    # notions de cours : le cours reste dans « notions », l'exercice d'application rejoint les exercices corrigés
+    notions = {}
+    subj = {s[0]: s for s in SUBJECTS}
+    for sid, chapters in NOTIONS.items():
+        assert sid in subj, sid
+        notions[sid] = []
+        for i, ch in enumerate(chapters):
+            notions[sid].append({k: v for k, v in ch.items() if k != "exo"} | {"free": i == 0})
+            exo = ch["exo"]
+            exercises.append({"id": "ch-" + ch["id"], "levels": subj[sid][1], "subject": subj[sid][2], "free": i == 0, "chapter": ch["id"],
+                              "title": ch["title"], "src": "Exercice d'application du cours",
+                              "guided": guided("ch-" + ch["id"], [{"title": ch["title"], "context": exo["context"], "steps": exo["steps"]}])})
     assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
     for e in LIBRARY:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

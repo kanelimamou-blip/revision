@@ -72,15 +72,17 @@ function viewLevel() {
 }
 
 // ---------- Accueil
+const notionsOf = (level) => subjectsOf(level).flatMap((s) => ((DATA.notions || {})[s.id] || []).map((c) => ({ ...c, sid: s.id, sname: s.name })));
 const exercisesOf = (level) => (DATA.exercises || []).filter((e) => matches(e.levels, level));
 function rubriques() {
   const nAnn = annalesOf(S.level).length + libraryOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length;
-  const exam = examOf() ? examOf()[0] : "BAC";
+  const exam = examOf() ? examOf()[0] : "BAC", nNot = notionsOf(S.level).length;
   const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
     nAnn ? tile("#annales", "📚", `Sujets du ${exam}`, `${nAnn} vrais sujets et corrigés`) : "",
     tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
     tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas` : "Bientôt pour ta classe"),
+    nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
     tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
     tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
     tile("#duo", "🤝", "Session à deux", "Défie un camarade de ta classe"),
@@ -90,7 +92,8 @@ function rubriques() {
 function programme() {
   const n = Math.min(TRIAL_DAYS, Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5) + 1);
   const weakest = subjectsOf(S.level).filter((s) => !/annales/.test(s.id)).sort((a, b) => mastery(a.id) - mastery(b.id))[0];
-  const third = n % 3 === 1 ? ["exo", "#exercices", "Fais un exercice corrigé"] : n % 3 === 2 ? ["fiche", weakest ? `#fiche/${weakest.id}` : "#fiches", "Lis une synthèse de cours"] : ["duo", "#duo", "Fais une session à deux avec un camarade"];
+  const third = n % 3 === 1 ? ["exo", "#exercices", "Fais un exercice corrigé"] : n % 3 === 2 ? (() => { const ch = (DATA.notions || {})[weakest && weakest.id] || [];
+    return ch.length ? ["fiche", `#notion/${ch[Math.floor(n / 3) % ch.length].id}`, `Apprends un chapitre de ${weakest.name} : ${ch[Math.floor(n / 3) % ch.length].title}`] : ["fiche", weakest ? `#fiche/${weakest.id}` : "#fiches", "Lis une synthèse de cours"]; })() : ["duo", "#duo", "Fais une session à deux avec un camarade"];
   const missions = [["challenge", "#challenge", "Fais le challenge du jour (toutes matières)"],
     ["qcm", weakest ? `#quiz/${weakest.id}` : "#qcm-list", `QCM dans ta matière la plus faible${weakest ? " : " + weakest.name : ""}`], third];
   const done = missions.filter(([t]) => doneToday(t)).length;
@@ -266,6 +269,31 @@ function viewFiche(sid) {
     <a class="btn" href="#quiz/${s.id}">M'entraîner sur ${esc(s.name)}</a>
     <a class="btn alt" href="#fiches">Autres synthèses</a>`;
 }
+// ---------- Notions de cours : chapitre détaillé (cours, énoncé, exemples, illustration) + exercice corrigé
+function viewNotions() {
+  const all = notionsOf(S.level), subs = [...new Set(all.map((c) => c.sid))];
+  $view.innerHTML = `<h1>Notions de cours</h1><p class="muted">Chaque chapitre : le cours expliqué, ce qu'il faut retenir, des exemples résolus, puis un exercice corrigé pas à pas.</p>
+    ${subs.map((sid) => { const ch = all.filter((c) => c.sid === sid);
+      return `<h2>${esc(ch[0].sname)}</h2>${ch.map((c, i) => `<a class="card lib-card" href="#notion/${c.id}"><b>${i + 1}. ${esc(c.title)}</b><span class="small muted">Cours · ${c.exemples.length} exemple${c.exemples.length > 1 ? "s" : ""} · exercice corrigé${c.free ? " · gratuit" : isPremium() ? "" : " 🔒"}</span></a>`).join("")}`; }).join("")}
+    ${all.length ? "" : `<div class="card"><p>Les chapitres détaillés de ta classe arrivent. En attendant, lis les synthèses.</p><a class="btn" href="#fiches">Synthèses de cours</a></div>`}`;
+}
+function viewNotion(id) {
+  const all = Object.entries(DATA.notions || {}).flatMap(([sid, ch]) => ch.map((c, i) => ({ ...c, sid, i, n: ch.length })));
+  const c = all.find((x) => x.id === id);
+  if (!c) return go("notions");
+  if (!isPremium() && !c.free) return viewPremium("Tous les chapitres détaillés font partie du pack premium. Le premier chapitre de chaque matière est gratuit.");
+  markDone("fiche");
+  const s = DATA.subjects.find((x) => x.id === c.sid), next = all.find((x) => x.sid === c.sid && x.i === c.i + 1);
+  $view.innerHTML = `<p class="tag-src">${esc(s ? s.name : "")} · chapitre ${c.i + 1} / ${c.n}</p><h1>${esc(c.title)}</h1>
+    <div class="card"><h2>📘 Le cours</h2>${c.cours.map((p) => `<p>${esc(p)}</p>`).join("")}</div>
+    ${c.svg ? `<div class="card notion-fig">${c.svg}</div>` : ""}
+    <div class="card notion-key"><h2>📌 À retenir</h2><ul class="steps">${c.enonce.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
+    ${c.exemples.map(([t, lines]) => `<div class="card"><h2>💡 Exemple : ${esc(t)}</h2><ol class="steps">${lines.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`).join("")}
+    <a class="btn hi-btn" href="#sujet/ch-${c.id}">✏️ Exercice corrigé sur ce chapitre</a>
+    ${next ? `<a class="btn alt" href="#notion/${next.id}">Chapitre suivant : ${esc(next.title)}${isPremium() || next.free ? "" : " 🔒"}</a>` : ""}
+    <a class="btn alt" href="#notions">Tous les chapitres</a>`;
+  window.scrollTo(0, 0);
+}
 function viewAnnales() {
   const list = annalesOf(S.level);
   $view.innerHTML = `<h1>Sujets du ${examOf() ? esc(examOf()[0]) : "BAC"}</h1>
@@ -419,7 +447,7 @@ function viewGuided(id) {
       <p class="score">${pts(note)} / 20</p><p>${pts(got)} points sur ${pts(max)} notés</p></div>
       <div class="card">${an.guided.map((p, i) => `<div class="row small"><span>${esc(p.title)}</span><b>${pts(byPart[i])} / ${pts(p.steps.reduce((n, x) => n + x.pts, 0))}</b></div>`).join("")}</div>
       <div class="btns">${an.corrige ? `<a class="btn alt" href="${esc(an.corrige)}" target="_blank" rel="noopener">Corrigé officiel complet (PDF)</a>` : ""}
-      <button class="btn" id="again">Recommencer</button><a class="btn alt" href="#exercices">Autres exercices</a></div>
+      <button class="btn" id="again">Recommencer</button>${an.chapter ? `<a class="btn alt" href="#notion/${an.chapter}">Revoir le cours</a>` : ""}<a class="btn alt" href="#exercices">Autres exercices</a></div>
       ${solo ? `<h2>Corrigé ligne par ligne</h2>${steps.map((st, i) => { const ok = picks[i] === st.a;
         return `<div class="card"><p class="small muted">${esc(an.guided[st.pi].title)} · ${pts(st.pts)} pt</p><p><b>${esc(st.q)}</b></p>
           <p class="${ok ? "msg-ok" : "msg-ko"}">${ok ? "✓ Juste" : "✗ Ta réponse : " + esc(st.c[picks[i]])} · Bonne réponse : ${esc(st.c[st.a])}</p><p class="small">${esc(st.e)}</p></div>`; }).join("")}` : ""}`;
@@ -551,7 +579,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
