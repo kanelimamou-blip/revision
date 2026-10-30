@@ -108,6 +108,8 @@ function rubriques() {
     tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas${nGx ? ", nombres nouveaux à chaque essai" : ""}` : "Bientôt pour ta classe"),
     nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
     tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
+    tile("#vie", "🌍", "Les cours dans la vie", "Marché, factures Senelec et eau, solaire, route"),
+    tile("#outils", "🧰", "Mes outils", "Fiches flash, formulaire, moyenne, minuteur, journal"),
     tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
     tile("#duo", "👥", "Session de groupe", "De 2 à 10 élèves, classement en direct"),
     tile("#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`),
@@ -154,6 +156,7 @@ function viewHome() {
       <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
     </div>
     ${agendaCard()}
+    ${typeof citationCard === "function" ? citationCard() : ""}
     ${tutoCard()}
     ${programme()}
     <h2>Rubriques</h2>
@@ -309,6 +312,7 @@ function viewFiche(arg) {
     ${c.pieges ? `<div class="card"><h2>⚠️ Pièges à éviter</h2><ul class="steps">${c.pieges.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
     ${[...(c.exemple ? [c.exemple] : []), ...(c.exemples || [])].map(([q, lines], j, all) => `<div class="card"><h2>💡 Exercice corrigé${all.length > 1 ? " " + (j + 1) : ""}</h2><p><b>${esc(q)}</b></p><details><summary class="small">Voir le corrigé</summary><ol class="steps">${lines.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></details></div>`).join("")}
     ${c.exam ? `<div class="card"><h2>🎯 À l'examen</h2><p>${esc(c.exam)}</p></div>` : ""}
+    ${typeof pourquoiCard === "function" ? pourquoiCard(c.t, sid) : ""}
     ${prog && c.p !== undefined ? `<button class="btn hi-btn" id="train">✏️ M'entraîner sur ce chapitre</button>` : `<a class="btn hi-btn" href="#quiz/${s.id}">✏️ M'entraîner sur ${esc(s.name)}</a>`}
     ${nots.map((n) => `<a class="btn alt" href="#notion/${n.id}">📖 Cours détaillé : ${esc(n.title)}${isPremium() || n.free ? "" : " 🔒"}</a>`).join("")}
     ${f[i + 1] ? `<a class="btn alt" href="#fiche/${sid}~${i + 1}">Chapitre suivant : ${esc(f[i + 1].t)}</a>` : ""}
@@ -710,7 +714,7 @@ function render() {
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
   if (!isPremium() && !["accueil", "classe", "premium", "progres"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
