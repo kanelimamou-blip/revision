@@ -664,8 +664,12 @@ async function share() {
 
 // ---------- Navigation
 function go(h) { location.hash = h; }
+// carte d'installation (affichée avant la connexion, utile quand on arrive en scannant le QR code)
+const installCard = () => standalone ? "" : `<div class="card small"><b>📲 Installe l'appli sur ton téléphone</b><br>${isIOS
+  ? "Dans Safari, touche Partager (carré avec une flèche), puis « Sur l'écran d'accueil », puis « Ajouter »."
+  : `Touche « Installer l'appli » s'il apparaît, sinon le menu ⋮ du navigateur puis « Installer l'application » (ou « Ajouter à l'écran d'accueil »).${deferred ? `<button class="btn" id="install2" style="margin-top:8px">Installer l'appli</button>` : ""}`}</div>`;
 function viewLogin(err = "", ok = "") {
-  $view.innerHTML = `<div class="card" style="gap:14px">
+  $view.innerHTML = `${installCard()}<div class="card" style="gap:14px">
     <h1 style="text-align:center">Bienvenue sur Révision</h1>
     <p class="muted" style="text-align:center">Connecte-toi pour garder tes progrès et profiter de ${TRIAL_DAYS} jours d'essai gratuit avec tout débloqué.</p>
     <button class="btn" id="google">Se connecter avec Google</button>
@@ -687,6 +691,7 @@ function viewLogin(err = "", ok = "") {
     "auth/user-not-found": "Aucun compte avec cet e-mail : appuie sur « Créer un compte ».",
     "auth/too-many-requests": "Trop d'essais. Attends quelques minutes.",
   })[e && e.code] || "La connexion n'a pas abouti. Réessaie.");
+  const i2 = document.getElementById("install2"); if (i2) i2.onclick = () => document.getElementById("install").click();
   document.getElementById("google").onclick = () => Compte.signIn().then(done).catch(fail);
   document.getElementById("login").onclick = () => Compte.signInEmail(mail(), pass(), false).then(done).catch(fail);
   document.getElementById("signup").onclick = () => Compte.signInEmail(mail(), pass(), true).then(done).catch(fail);
@@ -728,7 +733,7 @@ function render() {
 window.addEventListener("hashchange", render);
 
 let deferred = null;
-window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferred = e; document.getElementById("install").hidden = false; });
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferred = e; document.getElementById("install").hidden = false; if (!document.getElementById("install2") && document.getElementById("google")) { const c = document.createElement("div"); c.innerHTML = `<button class="btn" id="install2">Installer l'appli</button>`; $view.prepend(c.firstChild); document.getElementById("install2").onclick = () => document.getElementById("install").click(); } });
 document.getElementById("install").onclick = () => { if (deferred) { deferred.prompt(); deferred = null; document.getElementById("install").hidden = true; } };
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 

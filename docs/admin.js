@@ -9,12 +9,18 @@
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = arg === "erreurs" ? "erreurs" : arg === "comptes" ? "comptes" : "chiffres";
+    const onglet = ["erreurs", "comptes", "qr"].includes(arg) ? arg : "chiffres";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["chiffres", "Chiffres"], ["comptes", "Comptes"], ["erreurs", "Erreurs"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["chiffres", "Chiffres"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
     document.getElementById("reload").onclick = () => { users = errors = null; viewAdmin(arg); };
     const box = document.getElementById("adm");
+    if (onglet === "qr") {
+      box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.svg" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
+        <p class="small muted">La personne ouvre l'appareil photo de son téléphone et vise le code : l'appli s'ouvre avec les étapes pour l'installer. Monte la luminosité de ton écran.</p></div>`;
+      document.getElementById("reload").hidden = true;
+      return;
+    }
     try {
       if (!users) users = await Compte.adminUsers();
       if (onglet === "erreurs" && !errors) errors = await Compte.adminErrors();
