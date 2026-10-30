@@ -108,6 +108,7 @@ function rubriques() {
     tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas${nGx ? ", nombres nouveaux à chaque essai" : ""}` : "Bientôt pour ta classe"),
     nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
     tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
+    tile("#apprendre", "🚀", "Mieux apprendre", "Plan de révision, diagnostic, jour J, dictées, cartes mentales"),
     tile("#vie", "🌍", "Les cours dans la vie", "Marché, factures Senelec et eau, solaire, route"),
     tile("#outils", "🧰", "Mes outils", "Fiches flash, formulaire, moyenne, minuteur, journal"),
     tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
@@ -117,7 +118,7 @@ function rubriques() {
 }
 // Vidéo de présentation (45 s), proposée sur l'accueil pendant les premiers jours
 function tutoCard() {
-  if (S.premium || S.tutoVu) return "";
+  if (S.premium || S.tutoVu || S.eco) return "";
   return `<div class="card tuto"><div class="row"><h2>▶️ Découvre l'appli en 45 secondes</h2><button class="btn alt small" id="tuto-x" aria-label="Fermer">✕</button></div>
     <video src="tuto.mp4" controls playsinline preload="none" poster="apercu.png"></video></div>`;
 }
@@ -155,6 +156,8 @@ function viewHome() {
         : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
       <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
     </div>
+    ${typeof profilCard === "function" ? profilCard() : ""}
+    ${typeof planCard === "function" ? planCard() : ""}
     ${agendaCard()}
     ${typeof citationCard === "function" ? citationCard() : ""}
     ${tutoCard()}
@@ -307,6 +310,7 @@ function viewFiche(arg) {
   const nots = ((DATA.notions || {})[sid] || []).filter((n) => c.p !== undefined && n.pch === c.p);
   const prog = (DATA.programmes || {})[sid];
   $view.innerHTML = `<p class="tag-src">${esc(s.name)} · chapitre ${i + 1} / ${f.length}</p><h1>${esc(c.t)}</h1>
+    <div class="btns">${typeof audioBtn === "function" ? audioBtn() : ""}<a class="btn alt" href="#carte/${sid}~${i}">🧠 Carte mentale</a></div>
     <div class="card notion-key"><h2>📌 L'essentiel</h2><ul class="steps">${c.cles.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
     ${(c.methodes || []).map(([t, st]) => `<div class="card"><h2>🛠️ Méthode : ${esc(t)}</h2><ol class="steps">${st.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`).join("")}
     ${c.pieges ? `<div class="card"><h2>⚠️ Pièges à éviter</h2><ul class="steps">${c.pieges.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
@@ -336,7 +340,7 @@ function viewNotion(id) {
   if (!isPremium() && !c.free) return viewPremium("Tous les chapitres détaillés font partie du pack premium. Le premier chapitre de chaque matière est gratuit.");
   markDone("fiche");
   const s = DATA.subjects.find((x) => x.id === c.sid), next = all.find((x) => x.sid === c.sid && x.i === c.i + 1);
-  $view.innerHTML = `<p class="tag-src">${esc(s ? s.name : "")} · chapitre ${c.i + 1} / ${c.n}</p><h1>${esc(c.title)}</h1>
+  $view.innerHTML = `<p class="tag-src">${esc(s ? s.name : "")} · chapitre ${c.i + 1} / ${c.n}</p><h1>${esc(c.title)}</h1>${typeof audioBtn === "function" ? audioBtn() : ""}
     <div class="card"><h2>📘 Le cours</h2>${c.cours.map((p) => `<p>${esc(p)}</p>`).join("")}</div>
     ${c.svg ? `<div class="card notion-fig">${c.svg}</div>` : ""}
     <div class="card notion-key"><h2>📌 À retenir</h2><ul class="steps">${c.enonce.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
@@ -714,6 +718,7 @@ function render() {
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
   if (!isPremium() && !["accueil", "classe", "premium", "progres"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
   ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
