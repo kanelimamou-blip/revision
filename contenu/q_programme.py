@@ -1031,3 +1031,344 @@ QCM_CH["2nde-svt"] = {
     ("La roche mère se trouve :", ["à la base du profil du sol", "en surface", "dans l'humus", "dans l'air"], 0, "Horizon le plus profond."),
   ],
 }
+
+QCM_CH["4e-maths"] = {
+  "Puissances et écriture scientifique": [
+    ("2³ × 2⁴ =", ["2⁷", "2¹²", "4⁷", "2¹"], 0, "On additionne les exposants."),
+    ("5⁰ =", ["1", "0", "5", "non défini"], 0, "Tout nombre non nul à la puissance 0 vaut 1."),
+    ("10⁻³ =", ["0,001", "−1 000", "0,000 1", "−0,001"], 0, "1/10³."),
+    ("L'écriture scientifique de 45 000 est :", ["4,5 × 10⁴", "45 × 10³", "0,45 × 10⁵", "4,5 × 10³"], 0, "1 ≤ a < 10."),
+    ("(−3)² =", ["9", "−9", "6", "−6"], 0, "(−3) × (−3)."),
+    ("(2³)² =", ["2⁶", "2⁵", "2⁹", "4⁶"], 0, "On multiplie les exposants."),
+  ],
+  "Calcul littéral : développer, factoriser": [
+    ("3(x + 4) =", ["3x + 12", "3x + 4", "x + 12", "3x + 7"], 0, "Distributivité."),
+    ("−(2x − 5) =", ["−2x + 5", "−2x − 5", "2x − 5", "2x + 5"], 0, "On change tous les signes."),
+    ("(x + 2)(x + 3) =", ["x² + 5x + 6", "x² + 6", "x² + 6x + 5", "2x + 5"], 0, "Double distributivité."),
+    ("Factoriser 5x + 10 :", ["5(x + 2)", "5(x + 10)", "x(5 + 10)", "10(x + 5)"], 0, "Facteur commun 5."),
+    ("Réduire 4x + 3 − x + 2 :", ["3x + 5", "5x + 5", "3x + 1", "6x"], 0, "4x − x = 3x ; 3 + 2 = 5."),
+  ],
+  "Équations": [
+    ("La solution de x + 7 = 12 :", ["5", "19", "−5", "7/12"], 0, "x = 12 − 7."),
+    ("La solution de 4x = 20 :", ["5", "16", "80", "24"], 0, "x = 20/4."),
+    ("La solution de 2x − 3 = x + 4 :", ["7", "1", "−7", "1/3"], 0, "2x − x = 4 + 3."),
+    ("La solution de x/3 = 6 :", ["18", "2", "9", "3"], 0, "x = 6 × 3."),
+    ("−3 est-il solution de 2x + 6 = 0 ?", ["oui", "non", "seulement si x > 0", "on ne peut pas savoir"], 0, "2 × (−3) + 6 = 0."),
+  ],
+  "Fractions et inverses": [
+    ("1/2 + 1/3 =", ["5/6", "2/5", "1/5", "2/6"], 0, "3/6 + 2/6."),
+    ("2/3 × 3/4 =", ["1/2", "6/7", "5/7", "8/9"], 0, "6/12 = 1/2."),
+    ("L'inverse de 5 :", ["1/5", "−5", "0,5", "5"], 0, "5 × 1/5 = 1."),
+    ("(3/4) ÷ (1/2) =", ["3/2", "3/8", "4/6", "1/2"], 0, "On multiplie par l'inverse : 3/4 × 2."),
+    ("12/18 simplifiée :", ["2/3", "3/4", "6/9", "4/6"], 0, "On divise par 6."),
+  ],
+  "Pythagore et cosinus": [
+    ("ABC rectangle en A, AB = 3, AC = 4 : BC =", ["5", "7", "25", "12"], 0, "√(9 + 16)."),
+    ("Dans un triangle rectangle, l'hypoténuse est :", ["le côté opposé à l'angle droit", "le plus petit côté", "un côté de l'angle droit", "la hauteur"], 0, "C'est le plus long côté."),
+    ("Un triangle de côtés 6, 8, 10 est :", ["rectangle", "équilatéral", "isocèle", "obtus"], 0, "36 + 64 = 100 (réciproque)."),
+    ("cos B̂ =", ["côté adjacent / hypoténuse", "côté opposé / hypoténuse", "hypoténuse / adjacent", "opposé / adjacent"], 0, "Définition."),
+    ("Le cosinus d'un angle aigu est :", ["entre 0 et 1", "supérieur à 1", "négatif", "égal à 90"], 0, "L'adjacent est plus petit que l'hypoténuse."),
+  ],
+  "Droite des milieux et cercle circonscrit": [
+    ("La droite qui joint les milieux de deux côtés d'un triangle est :", ["parallèle au troisième côté", "perpendiculaire au troisième côté", "une médiatrice", "une hauteur"], 0, "Théorème des milieux."),
+    ("I, J milieux de [AB], [AC] ; BC = 12 : IJ =", ["6", "12", "24", "3"], 0, "Moitié du troisième côté."),
+    ("Le centre du cercle circonscrit est l'intersection :", ["des médiatrices", "des hauteurs", "des médianes", "des bissectrices"], 0, "Équidistant des sommets."),
+    ("Dans un triangle rectangle, le centre du cercle circonscrit est :", ["le milieu de l'hypoténuse", "le sommet de l'angle droit", "le centre de gravité", "hors du triangle"], 0, "Propriété du triangle rectangle."),
+    ("ABC rectangle en A, BC = 10 : la médiane issue de A mesure :", ["5", "10", "20", "√10"], 0, "La moitié de l'hypoténuse."),
+  ],
+  "Proportionnalité, vitesse et pourcentages": [
+    ("Une voiture parcourt 180 km en 2 h. Vitesse :", ["90 km/h", "360 km/h", "180 km/h", "45 km/h"], 0, "180/2."),
+    ("1 h 15 min =", ["1,25 h", "1,15 h", "1,5 h", "75 h"], 0, "15 min = 0,25 h."),
+    ("20 % de 4 000 F :", ["800 F", "200 F", "80 F", "2 000 F"], 0, "4 000 × 0,2."),
+    ("À 60 km/h pendant 30 min, on parcourt :", ["30 km", "60 km", "120 km", "2 km"], 0, "60 × 0,5."),
+    ("Si 2/5 = x/20, alors x =", ["8", "50", "4", "10"], 0, "Produit en croix : x = 2 × 20/5."),
+  ],
+  "Statistiques": [
+    ("Fréquence d'une valeur d'effectif 6 sur 30 :", ["0,2", "0,6", "5", "6"], 0, "6/30."),
+    ("Moyenne de 5, 10, 15 :", ["10", "15", "30", "5"], 0, "30/3."),
+    ("Dans un diagramme circulaire, une fréquence de 25 % correspond à :", ["90°", "25°", "45°", "180°"], 0, "0,25 × 360."),
+    ("L'étendue de 4, 9, 2, 15 :", ["13", "15", "11", "7,5"], 0, "15 − 2."),
+    ("La somme des fréquences vaut :", ["1", "100", "l'effectif total", "0"], 0, "Ou 100 % en pourcentage."),
+  ],
+}
+
+QCM_CH["4e-pc"] = {
+  "Mesures : masse, volume, masse volumique": [
+    ("1 L =", ["1 dm³", "1 cm³", "1 m³", "10 cm³"], 0, "1 L = 1 000 cm³ = 1 dm³."),
+    ("La masse volumique de l'eau :", ["1 g/cm³", "10 g/cm³", "1 kg/cm³", "0,1 g/cm³"], 0, "Soit 1 000 kg/m³."),
+    ("ρ =", ["m/V", "V/m", "m × V", "m + V"], 0, "Masse sur volume."),
+    ("Un corps de ρ = 0,8 g/cm³ dans l'eau :", ["flotte", "coule", "se dissout", "reste au milieu toujours"], 0, "0,8 < 1."),
+    ("Pour mesurer le volume d'un solide irrégulier, on utilise :", ["le déplacement d'eau dans une éprouvette", "une balance", "une règle", "un thermomètre"], 0, "V = V₂ − V₁."),
+  ],
+  "Mélanges et corps purs": [
+    ("L'eau salée est :", ["un mélange homogène", "un corps pur", "un mélange hétérogène", "un gaz"], 0, "On ne distingue pas le sel."),
+    ("La filtration permet de séparer :", ["un solide non dissous d'un liquide", "le sel de l'eau", "deux gaz", "deux liquides miscibles"], 0, "Le filtre retient les particules."),
+    ("Pour obtenir de l'eau pure, on utilise :", ["la distillation", "la décantation", "la filtration", "l'agitation"], 0, "Vaporisation puis liquéfaction."),
+    ("L'eau pure bout à (pression normale) :", ["100 °C", "0 °C", "50 °C", "120 °C"], 0, "Température fixe."),
+    ("Une solution saturée :", ["ne peut plus dissoudre de soluté", "ne contient pas de soluté", "est toujours colorée", "est un corps pur"], 0, "Solubilité atteinte."),
+  ],
+  "Les changements d'état": [
+    ("Le passage du solide au liquide :", ["la fusion", "la solidification", "la vaporisation", "la liquéfaction"], 0, "Exemple : la glace fond."),
+    ("Le passage du gaz au liquide :", ["la liquéfaction", "la vaporisation", "la fusion", "la sublimation"], 0, "Exemple : la buée."),
+    ("Pendant la fusion d'un corps pur, la température :", ["reste constante", "augmente", "diminue", "varie au hasard"], 0, "Palier."),
+    ("Lors d'un changement d'état, la masse :", ["se conserve", "augmente", "diminue", "s'annule"], 0, "Seul le volume change."),
+    ("La glace fond à :", ["0 °C", "100 °C", "−10 °C", "4 °C"], 0, "Sous pression normale."),
+  ],
+  "Le circuit électrique": [
+    ("Dans un circuit en série, si une lampe grille :", ["les autres s'éteignent", "les autres brillent plus", "rien ne change", "le générateur explose"], 0, "La boucle est ouverte."),
+    ("Un bon conducteur électrique :", ["le cuivre", "le plastique", "le verre", "le bois sec"], 0, "Les métaux conduisent."),
+    ("Le sens conventionnel du courant, hors du générateur :", ["du + vers le −", "du − vers le +", "il n'a pas de sens", "des deux côtés"], 0, "Convention."),
+    ("Un court-circuit est dangereux car :", ["l'intensité devient très forte", "le courant s'arrête", "la tension s'annule", "les lampes brillent"], 0, "Risque d'échauffement et d'incendie."),
+    ("En dérivation, chaque branche :", ["fonctionne indépendamment", "s'éteint si une autre s'éteint", "n'a pas de courant", "est en série"], 0, "Boucles séparées."),
+  ],
+  "La propagation de la lumière": [
+    ("Dans un milieu homogène, la lumière se propage :", ["en ligne droite", "en courbe", "en zigzag", "en cercle"], 0, "Propagation rectiligne."),
+    ("La Lune est :", ["un objet diffusant", "une source primaire", "une étoile", "une source de chaleur"], 0, "Elle renvoie la lumière du Soleil."),
+    ("Vitesse de la lumière dans le vide :", ["300 000 km/s", "300 km/s", "340 m/s", "3 000 km/h"], 0, "3 × 10⁸ m/s."),
+    ("Une éclipse de Lune se produit quand :", ["la Terre est entre le Soleil et la Lune", "la Lune est entre le Soleil et la Terre", "le Soleil est entre la Terre et la Lune", "la Lune est pleine seulement"], 0, "La Lune est dans l'ombre de la Terre."),
+    ("L'ombre portée est :", ["la zone de l'écran non éclairée", "la partie sombre de l'objet", "la source", "un rayon"], 0, "L'ombre propre est sur l'objet."),
+  ],
+}
+
+QCM_CH["4e-svt"] = {
+  "La reproduction humaine": [
+    ("Les spermatozoïdes sont produits par :", ["les testicules", "la prostate", "les ovaires", "l'utérus"], 0, "Gonades mâles."),
+    ("La fécondation a lieu dans :", ["la trompe", "l'utérus", "le vagin", "l'ovaire"], 0, "Dans le tiers supérieur de la trompe."),
+    ("Un cycle menstruel dure en moyenne :", ["28 jours", "7 jours", "9 mois", "14 jours"], 0, "Ovulation vers le 14e jour."),
+    ("Le placenta permet :", ["les échanges entre la mère et le fœtus", "la production d'ovules", "la fécondation", "les règles"], 0, "Nutriments, O₂, déchets."),
+    ("La cellule-œuf résulte de :", ["l'union d'un spermatozoïde et d'un ovule", "la division d'un ovule", "deux spermatozoïdes", "la nidation"], 0, "Fécondation."),
+  ],
+  "Les IST et la contraception": [
+    ("Le seul moyen de contraception qui protège aussi des IST :", ["le préservatif", "la pilule", "le calendrier", "le stérilet"], 0, "Barrière physique."),
+    ("Le VIH s'attaque :", ["aux cellules du système immunitaire", "aux os", "aux muscles", "à la peau"], 0, "Lymphocytes T4."),
+    ("Le VIH ne se transmet pas :", ["en partageant un repas", "par le sang", "par des rapports non protégés", "de la mère à l'enfant"], 0, "Pas de transmission par la vie courante."),
+    ("Le sida est :", ["le stade avancé de l'infection par le VIH", "une bactérie", "un vaccin", "une IST guérissable rapidement"], 0, "Syndrome d'immunodéficience acquise."),
+    ("Savoir si l'on est infecté par le VIH nécessite :", ["un test de dépistage", "un examen des yeux", "une radio", "rien, cela se voit"], 0, "On peut être porteur sans symptôme."),
+  ],
+  "Volcans et séismes": [
+    ("Le point en profondeur où se produit la rupture lors d'un séisme :", ["le foyer", "l'épicentre", "le cratère", "la faille"], 0, "L'épicentre est en surface."),
+    ("Une lave fluide caractérise un volcan :", ["effusif", "explosif", "éteint", "de boue"], 0, "Coulées de lave."),
+    ("La magnitude d'un séisme mesure :", ["l'énergie libérée", "les dégâts", "la durée", "la profondeur"], 0, "Échelle de Richter."),
+    ("Volcans et séismes se trouvent surtout :", ["aux limites des plaques", "au centre des continents", "au Sahara", "partout de la même façon"], 0, "Zones actives."),
+    ("Le magma est :", ["de la roche fondue", "de l'eau chaude", "du sable", "du gaz seulement"], 0, "En profondeur ; la lave en surface."),
+  ],
+  "Roches, érosion et fossiles": [
+    ("Le calcaire est une roche :", ["sédimentaire", "volcanique", "plutonique", "métamorphique"], 0, "Dépôt de sédiments."),
+    ("Dans des couches non déformées, la plus ancienne est :", ["en bas", "en haut", "au milieu", "on ne peut pas savoir"], 0, "Principe de superposition."),
+    ("Un fossile est :", ["un reste ou une trace d'être vivant dans une roche", "un minéral", "un cristal", "un volcan"], 0, "Il renseigne sur le passé."),
+    ("Un agent d'érosion :", ["le vent", "le magma", "la photosynthèse", "la gravitation de la Lune"], 0, "Aussi l'eau et les variations de température."),
+    ("Des fossiles marins dans une région sèche indiquent :", ["qu'elle était autrefois recouverte par la mer", "qu'il a beaucoup plu", "un volcan", "rien"], 0, "Ancien milieu."),
+  ],
+  "L'hérédité": [
+    ("Nombre de chromosomes d'une cellule humaine :", ["46", "23", "44", "48"], 0, "23 paires."),
+    ("Les chromosomes sexuels d'un homme :", ["XY", "XX", "YY", "X"], 0, "La femme est XX."),
+    ("Un ovule contient :", ["23 chromosomes", "46 chromosomes", "1 chromosome", "92 chromosomes"], 0, "Gamète."),
+    ("Le sexe de l'enfant est déterminé par :", ["le spermatozoïde", "l'ovule", "la mère", "l'alimentation"], 0, "X ou Y."),
+    ("L'information héréditaire se trouve dans :", ["le noyau des cellules", "le sang uniquement", "les muscles", "la peau uniquement"], 0, "Sur les chromosomes."),
+  ],
+}
+
+QCM_CH["5e-maths"] = {
+  "Nombres relatifs": [
+    ("−5 + 8 =", ["3", "−13", "13", "−3"], 0, "Signes contraires : 8 − 5, signe de 8."),
+    ("−4 − 6 =", ["−10", "2", "−2", "10"], 0, "−4 + (−6)."),
+    ("7 − (−3) =", ["10", "4", "−10", "−4"], 0, "Soustraire −3, c'est ajouter 3."),
+    ("(−3) × (−4) =", ["12", "−12", "7", "−7"], 0, "Même signe : positif."),
+    ("Le plus petit nombre :", ["−9", "−2", "0", "3"], 0, "Plus loin de zéro du côté négatif."),
+    ("L'opposé de −6 :", ["6", "−6", "1/6", "0"], 0, "Même distance à zéro, signe contraire."),
+  ],
+  "Fractions et priorités de calcul": [
+    ("2 + 3 × 4 =", ["14", "20", "24", "9"], 0, "La multiplication d'abord."),
+    ("(2 + 3) × 4 =", ["20", "14", "24", "9"], 0, "Les parenthèses d'abord."),
+    ("3/5 + 1/5 =", ["4/5", "4/10", "3/25", "2/5"], 0, "Même dénominateur."),
+    ("Les 3/4 de 80 :", ["60", "20", "240", "75"], 0, "80 ÷ 4 × 3."),
+    ("La fraction égale à 2/3 :", ["8/12", "3/2", "4/5", "2/6"], 0, "× 4 en haut et en bas."),
+  ],
+  "Proportionnalité et pourcentages": [
+    ("5 stylos coûtent 750 F. 1 stylo coûte :", ["150 F", "75 F", "3 750 F", "155 F"], 0, "750 ÷ 5."),
+    ("10 % de 2 500 :", ["250", "25", "2 500", "1 000"], 0, "2 500 ÷ 10."),
+    ("Une situation de proportionnalité est représentée par :", ["une droite passant par l'origine", "une courbe", "une droite quelconque", "un cercle"], 0, "Propriété graphique."),
+    ("Échelle 1/1 000 : 5 cm sur le plan représentent :", ["50 m", "5 m", "500 m", "5 km"], 0, "5 000 cm = 50 m."),
+    ("Prix 4 000 F, remise de 25 % : prix payé", ["3 000 F", "1 000 F", "3 750 F", "3 975 F"], 0, "4 000 − 1 000."),
+  ],
+  "Angles et triangles": [
+    ("Somme des angles d'un triangle :", ["180°", "360°", "90°", "270°"], 0, "Toujours 180°."),
+    ("Un triangle a des angles de 50° et 60°. Le troisième :", ["70°", "80°", "90°", "110°"], 0, "180 − 110."),
+    ("Chaque angle d'un triangle équilatéral mesure :", ["60°", "90°", "45°", "180°"], 0, "180 ÷ 3."),
+    ("Des angles opposés par le sommet sont :", ["égaux", "supplémentaires", "complémentaires", "droits"], 0, "Propriété."),
+    ("Peut-on construire un triangle de côtés 2, 3 et 7 ?", ["non", "oui", "seulement s'il est rectangle", "seulement s'il est isocèle"], 0, "7 > 2 + 3 : inégalité triangulaire non respectée."),
+  ],
+  "Parallélogramme et symétrie centrale": [
+    ("Les diagonales d'un parallélogramme :", ["ont le même milieu", "sont perpendiculaires", "sont égales", "sont parallèles"], 0, "Propriété caractéristique."),
+    ("Un parallélogramme avec un angle droit est :", ["un rectangle", "un losange", "un trapèze", "un triangle"], 0, "Définition."),
+    ("Les diagonales d'un losange sont :", ["perpendiculaires", "égales", "parallèles", "confondues"], 0, "Propriété du losange."),
+    ("La symétrie centrale conserve :", ["les longueurs", "uniquement les angles", "rien", "uniquement l'orientation des droites verticales"], 0, "Ainsi que les angles et l'alignement."),
+    ("Le symétrique d'une droite par une symétrie centrale est :", ["une droite parallèle", "une droite perpendiculaire", "un cercle", "un point"], 0, "Propriété."),
+  ],
+  "Aires et volumes": [
+    ("Aire d'un triangle de base 6 et de hauteur 4 :", ["12", "24", "10", "20"], 0, "(6 × 4)/2."),
+    ("Aire d'un disque de rayon 3 (π ≈ 3,14) :", ["28,26", "18,84", "9,42", "9"], 0, "3,14 × 9."),
+    ("Volume d'un cube d'arête 3 cm :", ["27 cm³", "9 cm³", "18 cm³", "12 cm³"], 0, "3³."),
+    ("1 m³ =", ["1 000 L", "100 L", "10 L", "1 L"], 0, "1 m³ = 1 000 dm³."),
+    ("1 m² =", ["100 dm²", "10 dm²", "1 000 dm²", "10 000 dm²"], 0, "On multiplie par 100."),
+  ],
+  "Statistiques": [
+    ("Moyenne de 8, 12, 10 :", ["10", "30", "12", "9"], 0, "30/3."),
+    ("Effectif total d'une classe de 25 garçons et 20 filles :", ["45", "25", "20", "5"], 0, "25 + 20."),
+    ("Fréquence des filles (20 sur 40) :", ["50 %", "20 %", "40 %", "2 %"], 0, "20/40."),
+    ("Un diagramme en bâtons représente :", ["les effectifs de chaque valeur", "des aires", "des volumes", "des angles"], 0, "Hauteur = effectif."),
+    ("La somme des angles d'un diagramme circulaire :", ["360°", "180°", "100°", "90°"], 0, "Disque complet."),
+  ],
+}
+
+QCM_CH["5e-svt"] = {
+  "L'alimentation et les groupes d'aliments": [
+    ("Le poisson est un aliment :", ["bâtisseur", "énergétique", "protecteur uniquement", "sans nutriment"], 0, "Riche en protides."),
+    ("Le kwashiorkor est dû à un manque de :", ["protides", "glucides", "eau", "vitamine C"], 0, "Carence protéique."),
+    ("Les fruits et légumes apportent surtout :", ["des vitamines et des sels minéraux", "des lipides", "de l'amidon", "des protides"], 0, "Aliments protecteurs."),
+    ("Le riz et le mil sont des aliments :", ["énergétiques", "bâtisseurs", "protecteurs", "sans valeur"], 0, "Riches en glucides."),
+    ("Le goitre est lié à un manque :", ["d'iode", "de fer", "de calcium", "de sucre"], 0, "Le sel iodé le prévient."),
+  ],
+  "La digestion et le devenir des aliments": [
+    ("L'amidon est transformé en :", ["glucose", "acides aminés", "acides gras", "eau"], 0, "Action de l'amylase."),
+    ("L'absorption des nutriments a lieu surtout dans :", ["l'intestin grêle", "l'estomac", "la bouche", "l'œsophage"], 0, "Au niveau des villosités."),
+    ("L'eau iodée colore l'amidon en :", ["bleu-noir", "rouge", "vert", "jaune"], 0, "Test de l'amidon."),
+    ("Les enzymes digestives sont contenues dans :", ["les sucs digestifs", "le sang seulement", "les os", "l'air"], 0, "Salive, suc gastrique, suc pancréatique…"),
+    ("Les protéines sont transformées en :", ["acides aminés", "glucose", "glycérol", "amidon"], 0, "Nutriments absorbables."),
+  ],
+  "La respiration des êtres vivants": [
+    ("L'eau de chaux se trouble en présence de :", ["dioxyde de carbone", "dioxygène", "azote", "vapeur d'eau"], 0, "Test du CO₂."),
+    ("Les poissons respirent grâce à :", ["des branchies", "des poumons", "des trachées", "la peau seulement"], 0, "Prélèvent l'O₂ dissous."),
+    ("Les échanges gazeux dans les poumons se font dans :", ["les alvéoles", "la trachée", "les fosses nasales", "le diaphragme"], 0, "Avec le sang."),
+    ("Les insectes respirent par :", ["des trachées", "des branchies", "des poumons", "des racines"], 0, "Tubes ramifiés."),
+    ("Les plantes respirent :", ["le jour et la nuit", "seulement le jour", "seulement la nuit", "jamais"], 0, "Respiration continue."),
+  ],
+  "La nutrition des plantes": [
+    ("L'eau est absorbée par :", ["les poils absorbants des racines", "les feuilles", "les fleurs", "les fruits"], 0, "Zone pilifère."),
+    ("La photosynthèse nécessite :", ["de la lumière", "l'obscurité", "du sucre", "de l'alcool"], 0, "Ainsi que CO₂, eau et chlorophylle."),
+    ("La photosynthèse rejette :", ["du dioxygène", "du dioxyde de carbone", "de l'azote", "du méthane"], 0, "À la lumière."),
+    ("La sève brute contient :", ["de l'eau et des sels minéraux", "du sucre", "de l'amidon", "de la chlorophylle"], 0, "Elle monte des racines."),
+    ("Les stomates permettent :", ["les échanges gazeux et la transpiration", "l'absorption de l'eau", "la reproduction", "la germination"], 0, "Pores des feuilles."),
+  ],
+  "La reproduction des plantes à fleurs": [
+    ("Après fécondation, l'ovaire devient :", ["le fruit", "la graine", "la fleur", "la racine"], 0, "L'ovule devient graine."),
+    ("Le pollen est produit par :", ["les étamines", "le pistil", "les sépales", "les pétales"], 0, "Organes mâles."),
+    ("La pollinisation est :", ["le transport du pollen vers le pistil", "la germination", "la chute des feuilles", "la photosynthèse"], 0, "Par le vent ou les insectes."),
+    ("Le bouturage est une reproduction :", ["asexuée", "sexuée", "par graines", "par pollen"], 0, "Sans fécondation."),
+    ("Une condition de la germination :", ["l'eau", "la nuit", "le sel", "l'absence d'air"], 0, "Eau, air, température favorable."),
+  ],
+  "Les insectes et les animaux": [
+    ("Un insecte a :", ["6 pattes", "8 pattes", "4 pattes", "10 pattes"], 0, "Trois paires."),
+    ("Le moustique anophèle transmet :", ["le paludisme", "la grippe", "le tétanos", "la rougeole"], 0, "Par la piqûre de la femelle."),
+    ("Le corps d'un insecte comprend :", ["tête, thorax, abdomen", "tête et abdomen", "céphalothorax et abdomen", "un seul bloc"], 0, "Trois parties."),
+    ("L'abeille est utile car :", ["elle pollinise et produit du miel", "elle transmet des maladies", "elle détruit les récoltes", "elle n'a aucun rôle"], 0, "Insecte utile."),
+    ("L'araignée est :", ["un arachnide", "un insecte", "un mammifère", "un reptile"], 0, "8 pattes."),
+  ],
+}
+
+QCM_CH["6e-maths"] = {
+  "Nombres décimaux et opérations": [
+    ("3,45 × 100 =", ["345", "34,5", "3 450", "0,034 5"], 0, "La virgule recule de 2 rangs vers la droite."),
+    ("Le plus grand nombre :", ["2,8", "2,15", "2,09", "2,7"], 0, "On compare les dixièmes."),
+    ("56 ÷ 10 =", ["5,6", "560", "0,56", "56,10"], 0, "La virgule avance d'un rang vers la gauche."),
+    ("2,5 + 1,75 =", ["4,25", "3,30", "4,3", "3,75"], 0, "On aligne les virgules."),
+    ("Dans 47 = 6 × 7 + r, le reste r vaut :", ["5", "7", "6", "0"], 0, "47 − 42."),
+    ("3,7 arrondi à l'unité :", ["4", "3", "3,5", "37"], 0, "7 dixièmes ≥ 5."),
+  ],
+  "Multiples, diviseurs et divisibilité": [
+    ("Lequel est divisible par 3 ?", ["123", "124", "125", "121"], 0, "1 + 2 + 3 = 6."),
+    ("Un diviseur de 24 :", ["8", "5", "7", "9"], 0, "24 = 8 × 3."),
+    ("Un multiple de 7 :", ["63", "60", "65", "50"], 0, "7 × 9."),
+    ("Un nombre qui se termine par 0 est divisible par :", ["2, 5 et 10", "3 seulement", "9", "7"], 0, "Critères."),
+    ("Lequel est divisible par 9 ?", ["729", "728", "730", "731"], 0, "7 + 2 + 9 = 18."),
+  ],
+  "Fractions": [
+    ("3/4 =", ["0,75", "0,34", "1,33", "0,43"], 0, "3 ÷ 4."),
+    ("La moitié de 30 s'écrit :", ["1/2 × 30 = 15", "2/1 × 30", "30/30", "1/30"], 0, "Prendre 1/2."),
+    ("La fraction égale à 1/2 :", ["5/10", "1/5", "2/1", "3/5"], 0, "× 5."),
+    ("La plus grande fraction :", ["1/2", "1/3", "1/4", "1/5"], 0, "Moins de parts, parts plus grandes."),
+    ("2/5 de 50 :", ["20", "10", "25", "100"], 0, "50 ÷ 5 × 2."),
+  ],
+  "Proportionnalité": [
+    ("3 mangues coûtent 300 F ; 6 mangues coûtent :", ["600 F", "900 F", "306 F", "450 F"], 0, "Deux fois plus."),
+    ("1 kg de sucre coûte 600 F ; 2,5 kg coûtent :", ["1 500 F", "1 200 F", "1 800 F", "602,5 F"], 0, "600 × 2,5."),
+    ("50 % de 80 :", ["40", "50", "30", "8"], 0, "La moitié."),
+    ("L'âge et la taille d'un enfant sont-ils proportionnels ?", ["non", "oui", "toujours", "seulement jusqu'à 10 ans"], 0, "Pas de coefficient constant."),
+    ("Une recette pour 4 utilise 200 g de riz ; pour 6 :", ["300 g", "250 g", "400 g", "1 200 g"], 0, "50 g par personne."),
+  ],
+  "Mesures de longueurs, masses et durées": [
+    ("1 km =", ["1 000 m", "100 m", "10 m", "10 000 m"], 0, "Kilo = 1 000."),
+    ("2,5 kg =", ["2 500 g", "250 g", "25 g", "25 000 g"], 0, "× 1 000."),
+    ("1 h 30 min =", ["90 min", "130 min", "80 min", "1,3 h"], 0, "60 + 30."),
+    ("350 cm =", ["3,5 m", "35 m", "0,35 m", "350 m"], 0, "÷ 100."),
+    ("1 L =", ["100 cL", "10 cL", "1 000 cL", "1 cL"], 0, "Centi = 1/100."),
+  ],
+  "Droites, angles et triangles": [
+    ("Un angle droit mesure :", ["90°", "180°", "45°", "360°"], 0, "Quart de tour."),
+    ("Un angle de 120° est :", ["obtus", "aigu", "droit", "plat"], 0, "Entre 90° et 180°."),
+    ("Deux droites perpendiculaires à une même droite sont :", ["parallèles entre elles", "perpendiculaires entre elles", "confondues", "sécantes"], 0, "Propriété."),
+    ("Un triangle isocèle a :", ["deux côtés égaux", "trois côtés égaux", "un angle droit obligatoirement", "aucun côté égal"], 0, "Définition."),
+    ("La médiatrice d'un segment le coupe :", ["perpendiculairement en son milieu", "en son extrémité", "en biais", "en trois"], 0, "Définition."),
+  ],
+  "Périmètres, aires et cercle": [
+    ("Périmètre d'un carré de côté 5 cm :", ["20 cm", "25 cm", "10 cm", "15 cm"], 0, "4 × 5."),
+    ("Aire d'un rectangle de 6 m sur 4 m :", ["24 m²", "20 m²", "10 m²", "48 m²"], 0, "6 × 4."),
+    ("Le diamètre d'un cercle de rayon 7 cm :", ["14 cm", "3,5 cm", "7 cm", "21 cm"], 0, "d = 2r."),
+    ("1 ha =", ["10 000 m²", "1 000 m²", "100 m²", "100 000 m²"], 0, "Hectare."),
+    ("Périmètre d'un cercle de diamètre 10 cm (π ≈ 3,14) :", ["31,4 cm", "314 cm", "78,5 cm", "15,7 cm"], 0, "π × d."),
+  ],
+}
+
+QCM_CH["6e-svt"] = {
+  "Caractéristiques du vivant": [
+    ("Un être vivant :", ["naît, se nourrit, se reproduit et meurt", "ne change jamais", "se déplace toujours", "n'a pas de cellules"], 0, "Caractères du vivant."),
+    ("Les êtres vivants sont formés de :", ["cellules", "cristaux", "pierres", "métaux"], 0, "Unité du vivant."),
+    ("Un morceau de bois mort est :", ["ce qui a été vivant", "vivant", "jamais vivant", "un minéral"], 0, "Il provient d'un arbre."),
+    ("Pour observer des cellules, on utilise :", ["un microscope", "une loupe de poche seulement", "un thermomètre", "une balance"], 0, "Elles sont minuscules."),
+  ],
+  "Nutrition des plantes vertes": [
+    ("La plante absorbe l'eau par :", ["les racines", "les fleurs", "les fruits", "l'écorce"], 0, "Poils absorbants."),
+    ("Pour fabriquer sa matière, la plante verte a besoin :", ["de lumière", "d'obscurité", "de viande", "de sucre de canne"], 0, "Photosynthèse."),
+    ("À la lumière, la plante rejette :", ["du dioxygène", "de la fumée", "de l'eau salée", "du sucre"], 0, "Photosynthèse."),
+    ("Dans une expérience, on ne change qu'un facteur pour :", ["savoir quel facteur agit", "aller plus vite", "économiser l'eau", "avoir plus de plantes"], 0, "Expérience témoin."),
+  ],
+  "Germination et reproduction des plantes": [
+    ("Une graine germe si elle a :", ["de l'eau, de l'air et une bonne température", "seulement de la lumière", "du sel", "de l'engrais seulement"], 0, "Conditions de germination."),
+    ("Les réserves de la graine se trouvent dans :", ["les cotylédons", "le tégument", "la racine", "la fleur"], 0, "Elles nourrissent la plantule."),
+    ("Le fruit provient de :", ["la fleur", "la racine", "la feuille", "la tige"], 0, "De l'ovaire de la fleur."),
+    ("Un mode de dissémination des graines :", ["le vent", "la photosynthèse", "la respiration", "la germination"], 0, "Aussi les animaux et l'eau."),
+  ],
+  "Régimes alimentaires et dentition": [
+    ("Le lion est :", ["carnivore", "herbivore", "granivore", "omnivore"], 0, "Il mange de la viande."),
+    ("Les canines servent à :", ["déchirer", "broyer", "couper l'herbe", "rien"], 0, "Développées chez les carnivores."),
+    ("L'Homme est :", ["omnivore", "carnivore", "herbivore", "insectivore"], 0, "Il mange de tout."),
+    ("Les molaires servent à :", ["broyer", "déchirer", "couper", "mordre seulement"], 0, "Dents du fond."),
+    ("Le mouton est :", ["un herbivore ruminant", "un carnivore", "un insectivore", "un omnivore"], 0, "Il rumine."),
+  ],
+  "Classification et déplacement des animaux": [
+    ("Un animal avec des poils et des mamelles :", ["mammifère", "oiseau", "poisson", "reptile"], 0, "Caractères des mammifères."),
+    ("La chauve-souris est :", ["un mammifère", "un oiseau", "un insecte", "un reptile"], 0, "Poils et mamelles."),
+    ("Un vertébré possède :", ["une colonne vertébrale", "une coquille", "six pattes", "des antennes"], 0, "Squelette interne."),
+    ("Le serpent se déplace par :", ["reptation", "vol", "nage uniquement", "saut"], 0, "Il rampe."),
+    ("Un invertébré :", ["l'escargot", "le chat", "le poisson", "le pigeon"], 0, "Pas de colonne vertébrale."),
+  ],
+  "Développement des animaux : métamorphoses": [
+    ("Le têtard devient :", ["une grenouille", "un poisson", "un serpent", "un papillon"], 0, "Métamorphose."),
+    ("Chez le papillon, l'ordre est :", ["œuf, chenille, chrysalide, adulte", "œuf, chrysalide, chenille, adulte", "chenille, œuf, adulte", "adulte, œuf, chenille"], 0, "Métamorphose complète."),
+    ("Le têtard respire par :", ["des branchies", "des poumons", "la bouche seulement", "des trachées"], 0, "Il vit dans l'eau."),
+    ("Un animal à développement direct :", ["la chèvre", "la grenouille", "le papillon", "le moustique"], 0, "Le jeune ressemble à l'adulte."),
+  ],
+  "Le corps humain : squelette, respiration, circulation": [
+    ("Le cœur sert à :", ["pomper le sang", "digérer", "respirer", "penser"], 0, "Moteur de la circulation."),
+    ("Les muscles font bouger les os en :", ["se contractant", "poussant", "s'allongeant seuls", "fondant"], 0, "Ils tirent sur les os."),
+    ("L'air expiré est plus riche en :", ["dioxyde de carbone", "dioxygène", "azote", "fumée"], 0, "Rejet de CO₂."),
+    ("Le crâne protège :", ["le cerveau", "le cœur", "les poumons", "l'estomac"], 0, "Rôle de protection."),
+    ("Pendant l'effort, le rythme cardiaque :", ["augmente", "diminue", "s'arrête", "ne change pas"], 0, "Besoin accru en O₂."),
+  ],
+  "Le sol et l'environnement": [
+    ("L'humus provient :", ["de la décomposition des débris végétaux et animaux", "des roches", "de la pluie", "du plastique"], 0, "Matière organique."),
+    ("Le ver de terre :", ["aère le sol", "pollue le sol", "mange les racines", "n'a aucun rôle"], 0, "Il creuse des galeries."),
+    ("Un sol sableux :", ["laisse passer l'eau rapidement", "retient beaucoup l'eau", "est imperméable", "n'existe pas au Sénégal"], 0, "Gros grains."),
+    ("Un geste pour protéger l'environnement :", ["planter des arbres", "brûler la brousse", "jeter les sachets plastiques", "couper les arbres"], 0, "Reboisement."),
+  ],
+}
