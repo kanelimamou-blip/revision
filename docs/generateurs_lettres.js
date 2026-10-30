@@ -214,4 +214,38 @@
       return rev ? { q: `Qui est l'auteur de « ${o} » ?`, ok: a, faux: others(r, PHO.map((x) => x[0]), a), e: `« ${o} » est de ${a}.` }
         : { q: `Quelle œuvre a écrite ${a} ?`, ok: `« ${o} »`, faux: others(r, PHO.map((x) => `« ${x[1]} »`), `« ${o} »`), e: `${a} : « ${o} ».` }; });
   }
+  // ---------------- SVT : génétique, chromosomes, groupes sanguins, glycémie
+  const COMP = { A: "U", T: "A", G: "C", C: "G" }, DCOMP = { A: "T", T: "A", G: "C", C: "G" };
+  const rseq = (r, n) => Array.from({ length: n }, () => pick(r, ["A", "T", "G", "C"])).join("");
+  const grp = (x) => x.match(/.{1,3}/g).join(" ");
+  const transQ = (r) => { let b = rseq(r, 12); while (!b.includes("A") || !b.includes("T")) b = rseq(r, 12); const arn = [...b].map((c) => COMP[c]).join(""), adn = [...b].map((c) => DCOMP[c]).join("");
+    return { q: `Brin transcrit de l'ADN : ${grp(b)}. Séquence de l'ARNm :`, ok: grp(arn), faux: [grp(adn), grp(b.replace(/T/g, "U")), grp([...arn].reverse().join(""))], e: "L'ARNm est complémentaire du brin transcrit, avec U à la place de T : A → U, T → A, G → C, C → G." }; };
+  const CODE = [["AUG", "Met"], ["UUU", "Phe"], ["UUA", "Leu"], ["GGC", "Gly"], ["GCU", "Ala"], ["AAA", "Lys"], ["GAA", "Glu"], ["GAU", "Asp"], ["UGG", "Trp"], ["CAU", "His"], ["CCU", "Pro"], ["UCU", "Ser"], ["ACU", "Thr"], ["GUU", "Val"], ["AUU", "Ile"], ["CGU", "Arg"], ["AAU", "Asn"], ["CAA", "Gln"], ["UGU", "Cys"], ["UAU", "Tyr"]];
+  const tradQ = (r) => { const cs = [CODE[0], ...shuffle(r, CODE.slice(1)).slice(0, 3)], arn = cs.map((c) => c[0]).join(" ") + " UAA", pep = cs.map((c) => c[1]).join("–");
+    const sw = [...cs]; [sw[1], sw[2]] = [sw[2], sw[1]];
+    return { q: `ARNm : ${arn}. Avec le code génétique (${cs.map((c) => `${c[0]} = ${c[1]}`).join(", ")} ; UAA = stop), le peptide est :`, ok: pep, faux: [sw.map((c) => c[1]).join("–"), pep + "–Stop", cs.slice(1).map((c) => c[1]).join("–")], e: "On lit l'ARNm codon par codon à partir de AUG (Met) jusqu'au codon stop, qui ne code aucun acide aminé." }; };
+  const ESP = [["l'Homme", 46], ["la drosophile", 8], ["le pois", 14], ["le maïs", 20], ["la souris", 40], ["le chat", 38], ["le chien", 78]];
+  const gamQ = (r) => { const [e, n2] = pick(r, ESP); return { q: `Chez ${e}, 2n = ${n2}. Nombre de chromosomes dans un gamète :`, ok: String(n2 / 2), faux: others(r, [n2, n2 * 2, n2 / 2 + 1, n2 - 2].map(String), String(n2 / 2)), e: `La méiose divise par deux le nombre de chromosomes : n = ${n2} ÷ 2 = ${n2 / 2}. La fécondation rétablit 2n.` }; };
+  const combQ = (r) => { const [e, n2] = pick(r, ESP.filter((x) => x[1] <= 20)); const n = n2 / 2;
+    return { q: `Chez ${e} (2n = ${n2}), nombre de gamètes génétiquement différents dus au seul brassage interchromosomique :`, ok: `2${GH.sup(n)} = ${2 ** n}`, faux: [`${n2}`, `${n}`, `2${GH.sup(n2)} = ${2 ** n2}`], e: `Chaque paire se sépare au hasard en anaphase I : 2ⁿ combinaisons avec n = ${n}.` }; };
+  const CROSS = [["pois", "graines lisses", "graines ridées"], ["drosophile", "ailes longues", "ailes vestigiales"], ["drosophile", "corps gris", "corps ébène"], ["maïs", "grains colorés", "grains incolores"], ["souris", "pelage gris", "pelage blanc"]];
+  const monoQ = (r) => { const [esp, D, rr] = pick(r, CROSS), t = ri(r, 0, 2);
+    if (t === 0) return { q: `Chez le ${esp}, « ${D} » domine « ${rr} ». On croise deux hybrides F1. Proportion de « ${rr} » en F2 :`, ok: "1/4", faux: ["3/4", "1/2", "0"], e: "F1 × F1 (hétérozygotes) : 1/4 homozygotes dominants, 1/2 hétérozygotes, 1/4 homozygotes récessifs. Seuls ces derniers expriment le caractère récessif." };
+    if (t === 1) return { q: `Chez le ${esp}, « ${D} » domine « ${rr} ». Test-cross d'un hybride F1 (croisement avec un récessif). Proportions attendues :`, ok: `1/2 « ${D} », 1/2 « ${rr} »`, faux: [`3/4 « ${D} », 1/4 « ${rr} »`, `100 % « ${D} »`, `1/4 « ${D} », 3/4 « ${rr} »`], e: "Le récessif ne donne qu'un type de gamète : on lit directement les gamètes de l'hybride, 50 % / 50 %." };
+    return { q: `Chez le ${esp}, on croise deux lignées pures « ${D} » et « ${rr} ». Toute la F1 est « ${D} ». On en déduit :`, ok: `l'allèle « ${D} » est dominant`, faux: [`l'allèle « ${rr} » est dominant`, "les allèles sont codominants", "le gène est lié au sexe"], e: "1re loi de Mendel : la F1 est homogène et exprime le caractère dominant." }; };
+  const diQ = (r) => { const t = ri(r, 0, 2);
+    if (t === 0) return { q: "Dihybridisme, gènes indépendants, F1 × F1. Proportion du phénotype « double récessif » en F2 :", ok: "1/16", faux: ["9/16", "3/16", "1/4"], e: "F2 : 9/16 [A B], 3/16 [A b], 3/16 [a B], 1/16 [a b]." };
+    if (t === 1) return { q: "Dihybridisme, gènes indépendants, F1 × F1. Proportion du phénotype « double dominant » en F2 :", ok: "9/16", faux: ["1/16", "3/16", "3/4"], e: "F2 : 9/16 [A B], 3/16 [A b], 3/16 [a B], 1/16 [a b]." };
+    return { q: "Test-cross d'un double hétérozygote, gènes indépendants. Proportions attendues :", ok: "4 phénotypes à 25 % chacun", faux: ["9/16, 3/16, 3/16, 1/16", "2 phénotypes à 50 %", "2 parentaux majoritaires et 2 recombinés minoritaires"], e: "Gènes indépendants : 4 types de gamètes équiprobables chez l'hybride, donc 1/4 de chaque phénotype. Des parentaux majoritaires indiqueraient des gènes liés." }; };
+  const GS = { A: "A et O", B: "B et O", AB: "A, B, AB et O", O: "O seulement" };
+  const sangQ = (r) => { const g = pick(r, Object.keys(GS)); return { q: `Système ABO : un receveur du groupe ${g} peut recevoir les globules rouges des groupes :`, ok: GS[g], faux: others(r, Object.values(GS).concat(["AB seulement"]), GS[g]), e: `Le receveur ne doit pas avoir d'anticorps contre les antigènes du donneur. O est donneur universel, AB receveur universel.` }; };
+  const glyQ = (r) => { const v = pick(r, [0.45, 0.5, 0.55, 0.85, 0.9, 1, 1.6, 1.8, 2.2]), k = v < 0.7 ? "hypoglycémie" : v <= 1.1 ? "glycémie normale" : "hyperglycémie";
+    return { q: `Glycémie à jeun mesurée : ${nf(v)} g/L. Il s'agit :`, ok: `d'une ${k}`, faux: others(r, ["d'une hypoglycémie", "d'une glycémie normale", "d'une hyperglycémie", "d'une anémie"], `d'une ${k}`), e: "Valeur normale à jeun : environ 0,7 à 1,1 g/L. En dessous : hypoglycémie (le glucagon agit) ; au-dessus : hyperglycémie (l'insuline agit). À partir de 1,26 g/L à jeun, on parle de diabète." }; };
+  const SVT = {
+    "3e-svt": [["La cellule et les chromosomes", gamQ], ["Le sang et la circulation", sangQ]],
+    "1ere-svt": [["Milieu intérieur : sang, glycémie, rein", glyQ], ["Milieu intérieur : sang, glycémie, rein", sangQ]],
+    "2nde-svt": [["ADN, génome et mitose", transQ]],
+    "tle-svt": [["Expression de l'information génétique", transQ], ["Expression de l'information génétique", tradQ], ["Méiose et brassage génétique", gamQ], ["Méiose et brassage génétique", combQ], ["Hérédité : monohybridisme, dihybridisme, hérédité humaine", monoQ], ["Hérédité : monohybridisme, dihybridisme, hérédité humaine", diQ], ["Régulation de la glycémie", glyQ]],
+  };
+  for (const [sid, list] of Object.entries(SVT)) list.forEach(([ch, f]) => add(sid, ch, f));
 })();

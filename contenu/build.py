@@ -22,6 +22,10 @@ from q_plus_college import EXTRA_COLLEGE
 from q_plus_lycee import EXTRA_LYCEE
 from q_chapitres import CHAPITRE_FORCE, EXTRA_CHAPITRES
 from q_programme import QCM_CH
+from q_svt_plus import QCM_SVT
+for _sid, _chs in QCM_SVT.items():
+    for _t, _qs in _chs.items():
+        QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
 from fiches import FICHES
 from fiches_autres import FICHES_AUTRES
 from syntheses import SYNTH
