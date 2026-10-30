@@ -138,12 +138,13 @@ function viewHome() {
   const subs = subjectsOf(S.level).map((s) => `
     <a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit">
       <b>${esc(s.name)}</b>
-      <span class="small muted">${isPremium() ? s.count : s.free} questions${isPremium() ? "" : ` · <span class="lock">🔒 ${s.count - s.free} premium</span>`}</span>
+      <span class="small muted">${s.count} questions${isPremium() ? "" : ` · <span class="lock">🔒</span>`}</span>
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   $view.innerHTML = `
     ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
+    ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
     <div class="card">
       <div class="row">${ex ? `<div><p class="small muted">${ex[0]} ${ex[1].slice(0, 4)}, date indicative</p><p class="count">J−${days}</p></div>`
         : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
@@ -723,6 +724,8 @@ function render() {
   const [tab, arg] = (location.hash.slice(1) || "accueil").split("/");
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
+  // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
+  if (!isPremium() && !["accueil", "classe", "premium", "progres"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
