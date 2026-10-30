@@ -506,9 +506,10 @@ async function sha256(s) {
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
-function viewPremium(reason = "") {
-  const total = DATA.questions.length, wa = CFG.whatsapp, wave = CFG.wave_number;
-  const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par Wave pour le pack premium Révision BAC BFEM. Voici ma capture :`);
+function viewPremium(reason = "", pay = "wave") {
+  const total = DATA.questions.length, wa = CFG.whatsapp, wave = CFG.wave_number, om = CFG.om_number;
+  if (!wave) pay = "om";
+  const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
     ${!S.premium ? `<div class="card"><p>${trialLeft() > 0 ? `🎁 Ton essai gratuit de ${TRIAL_DAYS} jours est en cours : encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b> avec tout débloqué.` : `Ton essai gratuit de ${TRIAL_DAYS} jours est terminé.`}</p></div>` : ""}
@@ -518,16 +519,19 @@ function viewPremium(reason = "") {
       <ul class="steps"><li>Les <b>${total}</b> questions de la 6e à la Terminale, toutes corrigées</li><li>Les examens et devoirs blancs chronométrés, notés sur 20</li><li>Les nouvelles questions ajoutées pendant l'année</li></ul>
     </div>
     <div class="card"><h2>Comment payer</h2>
-      ${wave ? `<ol class="steps">
-        <li>Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.</li>
+      ${wave || om ? `<p class="small muted">Choisis ton moyen de paiement :</p>
+        <div class="row">${wave ? `<button class="btn${pay === "wave" ? "" : " alt"}" style="flex:1" data-pay="wave">Wave</button>` : ""}${om ? `<button class="btn${pay === "om" ? "" : " alt"}" style="flex:1" data-pay="om">Orange Money</button>` : ""}</div>
+        <ol class="steps">
+        <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}</li>
         <li>Envoie la capture du paiement sur WhatsApp.</li>
         <li>Tu reçois ton code. Entre-le ci-dessous.</li></ol>
         ${wa ? `<a class="btn hi-btn" href="https://wa.me/${esc(wa)}?text=${msg}" target="_blank" rel="noopener">Envoyer la capture sur WhatsApp</a>` : ""}`
-      : `<p class="muted">Le paiement par Wave arrive très bientôt. Si tu as déjà un code, entre-le ci-dessous.</p>`}
+      : `<p class="muted">Le paiement arrive très bientôt. Si tu as déjà un code, entre-le ci-dessous.</p>`}
     </div>
     <div class="card"><h2>J'ai un code</h2>
       <input class="code" id="code" placeholder="XXXXX-XXXXXX" autocomplete="off" maxlength="12">
       <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}`;
+  $view.querySelectorAll("[data-pay]").forEach((b) => b.onclick = () => viewPremium(reason, b.dataset.pay));
   const btn = document.getElementById("unlock");
   if (btn) btn.onclick = async () => {
     const raw = document.getElementById("code").value.trim().toUpperCase().replace(/\s/g, "");

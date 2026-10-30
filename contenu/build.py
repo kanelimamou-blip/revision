@@ -35,6 +35,8 @@ ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # sans 0/O ni 1/I
 CONFIG = {
     "price_fcfa": 1000,
     "wave_number": "78 272 19 20",
+    # numéro Orange Money (même numéro que Wave tant qu'Est n'en donne pas un autre)
+    "om_number": "78 272 19 20",
     "whatsapp": "221782721920",
     # classes d'examen : nom de l'examen et date indicative
     "exams": {"3e": ["BFEM", "2027-07-06"], "Tle": ["BAC", "2027-07-01"]},
