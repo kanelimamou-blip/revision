@@ -46,6 +46,10 @@ import importlib
 for _mod, _var in [("notions_3e", "N3"), ("notions_tle_maths", "NTM"), ("notions_tle_pc", "NTP"), ("notions_tle_autres", "NTA"), ("notions_2nde", "N2"), ("notions_1ere", "N1"), ("notions_g", "NG"), ("notions_6e", "N6"), ("notions_5e", "N5"), ("notions_4e", "N4")]:
     for _sid, _lst in getattr(importlib.import_module(_mod), _var).items():
         NOTIONS.setdefault(_sid, []).extend(_lst)
+# synthèses chapitre par chapitre là où il n'y avait qu'une fiche générale (gardée en fin de synthèse)
+from syntheses_auto import auto_synth
+for _sid, _chs in auto_synth(NOTIONS, PROGRAMMES).items():
+    FICHES[_sid] = _chs + [c for c in FICHES.get(_sid, []) if "p" not in c]
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
