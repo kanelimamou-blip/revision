@@ -3107,3 +3107,522 @@ SYNTH["3e-anglais"] = [
    "exam": "The paper has a text with questions, grammar exercises and a short writing task.",
   },
 ]
+
+
+def C(t, p, cles, methodes, pieges, exemple, exam):
+    """Chapitre au format compact : methodes = [(titre, [étapes])], exemple = (énoncé, [corrigé])."""
+    return {"t": t, "p": p, "cles": cles, "methodes": methodes, "pieges": pieges, "exemple": exemple, "exam": exam}
+
+
+SYNTH["1ere-maths"] = [
+  C("Le second degré", 0, [
+    "Forme développée : f(x) = ax² + bx + c (a ≠ 0). Discriminant Δ = b² − 4ac.",
+    "Δ > 0 : deux racines x₁,₂ = (−b ± √Δ)/(2a) ; Δ = 0 : une racine double −b/(2a) ; Δ < 0 : pas de racine réelle.",
+    "Forme canonique : f(x) = a(x − α)² + β, avec α = −b/(2a) et β = f(α). Le sommet de la parabole est S(α ; β).",
+    "Factorisation : f(x) = a(x − x₁)(x − x₂) si Δ > 0.",
+    "Signe : ax² + bx + c est du signe de a à l'extérieur des racines, du signe contraire entre les racines (et du signe de a partout si Δ < 0).",
+    "Somme et produit des racines : x₁ + x₂ = −b/a ; x₁ × x₂ = c/a.",
+  ], [("Résoudre une inéquation du second degré", [
+    "Tout ramener sous la forme ax² + bx + c ≥ 0 (ou < 0…).",
+    "Calculer Δ et les racines.",
+    "Faire le tableau de signes et lire les solutions.",
+  ])], ["Oublier le signe de a pour orienter la parabole et le tableau de signes.", "Diviser par x dans une équation (on perd la solution x = 0)."],
+  ("Résoudre −2x² + 3x + 2 > 0.", [
+    "Δ = 9 + 16 = 25 ; x₁ = (−3 − 5)/(−4) = 2 et x₂ = (−3 + 5)/(−4) = −1/2.",
+    "a = −2 < 0 : le trinôme est positif entre les racines.",
+    "S = ]−1/2 ; 2[.",
+  ]), "Base de toute l'analyse de 1ère et de Terminale : équations, signes, études de fonctions."),
+  C("Dérivation", 1, [
+    "Nombre dérivé f′(a) = lim (h→0) (f(a + h) − f(a))/h, coefficient directeur de la tangente en a.",
+    "Tangente : y = f′(a)(x − a) + f(a).",
+    "Dérivées : (xⁿ)′ = nxⁿ⁻¹ ; (1/x)′ = −1/x² ; (√x)′ = 1/(2√x) ; (uv)′ = u′v + uv′ ; (u/v)′ = (u′v − uv′)/v² ; (sin x)′ = cos x ; (cos x)′ = −sin x.",
+    "Si f′ > 0 sur un intervalle, f y est strictement croissante ; si f′ < 0, décroissante.",
+    "Extremum local en a si f′ s'annule en changeant de signe en a.",
+  ], [("Étudier les variations d'une fonction", [
+    "Calculer f′(x) et la factoriser.",
+    "Étudier le signe de f′(x) (tableau de signes).",
+    "Dresser le tableau de variations avec les valeurs des extremums.",
+  ])], ["Oublier de factoriser f′ avant d'étudier son signe."],
+  ("f(x) = x³ − 3x + 1. Variations ?", [
+    "f′(x) = 3x² − 3 = 3(x − 1)(x + 1).",
+    "f′ > 0 sur ]−∞ ; −1[ et ]1 ; +∞[, f′ < 0 sur ]−1 ; 1[.",
+    "Maximum local f(−1) = 3 ; minimum local f(1) = −1.",
+  ]), "Exercice central de 1ère S : dérivée, tangente, variations, courbe."),
+  C("Limites et asymptotes", 2, [
+    "Limites de référence : 1/x → 0 en ±∞ ; xⁿ → +∞ en +∞ ; 1/x → +∞ en 0⁺ et −∞ en 0⁻.",
+    "Formes indéterminées : ∞ − ∞, 0 × ∞, ∞/∞, 0/0.",
+    "Polynôme en ±∞ : limite du terme de plus haut degré ; fraction rationnelle : quotient des termes de plus haut degré.",
+    "Asymptote verticale x = a si f → ±∞ en a ; horizontale y = b si f → b en ±∞ ; oblique y = ax + b si f(x) − (ax + b) → 0.",
+  ], [("Étudier la limite en a d'une fraction dont le dénominateur s'annule", [
+    "Calculer la limite du numérateur.",
+    "Étudier le signe du dénominateur à gauche et à droite de a.",
+    "Conclure avec la règle des signes : ±∞.",
+  ])], ["Conclure « ∞/∞ = 1 »."],
+  ("lim (x→+∞) (3x² + 1)/(x² − 4) ?", ["Quotient des termes de plus haut degré : 3x²/x² = 3.", "La limite vaut 3 : asymptote horizontale y = 3."]),
+  "Préparation directe au chapitre des limites de Terminale."),
+  C("Suites arithmétiques et géométriques", 3, [
+    "Arithmétique : u(n+1) = u(n) + r ; u(n) = u(0) + nr ; u(n) = u(p) + (n − p)r.",
+    "Géométrique : u(n+1) = q × u(n) ; u(n) = u(0) × qⁿ.",
+    "Somme arithmétique : S = nombre de termes × (premier + dernier)/2. 1 + 2 + … + n = n(n + 1)/2.",
+    "Somme géométrique : S = premier × (1 − q^nombre de termes)/(1 − q) (q ≠ 1).",
+    "Variations : arithmétique croissante si r > 0 ; géométrique (u(0) > 0) croissante si q > 1, décroissante si 0 < q < 1.",
+  ], [("Montrer qu'une suite est arithmétique ou géométrique", [
+    "Calculer u(n+1) − u(n) : si c'est une constante r, la suite est arithmétique.",
+    "Calculer u(n+1)/u(n) (termes non nuls) : si c'est une constante q, la suite est géométrique.",
+  ])], ["Vérifier sur les trois premiers termes seulement : ce n'est pas une preuve."],
+  ("Une population de 2 000 bactéries augmente de 10 % par heure. Combien après 5 h ?", [
+    "u(n+1) = 1,1 × u(n) : géométrique de raison 1,1.",
+    "u(5) = 2 000 × 1,1⁵ ≈ 3 221 bactéries.",
+  ]), "Exercice classique : modélisation (épargne, population), calcul de termes et de sommes."),
+  C("Produit scalaire et vecteurs", 4, [
+    "u⃗ · v⃗ = ‖u⃗‖ × ‖v⃗‖ × cos(u⃗, v⃗) = xx′ + yy′ (repère orthonormé).",
+    "u⃗ ⟂ v⃗ ⟺ u⃗ · v⃗ = 0.",
+    "Théorème d'Al-Kashi : a² = b² + c² − 2bc cos A.",
+    "Théorème de la médiane : MA² + MB² = 2MI² + AB²/2 (I milieu de [AB]).",
+    "Équation de cercle de centre Ω(a ; b) et rayon r : (x − a)² + (y − b)² = r². Ensemble des M tels que MA⃗ · MB⃗ = 0 : cercle de diamètre [AB].",
+    "Droite de vecteur normal n⃗(a ; b) : ax + by + c = 0.",
+  ], [("Calculer un angle avec le produit scalaire", [
+    "Calculer u⃗ · v⃗ avec les coordonnées.",
+    "Calculer les normes.",
+    "cos θ = u⃗ · v⃗ / (‖u⃗‖ ‖v⃗‖), puis θ à la calculatrice.",
+  ])], ["Confondre vecteur normal et vecteur directeur d'une droite."],
+  ("Triangle avec b = 5, c = 8 et A = 60°. Calculer a.", ["a² = 25 + 64 − 2 × 5 × 8 × 0,5 = 49.", "a = 7."]),
+  "Géométrie analytique de 1ère S : orthogonalité, angles, cercles, ensembles de points."),
+  C("Trigonométrie", 5, [
+    "Radian : π rad = 180°. Cercle trigonométrique : M(cos x ; sin x).",
+    "cos² x + sin² x = 1 ; cos(−x) = cos x ; sin(−x) = −sin x ; cos(π − x) = −cos x ; sin(π − x) = sin x.",
+    "Formules d'addition : cos(a + b) = cos a cos b − sin a sin b ; sin(a + b) = sin a cos b + cos a sin b.",
+    "Duplication : cos 2a = cos² a − sin² a = 2cos² a − 1 = 1 − 2sin² a ; sin 2a = 2 sin a cos a.",
+    "Équations : cos x = cos a ⟺ x = a + 2kπ ou x = −a + 2kπ ; sin x = sin a ⟺ x = a + 2kπ ou x = π − a + 2kπ.",
+  ], [("Résoudre une équation trigonométrique", [
+    "Se ramener à cos x = cos a ou sin x = sin a avec une valeur remarquable.",
+    "Écrire les deux familles de solutions.",
+    "Garder celles qui sont dans l'intervalle demandé.",
+  ])], ["Oublier la deuxième famille de solutions."],
+  ("Résoudre cos x = 1/2 dans [0 ; 2π[.", ["cos x = cos(π/3).", "x = π/3 ou x = −π/3 + 2π = 5π/3."]),
+  "Équations et formules d'addition : outil pour la physique et les complexes de Terminale."),
+  C("Probabilités et dénombrement", 6, [
+    "Univers Ω, événements ; équiprobabilité : P(A) = cardinal de A / cardinal de Ω.",
+    "P(Ā) = 1 − P(A) ; P(A ∪ B) = P(A) + P(B) − P(A ∩ B).",
+    "Dénombrement : p-listes nᵖ ; arrangements n!/(n − p)! ; combinaisons Cₙᵖ = n!/(p!(n − p)!).",
+    "Variable aléatoire : loi de probabilité, espérance E(X) = Σ xᵢpᵢ, variance V(X) = Σ xᵢ²pᵢ − E(X)².",
+  ], [("Calculer la probabilité d'un tirage", [
+    "Identifier le type de tirage (simultané, successif avec ou sans remise).",
+    "Compter les cas possibles et les cas favorables avec la formule adaptée.",
+    "Faire le quotient.",
+  ])], ["Mélanger tirages simultanés et successifs dans un même calcul."],
+  ("On tire 2 boules simultanément dans une urne de 3 rouges et 2 noires. P(2 rouges) ?", ["Cas possibles : C₅² = 10.", "Cas favorables : C₃² = 3.", "P = 3/10."]),
+  "Préparation à l'exercice de probabilités du BAC."),
+]
+
+SYNTH["1ere-pc"] = [
+  C("Travail, énergie et puissance", 0, [
+    "Travail d'une force constante : W = F × AB × cos α (J).",
+    "Travail du poids : W = mg(zA − zB), indépendant du chemin suivi.",
+    "Puissance : P = W/Δt = F × v (si la force est dans le sens du mouvement).",
+    "Théorème de l'énergie cinétique : ΔEc = ΣW, Ec = (1/2)mv².",
+    "Énergie potentielle de pesanteur Ep = mgz ; énergie mécanique Em = Ec + Ep, conservée sans frottements.",
+  ], [("Calculer une vitesse au bas d'une pente", [
+    "Faire le bilan des forces.",
+    "Appliquer le théorème de l'énergie cinétique entre le départ et l'arrivée.",
+    "Isoler v.",
+  ])], ["Oublier le signe négatif du travail d'une force résistante."],
+  ("Un skieur de 70 kg descend sans frottement une pente de dénivelé 20 m. Vitesse finale (départ arrêté, g = 10) ?", ["(1/2)mv² = mgh.", "v = √(2 × 10 × 20) = 20 m/s."]),
+  "Fondamental pour la mécanique de Terminale."),
+  C("Mouvement de rotation", 1, [
+    "Abscisse angulaire θ (rad) ; vitesse angulaire ω = dθ/dt (rad/s) ; v = Rω.",
+    "Moment d'une force par rapport à un axe : M = F × d (d : bras de levier).",
+    "Moment d'inertie J (kg·m²) ; énergie cinétique de rotation Ec = (1/2)Jω².",
+    "Travail d'un couple : W = M × θ ; puissance P = M × ω.",
+    "Équilibre d'un solide mobile autour d'un axe : somme des moments nulle.",
+  ], [("Utiliser le théorème des moments", [
+    "Choisir le sens positif de rotation.",
+    "Calculer le moment de chaque force (signe selon le sens).",
+    "Écrire que la somme est nulle à l'équilibre.",
+  ])], ["Prendre la longueur du bras au lieu de la distance perpendiculaire à la droite d'action."],
+  ("Une roue tourne à 300 tr/min. Vitesse angulaire ?", ["300 tr/min = 5 tr/s.", "ω = 5 × 2π ≈ 31,4 rad/s."]),
+  "Mouvement de rotation et moments : bases pour les pendules et oscillateurs."),
+  C("Champ et force électriques", 2, [
+    "Loi de Coulomb : F = k|q₁q₂|/d², k = 9 × 10⁹ SI.",
+    "Champ électrique : F⃗ = qE⃗ ; entre deux plaques parallèles, champ uniforme E = U/d, dirigé vers la plaque négative.",
+    "Travail de la force électrique : W = qU_AB, indépendant du chemin.",
+    "Énergie potentielle électrique et potentiel : U_AB = V_A − V_B.",
+    "1 eV = 1,6 × 10⁻¹⁹ J.",
+  ], [("Calculer la vitesse d'une particule accélérée", [
+    "Théorème de l'énergie cinétique : (1/2)mv² − (1/2)mv₀² = qU.",
+    "Isoler v.",
+  ])], ["Oublier le signe de la charge de l'électron."],
+  ("Deux plaques distantes de 5 cm sous 1 000 V. Champ ?", ["E = U/d = 1 000/0,05 = 2 × 10⁴ V/m."]),
+  "Base des exercices de particules chargées en Terminale."),
+  C("Électrocinétique : générateurs, récepteurs et effet Joule", 3, [
+    "Générateur : U = E − rI (E : force électromotrice, r : résistance interne).",
+    "Récepteur (moteur, électrolyseur) : U = E′ + r′I.",
+    "Loi de Pouillet (circuit série) : I = (E − E′)/(R + r + r′).",
+    "Effet Joule : P = RI² ; énergie W = RI²t.",
+    "Rendement d'un générateur : η = U/E ; d'un moteur : η = E′/U.",
+  ], [("Établir le bilan énergétique d'un moteur", [
+    "Puissance reçue UI = puissance utile E′I + pertes Joule r′I².",
+    "En déduire le rendement.",
+  ])], ["Confondre E (générateur) et E′ (récepteur)."],
+  ("Pile E = 4,5 V, r = 1,5 Ω, branchée sur R = 7,5 Ω. Intensité ?", ["I = E/(R + r) = 4,5/9 = 0,5 A."]),
+  "Exercices de circuits avec bilans de puissance et rendements."),
+  C("Hydrocarbures et polymères", 4, [
+    "Alcanes CₙH₂ₙ₊₂ (liaisons simples) : méthane, éthane, propane, butane ; réactions de substitution et combustion.",
+    "Alcènes CₙH₂ₙ (double liaison) : réactions d'addition (H₂, Cl₂, H₂O, HCl) ; isomérie Z/E.",
+    "Alcynes CₙH₂ₙ₋₂ (triple liaison) : éthyne (acétylène).",
+    "Benzène C₆H₆ : cycle aromatique, plutôt substitution.",
+    "Polymérisation par addition : n CH₂=CHCl → (−CH₂−CHCl−)ₙ (PVC). Polyéthylène, polystyrène.",
+    "Nomenclature : chaîne la plus longue, numéros les plus petits pour les ramifications ou la liaison multiple.",
+  ], [("Nommer un hydrocarbure", [
+    "Trouver la chaîne carbonée la plus longue (contenant la liaison multiple).",
+    "Numéroter pour donner le plus petit indice à la liaison multiple puis aux ramifications.",
+    "Écrire les ramifications par ordre alphabétique, puis le nom de la chaîne.",
+  ])], ["Oublier que l'addition casse la double liaison."],
+  ("Écrire l'addition de H₂O sur l'éthylène.", ["CH₂=CH₂ + H₂O → CH₃−CH₂OH.", "On obtient l'éthanol."]),
+  "Nomenclature et réactions des hydrocarbures : bases de la chimie organique de Terminale."),
+  C("Alcools et acides carboxyliques", 5, [
+    "Alcool : groupe −OH sur un carbone tétragonal ; primaire, secondaire, tertiaire.",
+    "Oxydation ménagée : primaire → aldéhyde → acide ; secondaire → cétone ; tertiaire : non.",
+    "Acide carboxylique : groupe −COOH ; acide faible en solution.",
+    "Estérification : acide + alcool ⇌ ester + eau (lente, limitée).",
+    "Tests : DNPH (aldéhydes et cétones), liqueur de Fehling et réactif de Tollens (aldéhydes).",
+  ], [("Écrire une demi-équation d'oxydoréduction en chimie organique", [
+    "Équilibrer les atomes autres que O et H.",
+    "Équilibrer O avec H₂O, puis H avec H⁺.",
+    "Équilibrer les charges avec les électrons.",
+  ])], ["Confondre aldéhyde (−CHO en bout de chaîne) et cétone (C=O dans la chaîne)."],
+  ("Quel produit donne l'oxydation ménagée du propan-1-ol en excès d'oxydant ?", ["Alcool primaire → aldéhyde (propanal) → acide.", "En excès d'oxydant : acide propanoïque CH₃−CH₂−COOH."]),
+  "Préparation directe au chapitre de chimie organique de Terminale."),
+  C("Oxydoréduction", 6, [
+    "Oxydant : capte des électrons ; réducteur : cède des électrons. Couple Ox/Red : Ox + ne⁻ ⇌ Red.",
+    "Oxydation = perte d'électrons ; réduction = gain d'électrons.",
+    "Classification électrochimique : l'oxydant le plus fort réagit avec le réducteur le plus fort (règle du gamma).",
+    "Nombre d'oxydation (n.o.) : il augmente lors d'une oxydation, diminue lors d'une réduction.",
+    "Pile : électrodes de deux couples ; le pôle négatif est le métal le plus réducteur (pile Daniell : Zn⁻ / Cu⁺). Électrolyse : réaction forcée.",
+  ], [("Équilibrer une réaction d'oxydoréduction", [
+    "Écrire les deux demi-équations.",
+    "Multiplier pour avoir le même nombre d'électrons.",
+    "Additionner et simplifier.",
+  ])], ["Oublier que les électrons n'apparaissent pas dans le bilan final."],
+  ("Fer dans une solution de sulfate de cuivre : que se passe-t-il ?", ["Fe → Fe²⁺ + 2e⁻ et Cu²⁺ + 2e⁻ → Cu.", "Bilan : Fe + Cu²⁺ → Fe²⁺ + Cu : un dépôt de cuivre apparaît, la solution se décolore."]),
+  "Classification, piles et dosages d'oxydoréduction."),
+]
+
+SYNTH["1ere-svt"] = [
+  C("Tectonique des plaques et géologie", 0, [
+    "La lithosphère (croûte + manteau supérieur rigide) est découpée en plaques qui glissent sur l'asthénosphère.",
+    "Dorsales : accrétion (création de lithosphère océanique) ; preuves : âge des roches symétrique, anomalies magnétiques.",
+    "Subduction : la lithosphère océanique plonge (fosses, séismes en profondeur selon le plan de Wadati-Benioff, volcanisme explosif).",
+    "Collision : formation des chaînes de montagnes (Alpes, Himalaya).",
+    "Volcanisme effusif (laves fluides, dorsales et points chauds) et explosif (laves visqueuses, subduction).",
+  ], [("Calculer une vitesse d'expansion", [
+    "Lire la distance d'une roche à l'axe de la dorsale et son âge.",
+    "v = distance / âge (convertir en cm/an).",
+  ])], ["Confondre lithosphère et croûte."],
+  ("Une roche de 10 millions d'années est à 200 km de la dorsale. Vitesse d'expansion d'un côté ?", ["v = 200 km / 10 Ma = 20 km/Ma.", "Soit 2 cm/an."]),
+  "Lecture de cartes et calculs de vitesses ; schémas de dorsale et subduction."),
+  C("Système nerveux et réflexes", 1, [
+    "Arc réflexe : récepteur, neurone sensitif, centre (moelle), neurone moteur, effecteur.",
+    "La moelle épinière : substance grise (corps cellulaires) au centre, substance blanche (fibres) autour ; racines dorsale (sensitive) et ventrale (motrice).",
+    "Le neurone conduit un message électrique ; la synapse transmet un message chimique.",
+    "Réflexes innés (médullaires) et conditionnés (Pavlov, acquis par apprentissage).",
+  ], [("Interpréter des expériences de section de racines", [
+    "Section dorsale : perte de la sensibilité.",
+    "Section ventrale : paralysie.",
+    "Conclure sur le rôle sensitif ou moteur de chaque racine.",
+  ])], ["Placer les corps cellulaires des neurones sensitifs dans la moelle (ils sont dans le ganglion spinal)."],
+  ("Pourquoi le chien de Pavlov salive-t-il au son de la cloche ?", ["Le son a été associé plusieurs fois à la nourriture.", "Il est devenu un stimulus conditionnel : c'est un réflexe acquis."]),
+  "Base du chapitre système nerveux de Terminale."),
+  C("Le muscle et l'énergie", 2, [
+    "Le muscle strié squelettique se contracte sous l'effet d'un message nerveux.",
+    "Secousse musculaire : temps de latence, contraction, relâchement. Fusion des secousses : tétanos.",
+    "Énergie : l'ATP est la seule source directe ; régénération par la phosphocréatine, la respiration (aérobie) ou la fermentation lactique (anaérobie).",
+    "Respiration : glucose + 6O₂ → 6CO₂ + 6H₂O, environ 36 ATP ; fermentation : 2 ATP et acide lactique (crampes).",
+  ], [("Lire un myogramme", [
+    "Repérer la stimulation, puis la latence, la contraction et le relâchement.",
+    "Mesurer les durées avec l'échelle de temps.",
+  ])], ["Dire que le glucose fournit directement l'énergie de contraction (c'est l'ATP)."],
+  ("Pourquoi un sprinteur a-t-il des crampes et pas un marcheur ?", ["Le sprint demande beaucoup d'ATP très vite : la fermentation lactique s'ajoute à la respiration.", "L'acide lactique s'accumule et provoque des douleurs."]),
+  "Myogrammes et voies métaboliques de production d'énergie."),
+  C("Le milieu intérieur : sang, glycémie, rein", 3, [
+    "Milieu intérieur : plasma, lymphe et liquide interstitiel qui baignent les cellules ; ses constantes sont régulées (homéostasie).",
+    "Glycémie normale ≈ 1 g/L, régulée par le pancréas (insuline hypoglycémiante, glucagon hyperglycémiant) et le foie.",
+    "Le rein filtre environ 180 L de plasma par jour (urine primitive), réabsorbe l'essentiel, élimine environ 1,5 L d'urine (urée, sels).",
+    "Le néphron : glomérule (filtration), tubule (réabsorption et sécrétion).",
+  ], [("Comparer plasma, urine primitive et urine définitive", [
+    "Ce qui est absent de l'urine primitive n'est pas filtré (protéines).",
+    "Ce qui disparaît entre urine primitive et définitive est réabsorbé (glucose).",
+    "Ce qui se concentre est éliminé (urée).",
+  ])], ["Croire que la présence de glucose dans l'urine est normale (signe de diabète)."],
+  ("Le plasma contient 1 g/L de glucose et l'urine 0 g/L. Interpréter.", ["Le glucose est filtré dans l'urine primitive.", "Il est totalement réabsorbé par le tubule rénal."]),
+  "Base des régulations de Terminale."),
+]
+
+_COMM_LIT = ("Préparer un commentaire de texte", [
+  "Lire le texte plusieurs fois et dégager le thème, le genre et le ton.",
+  "Relever les procédés (champs lexicaux, figures, temps, rythme) et noter leur effet.",
+  "Regrouper les remarques en 2 axes de lecture et rédiger avec citations analysées.",
+])
+
+SYNTH["1ere-francais"] = [
+  C("Le XVIIe siècle : classicisme et théâtre", 0, [
+    "Le classicisme (règne de Louis XIV) : raison, ordre, mesure, imitation des Anciens, « plaire et instruire ».",
+    "Théâtre : règle des trois unités et bienséance. Tragédie : Corneille (Le Cid, 1637), Racine (Phèdre, 1677). Comédie : Molière (Le Misanthrope, Tartuffe, L'Avare).",
+    "Autres genres : fables de La Fontaine (morale), Maximes de La Rochefoucauld, Caractères de La Bruyère.",
+    "Le héros cornélien choisit le devoir et l'honneur ; le héros racinien est victime de la passion.",
+  ], [_COMM_LIT], ["Confondre classicisme (XVIIe) et romantisme (XIXe)."],
+  ("Quelle est la fonction de la comédie selon Molière ?", ["« Corriger les mœurs en divertissant » (castigat ridendo mores).", "Il fait rire des vices (hypocrisie dans Tartuffe, avarice dans L'Avare) pour les dénoncer."]),
+  "Extraits de théâtre en commentaire et questions d'histoire littéraire."),
+  C("Le XVIIIe siècle : les Lumières", 1, [
+    "Les philosophes des Lumières combattent l'ignorance, l'intolérance, l'absolutisme et l'esclavage par la raison.",
+    "Montesquieu : Lettres persanes (1721), De l'esprit des lois (1748, séparation des pouvoirs), « De l'esclavage des nègres » (ironie).",
+    "Voltaire : Candide (1759, conte philosophique), Traité sur la tolérance ; Rousseau : Du contrat social ; Diderot et d'Alembert : l'Encyclopédie.",
+    "Armes : ironie, conte philosophique, regard étranger, dialogue.",
+  ], [_COMM_LIT], ["Prendre l'ironie au premier degré (Montesquieu ne défend pas l'esclavage)."],
+  ("Comment Montesquieu dénonce-t-il l'esclavage dans « De l'esclavage des nègres » ?", ["Il fait semblant de justifier l'esclavage avec des arguments absurdes.", "L'ironie révèle la cruauté et la bêtise des esclavagistes."]),
+  "L'argumentation des Lumières est un grand classique du commentaire."),
+  C("Le XIXe siècle : romantisme, réalisme, naturalisme, symbolisme", 2, [
+    "Romantisme : lyrisme, moi, nature, mal du siècle, engagement (Hugo, Lamartine, Musset, Vigny).",
+    "Réalisme : peindre la société sans idéaliser (Balzac, Stendhal, Flaubert).",
+    "Naturalisme : méthode scientifique, milieu et hérédité (Zola, Germinal, 1885 ; Maupassant).",
+    "Parnasse et symbolisme : l'art pour l'art (Gautier), correspondances et musique du vers (Baudelaire, Les Fleurs du mal, 1857 ; Verlaine ; Rimbaud).",
+  ], [_COMM_LIT], ["Ranger tous les auteurs du XIXe siècle dans le même mouvement."],
+  ("Qu'est-ce qui distingue le naturalisme du réalisme ?", ["Le naturalisme pousse le réalisme plus loin.", "Il étudie l'homme comme un objet de science, déterminé par son milieu et son hérédité."]),
+  "Repères de mouvements littéraires utiles pour situer un texte."),
+  C("La Négritude et le théâtre africain", 3, [
+    "Négritude : Senghor, Césaire, Damas, années 1930 ; revalorisation des cultures noires, refus de l'assimilation.",
+    "Senghor : Chants d'ombre, Éthiopiques ; Césaire : Cahier d'un retour au pays natal ; Damas : Pigments.",
+    "Théâtre africain historique : L'Exil d'Albouri (Cheik Aliou Ndao), Les Amazoulous (Abdou Anta Kâ), Béatrice du Congo (Bernard Dadié), La Tragédie du roi Christophe (Césaire).",
+    "Fonctions : célébrer les héros de la résistance, éduquer, critiquer les pouvoirs.",
+  ], [_COMM_LIT], ["Résumer une œuvre au lieu de l'exploiter comme argument."],
+  ("Quel est le dilemme d'Albouri dans L'Exil d'Albouri ?", ["Se soumettre au colonisateur ou partir en exil pour continuer la lutte.", "Il choisit l'exil pour préserver la liberté de son peuple."]),
+  "Œuvres africaines très présentes dans les sujets de dissertation."),
+  C("L'argumentation : convaincre et persuader", 4, [
+    "Convaincre : faire appel à la raison (arguments, exemples, logique). Persuader : faire appel aux sentiments.",
+    "Thèse, antithèse, arguments, exemples, concession (certes… mais).",
+    "Types d'arguments : d'autorité, d'expérience, par l'exemple, par l'analogie, ad hominem.",
+    "Genres : essai, apologue (fable, conte philosophique), discours, lettre ouverte.",
+    "Résumé et discussion : réduire le texte au quart en gardant la logique, puis discuter une idée.",
+  ], [("Rédiger une discussion", [
+    "Introduction : présenter le thème et la question.",
+    "Deux parties argumentées (pour / contre ou idée / nuance).",
+    "Conclusion : position personnelle nuancée.",
+  ])], ["Confondre l'exemple (fait précis) et l'argument (idée générale)."],
+  ("Repérer la stratégie : « Vous qui êtes mères, imaginez votre enfant privé d'école. »", ["Apostrophe et appel à l'imagination et à l'émotion.", "Il s'agit de persuader."]),
+  "Résumé-discussion et dissertation reposent sur la maîtrise de l'argumentation."),
+  C("Les figures de style", 5, [
+    "Analogie : comparaison, métaphore, personnification, allégorie.",
+    "Opposition : antithèse, oxymore, chiasme. Insistance : anaphore, gradation, hyperbole, accumulation.",
+    "Atténuation : litote, euphémisme. Substitution : métonymie, périphrase.",
+    "Sonorités : allitération, assonance.",
+  ], [("Analyser une figure", ["Citer.", "Nommer.", "Expliquer l'effet."])], ["Relever sans interpréter."],
+  ("« Va, je ne te hais point » (Corneille). Quelle figure ?", ["Litote : dire moins pour suggérer plus.", "Chimène avoue en réalité son amour pour Rodrigue."]),
+  "Indispensables pour le commentaire."),
+]
+
+SYNTH["1ere-hg"] = [
+  C("La Première Guerre mondiale", 0, [
+    "Causes : rivalités impériales et économiques, nationalismes, alliances (Triple Entente : France, Royaume-Uni, Russie ; Triple Alliance : Allemagne, Autriche-Hongrie, Italie). Étincelle : attentat de Sarajevo (28 juin 1914).",
+    "Phases : guerre de mouvement (1914), guerre de position et des tranchées (1915-1917, Verdun 1916), reprise du mouvement (1918), armistice du 11 novembre 1918.",
+    "Guerre totale : mobilisation des économies, des sociétés et des colonies (près de 200 000 tirailleurs d'AOF).",
+    "Traités de paix : Versailles (1919), Allemagne jugée responsable ; création de la SDN.",
+    "Conséquences : environ 10 millions de morts militaires, révolution russe (1917), redécoupage de l'Europe.",
+  ], [_DISSERT_HG], ["Oublier la participation des colonies africaines."],
+  ("Pourquoi parle-t-on de guerre totale ?", ["Tous les moyens humains, économiques et moraux sont mobilisés.", "Les civils et les colonies participent à l'effort de guerre."]),
+  "Sujets de dissertation et commentaires de documents (affiches, témoignages)."),
+  C("L'entre-deux-guerres : crise et totalitarismes", 1, [
+    "Crise de 1929 : krach de Wall Street (24 octobre 1929), faillites, chômage massif, crise mondiale ; New Deal de Roosevelt (1933).",
+    "Totalitarismes : parti unique, chef tout-puissant, propagande, terreur, encadrement de la société.",
+    "Fascisme italien (Mussolini, 1922) ; nazisme (Hitler au pouvoir en 1933, idéologie raciste) ; stalinisme (URSS, collectivisation, goulag).",
+    "Montée des tensions : remilitarisation de la Rhénanie, Anschluss (1938), accords de Munich (1938).",
+  ], [_DISSERT_HG], ["Confondre régime autoritaire et régime totalitaire."],
+  ("Quels sont les points communs des régimes totalitaires ?", ["Un parti unique et un chef vénéré.", "La propagande, la terreur policière et le contrôle de toute la société."]),
+  "Les totalitarismes sont un sujet classique de dissertation."),
+  C("La Seconde Guerre mondiale", 2, [
+    "1939 : invasion de la Pologne. 1940 : défaite de la France, appel du 18 juin (de Gaulle). 1941 : attaque de l'URSS, Pearl Harbor.",
+    "Tournants : Stalingrad (1942-1943), débarquements (Normandie, 6 juin 1944 ; Provence, août 1944).",
+    "Génocide des Juifs (Shoah) et des Tsiganes ; camps d'extermination.",
+    "Fin : capitulation de l'Allemagne (8 mai 1945), bombes atomiques sur Hiroshima et Nagasaki, capitulation du Japon (2 septembre 1945).",
+    "Afrique : tirailleurs, ressources, massacre de Thiaroye (1er décembre 1944), conférence de Brazzaville (1944).",
+  ], [_DISSERT_HG], ["Oublier la dimension mondiale (Pacifique, Afrique)."],
+  ("Pourquoi la guerre favorise-t-elle les indépendances africaines ?", ["La France a été affaiblie et a dû s'appuyer sur ses colonies.", "Les soldats africains ont pris conscience de l'injustice coloniale ; la Charte de l'Atlantique proclame le droit des peuples."]),
+  "Sujets sur les phases de la guerre et ses conséquences, en lien avec l'Afrique."),
+  C("La mondialisation et ses acteurs", 3, [
+    "Mondialisation : intensification des échanges de biens, capitaux, personnes et informations à l'échelle mondiale.",
+    "Acteurs : États, firmes multinationales (FMN), organisations internationales (OMC, FMI, Banque mondiale), ONG.",
+    "Pôles : Amérique du Nord, Europe, Asie de l'Est ; façades maritimes et métropoles mondiales (New York, Londres, Tokyo).",
+    "Inégalités : l'Afrique représente une faible part du commerce mondial (environ 3 %).",
+  ], [_DISSERT_HG], ["Réduire la mondialisation au seul commerce."],
+  ("Pourquoi les FMN délocalisent-elles ?", ["Pour réduire les coûts (main-d'œuvre, impôts).", "Pour se rapprocher des marchés et des matières premières."]),
+  "Thème de géographie fréquent."),
+  C("Le Sénégal dans la mondialisation", 4, [
+    "Ouverture : port de Dakar, aéroport Blaise Diagne, zones économiques spéciales (Diamniadio).",
+    "Exportations : produits halieutiques, or, phosphates et acide phosphorique, arachide ; désormais pétrole et gaz.",
+    "Intégration : CEDEAO, UEMOA, franc CFA ; partenaires : France, Chine, Inde, Union européenne.",
+    "Diaspora : transferts d'argent importants vers le pays.",
+    "Défis : dépendance aux importations (riz), balance commerciale déficitaire, emploi des jeunes.",
+  ], [_DISSERT_HG], ["Oublier les limites de l'intégration du Sénégal."],
+  ("Quels sont les atouts du Sénégal dans la mondialisation ?", ["Une position géographique favorable (pointe ouest de l'Afrique, port en eau profonde).", "Une stabilité politique et des ressources nouvelles (pétrole, gaz)."]),
+  "Sujet de géographie appliquée au Sénégal."),
+]
+
+SYNTH["1ere-anglais"] = [
+  C("Inversion and past conditional", 0, [
+    "Third conditional: If + past perfect, would have + past participle.",
+    "Inversion after negative adverbs at the start: Never have I seen… ; Not only did he… ; Hardly had she arrived when…",
+    "Inverted conditional: Had I known (= If I had known), I would have come. Should you need help (= If you need help)…",
+  ], [("Rewrite with inversion", ["Put the negative adverb first.", "Use auxiliary + subject + verb, as in a question."])], ["« Never I have seen » is wrong."],
+  ("Rewrite: If I had known, I would have helped you. (start with Had)", ["Had I known, I would have helped you."]),
+  "Rewriting exercises in the grammar section."),
+  C("Modals in the past", 1, [
+    "Must have + participle: certainty about the past (« He must have missed the bus »).",
+    "Can't have + participle: impossibility in the past.",
+    "Should have + participle: reproach or regret (« You should have studied »).",
+    "Could / might have + participle: possibility in the past.",
+  ], [("Express a reproach", ["Use should have + past participle."])], ["« He must have went » is wrong: past participle « gone »."],
+  ("He didn't revise and failed. Make a reproach.", ["He should have revised."]),
+  "Frequent in grammar exercises."),
+  C("Gerund and infinitive", 2, [
+    "-ing after: enjoy, avoid, mind, finish, suggest, can't stand, look forward to, be used to, prepositions.",
+    "To + verb after: want, decide, hope, refuse, manage, plan, expect.",
+    "Change of meaning: stop, remember, forget, try.",
+  ], [("Choose the form", ["Learn the lists.", "After a preposition, always -ing."])], ["« I'm used to wake up early » is wrong: « to waking »."],
+  ("Complete: I remember (lock) the door. (= I locked it and I remember it)", ["Past memory → remember + -ing: I remember locking the door."]),
+  "Gap-filling exercises."),
+  C("Subjunctive and wishes", 3, [
+    "I wish / If only + past: present regret ; + past perfect: past regret ; + would: wish for a change.",
+    "It's (high) time + past: « It's high time we left ».",
+    "I'd rather + subject + past: « I'd rather you stayed ».",
+  ], [("Express a regret about the past", ["I wish + past perfect."])], ["« I wish I would be rich » is wrong: « I wish I were rich »."],
+  ("I'm sorry I didn't call her. → I wish…", ["I wish I had called her."]),
+  "Common rewriting exercise."),
+  C("Structures: passive, so…that, the more…the more", 4, [
+    "Passive: be + past participle, at all tenses.",
+    "So + adjective + that ; such + (a) + adjective + noun + that (consequence).",
+    "Too + adjective + to (excess) ; adjective + enough + to (sufficiency).",
+    "The more…, the more… : « The more you read, the better you write ».",
+  ], [("Join with so…that", ["So + adjective + that + consequence."])], ["« so much tired » is wrong: « so tired »."],
+  ("Join: It was very hot. We stayed inside.", ["It was so hot that we stayed inside."]),
+  "Rewriting exercises."),
+  C("Linking words and vocabulary", 5, [
+    "Contrast: however, although, though, despite, in spite of, whereas.",
+    "Cause and consequence: because, as, since, therefore, consequently, as a result.",
+    "Addition: moreover, furthermore, besides, in addition.",
+    "Themes: youth, education, environment, health, technology, migration, gender equality.",
+  ], [("Write a paragraph", ["Topic sentence.", "Argument with an example.", "Concluding sentence with a linker."])], ["« Despite of » is wrong: « despite » or « in spite of »."],
+  ("Join with although: He was tired. He kept working.", ["Although he was tired, he kept working."]),
+  "Essays and connectors."),
+]
+
+SYNTH["g-eco"] = [
+  C("Les agrégats : PIB, croissance, valeur ajoutée", 0, [
+    "Valeur ajoutée = production − consommations intermédiaires.",
+    "PIB = somme des valeurs ajoutées des unités résidentes (+ impôts sur les produits − subventions).",
+    "Taux de croissance = (PIB année n − PIB année n−1) / PIB année n−1 × 100.",
+    "PIB réel (en volume, sans l'effet des prix) et PIB nominal (en valeur). PIB par habitant = PIB / population.",
+    "Croissance (quantitative) ≠ développement (qualitatif : santé, éducation, IDH).",
+  ], [("Calculer un taux de croissance", ["Faire la différence entre les deux années.", "Diviser par la valeur de départ et multiplier par 100."])], ["Diviser par la valeur d'arrivée."],
+  ("PIB 2024 : 18 000 milliards ; 2025 : 19 080 milliards. Taux de croissance ?", ["(19 080 − 18 000) / 18 000 × 100 = 6 %."]),
+  "Calculs d'agrégats dans presque chaque sujet."),
+  C("Les secteurs d'activité et les entreprises", 1, [
+    "Secteur primaire (agriculture, pêche, mines), secondaire (industrie), tertiaire (services).",
+    "Entreprise : unité de production ; individuelle ou sociétaire (SARL, SA), publique ou privée.",
+    "Facteurs de production : travail et capital ; productivité = production / quantité de facteur.",
+    "Secteur informel : activités non déclarées, très important au Sénégal.",
+  ], [("Calculer une productivité", ["Production / nombre de travailleurs (ou d'heures)."])], ["Confondre production et productivité."],
+  ("10 ouvriers produisent 500 chaises par mois. Productivité ?", ["500 / 10 = 50 chaises par ouvrier et par mois."]),
+  "Questions de cours et calculs simples."),
+  C("Le marché, les prix et l'inflation", 2, [
+    "Marché : rencontre de l'offre et de la demande ; le prix d'équilibre égalise les deux.",
+    "La demande baisse quand le prix monte ; l'offre augmente quand le prix monte.",
+    "Inflation : hausse générale et durable des prix, mesurée par l'indice des prix à la consommation (IPC).",
+    "Indice = valeur année n / valeur année de base × 100. Variation en % = indice − 100.",
+    "Causes de l'inflation : par la demande, par les coûts, monétaire. Conséquence : baisse du pouvoir d'achat.",
+  ], [("Calculer un indice", ["Diviser la valeur par la valeur de base.", "Multiplier par 100."])], ["Confondre indice et taux de variation."],
+  ("Prix du riz : 400 F en 2020, 460 F en 2025. Indice base 100 en 2020 ?", ["460 / 400 × 100 = 115.", "Hausse de 15 %."]),
+  "Lecture de graphiques offre-demande et calculs d'indices."),
+  C("La monnaie et la banque centrale", 3, [
+    "Fonctions de la monnaie : intermédiaire des échanges, unité de compte, réserve de valeur.",
+    "Formes : fiduciaire (billets, pièces), scripturale (comptes bancaires), électronique (Wave, Orange Money).",
+    "Création monétaire : les banques créent de la monnaie en accordant des crédits.",
+    "BCEAO : banque centrale de l'UEMOA ; émet le franc CFA, fixe les taux directeurs, lutte contre l'inflation.",
+  ], [("Expliquer la création monétaire", ["La banque accorde un crédit.", "Elle crédite le compte du client : de la monnaie scripturale nouvelle apparaît."])], ["Croire que seule la banque centrale crée de la monnaie."],
+  ("Pourquoi la BCEAO augmente-t-elle ses taux en période d'inflation ?", ["Le crédit devient plus cher, donc moins demandé.", "La création monétaire ralentit et la hausse des prix aussi."]),
+  "Questions de cours sur la monnaie et la politique monétaire."),
+  C("L'emploi et le chômage", 4, [
+    "Population active = actifs occupés + chômeurs.",
+    "Taux de chômage = chômeurs / population active × 100.",
+    "Types : conjoncturel (ralentissement), structurel (inadéquation formation-emploi), frictionnel (passage d'un emploi à l'autre).",
+    "Sous-emploi et emploi informel très répandus au Sénégal.",
+  ], [("Calculer un taux de chômage", ["Diviser le nombre de chômeurs par la population active (et non totale)."])], ["Diviser par la population totale."],
+  ("Population active 5 millions, chômeurs 1 million. Taux ?", ["1 / 5 × 100 = 20 %."]),
+  "Calculs de taux et analyse des politiques de l'emploi."),
+  C("L'État : impôts et politique budgétaire", 5, [
+    "Budget de l'État : recettes (impôts, taxes) et dépenses (fonctionnement, investissement).",
+    "Solde budgétaire = recettes − dépenses : déficit si négatif.",
+    "Impôts directs (sur le revenu, sur les sociétés) et indirects (TVA, 18 % au Sénégal).",
+    "Politique de relance (plus de dépenses, moins d'impôts) ou de rigueur.",
+  ], [("Calculer un solde budgétaire", ["Recettes − dépenses.", "Interpréter le signe."])], ["Confondre déficit (une année) et dette (accumulation)."],
+  ("Prix HT 10 000 F, TVA 18 %. Prix TTC ?", ["TVA = 1 800 F.", "Prix TTC = 11 800 F."]),
+  "Calculs de TVA et analyse du budget."),
+  C("Le commerce extérieur", 6, [
+    "Balance commerciale = exportations − importations de biens.",
+    "Taux de couverture = exportations / importations × 100.",
+    "Termes de l'échange = indice des prix à l'exportation / indice des prix à l'importation × 100.",
+    "Protectionnisme (droits de douane, quotas) et libre-échange (OMC, ZLECAf).",
+  ], [("Calculer un taux de couverture", ["Exportations / importations × 100.", "Moins de 100 : déficit."])], ["Inverser le numérateur et le dénominateur."],
+  ("Exportations 2 500, importations 4 000 milliards. Taux de couverture ?", ["2 500 / 4 000 × 100 = 62,5 %.", "La balance est déficitaire."]),
+  "Calculs et commentaires de tableaux statistiques."),
+]
+
+SYNTH["g-compta"] = [
+  C("Le cadre comptable : SYSCOHADA", 0, [
+    "SYSCOHADA : système comptable de l'OHADA (17 pays dont le Sénégal), révisé en 2017.",
+    "Classes de comptes : 1 ressources durables, 2 actif immobilisé, 3 stocks, 4 tiers, 5 trésorerie, 6 charges, 7 produits, 8 autres charges et produits.",
+    "Principes : prudence, permanence des méthodes, coût historique, indépendance des exercices, continuité d'exploitation.",
+    "Documents de synthèse : bilan, compte de résultat, tableau des flux de trésorerie, notes annexes.",
+  ], [("Retrouver la classe d'un compte", ["Regarder le premier chiffre du numéro.", "Ex. 521 Banque → classe 5 (trésorerie)."])], ["Classer les clients (411) en trésorerie : ils sont en classe 4 (tiers)."],
+  ("Dans quelle classe va le compte 601 Achats de marchandises ?", ["Classe 6 : charges."]),
+  "Questions de cours et application des numéros de comptes."),
+  C("Le bilan", 1, [
+    "Le bilan est la photographie du patrimoine à une date : actif (emplois) = passif (ressources).",
+    "Actif : immobilisé (terrains, bâtiments, matériel), circulant (stocks, créances), trésorerie actif.",
+    "Passif : capitaux propres (capital, résultat), dettes financières, passif circulant (fournisseurs), trésorerie passif.",
+    "Fonds de roulement = ressources stables − actif immobilisé.",
+  ], [("Présenter un bilan", ["Classer chaque élément à l'actif ou au passif.", "Calculer les totaux.", "Le capital est souvent la valeur qui équilibre le bilan."])], ["Mettre les dettes à l'actif."],
+  ("Matériel 2 000 000, stocks 500 000, banque 300 000, fournisseurs 800 000. Capital ?", ["Actif = 2 800 000.", "Capital = 2 800 000 − 800 000 = 2 000 000 F."]),
+  "Établir un bilan d'ouverture et calculer le fonds de roulement."),
+  C("Le compte de résultat", 2, [
+    "Il récapitule les charges (classe 6) et les produits (classe 7) d'un exercice.",
+    "Résultat = produits − charges : bénéfice si positif, perte si négatif.",
+    "Soldes intermédiaires : marge commerciale = ventes de marchandises − coût d'achat des marchandises vendues ; valeur ajoutée ; excédent brut d'exploitation.",
+    "Coût d'achat des marchandises vendues = achats + stock initial − stock final.",
+  ], [("Calculer une marge commerciale", ["Calculer le coût d'achat des marchandises vendues.", "Retrancher des ventes."])], ["Oublier la variation de stock."],
+  ("Ventes 5 000 000 ; achats 3 000 000 ; stock initial 400 000 ; stock final 600 000. Marge ?", ["Coût d'achat vendu = 3 000 000 + 400 000 − 600 000 = 2 800 000.", "Marge = 5 000 000 − 2 800 000 = 2 200 000 F."]),
+  "Calcul des soldes de gestion et du résultat."),
+  C("Les comptes et la partie double", 3, [
+    "Un compte a deux côtés : débit (gauche) et crédit (droite).",
+    "Partie double : toute opération est enregistrée au débit d'au moins un compte et au crédit d'au moins un autre, pour le même montant.",
+    "Comptes d'actif et de charges : augmentent au débit. Comptes de passif et de produits : augmentent au crédit.",
+    "Solde = total débit − total crédit (débiteur ou créditeur).",
+  ], [("Analyser une opération", ["Quels comptes sont touchés ?", "Augmentent-ils ou diminuent-ils ?", "En déduire débit et crédit."])], ["Inverser débit et crédit pour la banque lors d'un encaissement."],
+  ("Achat de marchandises 200 000 F payé par chèque. Écriture ?", ["Débit 601 Achats de marchandises : 200 000.", "Crédit 521 Banque : 200 000."]),
+  "Base de toute la comptabilité."),
+  C("Journal, grand livre et balance", 4, [
+    "Journal : enregistrement chronologique des opérations (date, comptes, libellé, montants).",
+    "Grand livre : ensemble des comptes ; on y reporte les écritures du journal.",
+    "Balance : tableau des totaux et soldes de tous les comptes ; total des débits = total des crédits.",
+    "TVA : TVA facturée (4431) sur ventes, TVA récupérable (445) sur achats ; TVA due = facturée − récupérable.",
+  ], [("Enregistrer une vente avec TVA", ["Débit 411 Clients : montant TTC.", "Crédit 701 Ventes : HT ; crédit 4431 TVA facturée : TVA."])], ["Oublier d'enregistrer la TVA."],
+  ("Vente à crédit 100 000 F HT, TVA 18 %. Écriture ?", ["Débit 411 Clients : 118 000.", "Crédit 701 Ventes : 100 000 ; crédit 4431 TVA facturée : 18 000."]),
+  "Enregistrements au journal : exercice systématique."),
+  C("Les amortissements", 5, [
+    "Amortissement : constatation de la perte de valeur d'une immobilisation due à l'usure ou au temps.",
+    "Amortissement linéaire : annuité = valeur d'origine × taux ; taux = 100 / durée de vie.",
+    "Prorata temporis la première année : annuité × nombre de mois / 12.",
+    "Valeur nette comptable (VNC) = valeur d'origine − cumul des amortissements.",
+    "Écriture : débit 681 Dotations aux amortissements, crédit 28 Amortissements.",
+  ], [("Dresser un plan d'amortissement", ["Calculer le taux et l'annuité.", "Pour chaque année : annuité, cumul, VNC.", "Faire le prorata la première année si l'achat n'est pas au 1er janvier."])], ["Oublier le prorata temporis."],
+  ("Matériel de 6 000 000 F, durée 5 ans, acquis le 1er avril. Annuité de la 1re année ?", ["Taux 20 % : annuité pleine = 1 200 000.", "9 mois : 1 200 000 × 9/12 = 900 000 F."]),
+  "Plan d'amortissement et écritures d'inventaire."),
+]
