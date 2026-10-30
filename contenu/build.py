@@ -22,8 +22,8 @@ ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # sans 0/O ni 1/I
 # Réglages de vente (à remplir par Est : numéro Wave et WhatsApp au format 221XXXXXXXXX)
 CONFIG = {
     "price_fcfa": 2000,
-    "wave_number": "",
-    "whatsapp": "",
+    "wave_number": "78 272 19 20",
+    "whatsapp": "221782721920",
     # classes d'examen : nom de l'examen et date indicative
     "exams": {"3e": ["BFEM", "2027-07-06"], "Tle L": ["BAC", "2027-07-01"], "Tle S": ["BAC", "2027-07-01"]},
 }
