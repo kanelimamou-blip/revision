@@ -16,6 +16,8 @@ from q_plus import EXTRA
 from q_plus_college import EXTRA_COLLEGE
 from q_plus_lycee import EXTRA_LYCEE
 from fiches import FICHES
+from fiches_autres import FICHES_AUTRES
+FICHES = {**FICHES, **FICHES_AUTRES}
 from catalogue import LIBRARY, LIB_HOST
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
