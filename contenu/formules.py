@@ -268,8 +268,11 @@ def formulaire(fiches, notions, programmes):
             lignes += PLUS.get(sid, {}).get(t, [])
             vus, f = set(), []
             for k in lignes:
-                if FORMULE.search(k) and k not in vus:
-                    vus.add(k)
+                # même formule écrite deux fois (avec ou sans intitulé, espaces, précision entre parenthèses) : gardée une fois
+                corps = re.sub(r"\s*\([^()]*\)\.?$", "", k.split(" : ", 1)[-1])
+                cle = re.sub(r"[\s_.]|annuel|mensuel|ₐ|ₘ", "", corps)
+                if FORMULE.search(k) and cle not in vus:
+                    vus.add(cle)
                     f.append(k)
             if f:
                 chs.append({"p": i, "t": t, "f": f})
