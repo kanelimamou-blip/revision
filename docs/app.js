@@ -270,14 +270,35 @@ function share() {
 
 // ---------- Navigation
 function go(h) { location.hash = h; }
-function viewLogin(err = "") {
-  $view.innerHTML = `<div class="card" style="text-align:center;gap:14px">
-    <h1>Bienvenue sur Révision</h1>
-    <p class="muted">Connecte-toi avec ton compte Google pour garder tes progrès et profiter de ${TRIAL_DAYS} jours d'essai gratuit avec tout débloqué.</p>
+function viewLogin(err = "", ok = "") {
+  $view.innerHTML = `<div class="card" style="gap:14px">
+    <h1 style="text-align:center">Bienvenue sur Révision</h1>
+    <p class="muted" style="text-align:center">Connecte-toi pour garder tes progrès et profiter de ${TRIAL_DAYS} jours d'essai gratuit avec tout débloqué.</p>
     <button class="btn" id="google">Se connecter avec Google</button>
-    ${err ? `<p class="msg-ko small">${esc(err)}</p>` : ""}</div>`;
-  document.getElementById("google").onclick = () => Compte.signIn().then(applyProfile).then(render)
-    .catch(() => viewLogin("La connexion n'a pas abouti. Réessaie."));
+    <p class="small muted" style="text-align:center">ou avec ton adresse e-mail</p>
+    <input class="field" id="mail" type="email" autocomplete="email" placeholder="Adresse e-mail">
+    <input class="field" id="pass" type="password" autocomplete="current-password" placeholder="Mot de passe (6 caractères minimum)">
+    <div class="row"><button class="btn alt" style="flex:1" id="login">Se connecter</button><button class="btn alt" style="flex:1" id="signup">Créer un compte</button></div>
+    <button class="linkbtn small" id="forgot">Mot de passe oublié ?</button>
+    ${err ? `<p class="msg-ko small">${esc(err)}</p>` : ""}${ok ? `<p class="msg-ok small">${esc(ok)}</p>` : ""}</div>`;
+  const done = (p) => { applyProfile(p); render(); };
+  const mail = () => document.getElementById("mail").value.trim(), pass = () => document.getElementById("pass").value;
+  const fail = (e) => viewLogin(({
+    "auth/invalid-email": "Adresse e-mail invalide.",
+    "auth/missing-password": "Entre ton mot de passe.",
+    "auth/weak-password": "Le mot de passe doit faire au moins 6 caractères.",
+    "auth/email-already-in-use": "Ce compte existe déjà : appuie sur « Se connecter ».",
+    "auth/invalid-credential": "E-mail ou mot de passe incorrect.",
+    "auth/wrong-password": "E-mail ou mot de passe incorrect.",
+    "auth/user-not-found": "Aucun compte avec cet e-mail : appuie sur « Créer un compte ».",
+    "auth/too-many-requests": "Trop d'essais. Attends quelques minutes.",
+  })[e && e.code] || "La connexion n'a pas abouti. Réessaie.");
+  document.getElementById("google").onclick = () => Compte.signIn().then(done).catch(fail);
+  document.getElementById("login").onclick = () => Compte.signInEmail(mail(), pass(), false).then(done).catch(fail);
+  document.getElementById("signup").onclick = () => Compte.signInEmail(mail(), pass(), true).then(done).catch(fail);
+  document.getElementById("forgot").onclick = () => mail()
+    ? Compte.resetPassword(mail()).then(() => viewLogin("", "Un e-mail pour changer ton mot de passe a été envoyé."), fail)
+    : viewLogin("Écris d'abord ton adresse e-mail.");
 }
 // le profil en ligne fait foi pour l'essai et le premium ; les progrès les plus complets sont gardés
 function applyProfile(p) {

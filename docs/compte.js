@@ -54,6 +54,14 @@ const Compte = (() => {
     return profile();
   }
 
+  // Connexion par e-mail et mot de passe (utile sur iPhone si la fenêtre Google ne s'ouvre pas)
+  async function signInEmail(email, pass, create) {
+    const r = create ? await auth.createUserWithEmailAndPassword(email, pass) : await auth.signInWithEmailAndPassword(email, pass);
+    user = r.user;
+    return profile();
+  }
+  const resetPassword = (email) => auth.sendPasswordResetEmail(email);
+
   async function signOut() { if (auth) await auth.signOut(); user = null; }
 
   // Un code premium ne sert qu'une fois : la règle Firestore refuse de recréer claims/{code}
@@ -74,5 +82,5 @@ const Compte = (() => {
     }, 3000);
   }
 
-  return { enabled, start, signIn, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();
