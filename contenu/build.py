@@ -15,6 +15,9 @@ from pathlib import Path
 
 from annales import ANNALES, GUIDED, HOST
 from sujets_types import MODELE_ANNALES, MODELE_GUIDED
+from sujets_lg import ANNALES_LG, GUIDED_LG
+MODELE_ANNALES += ANNALES_LG
+MODELE_GUIDED.update(GUIDED_LG)
 ANNALES = MODELE_ANNALES + ANNALES
 GUIDED = {**GUIDED, **MODELE_GUIDED}
 from q_plus import EXTRA

@@ -1,11 +1,13 @@
-const CACHE = "revision-v44";
+const CACHE = "revision-v45";
 const SHELL = ["./", "index.html", "app.css", "app.js", "compte.js", "generateurs.js", "generateurs_plus.js", "generateurs_lettres.js", "exos_gen.js", "assistant.js", "agenda.js", "vie.js", "apprendre.js", "admin.js", "manifest.webmanifest", "data/questions.json", "data/config.json", "icons/icon-192.png", "icons/qr.svg", "icons/qr.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("revision-") && k !== CACHE).map((k) => caches.delete(k))))); self.clients.claim(); });
 // Réseau d'abord (dernières questions), cache si hors ligne : l'appli marche sans connexion.
 // En économie de données (drapeau « eco » dans le cache rprefs), tout est lu dans le cache ; « ?fresh » force la mise à jour.
 const keyOf = (req) => { const u = new URL(req.url); return u.origin + u.pathname; };
-const net = (req) => fetch(req).then((r) => { if (r.ok) { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(keyOf(req), copy)); } return r; }).catch(() => caches.match(keyOf(req)));
+// « no-cache » : on redemande toujours au serveur s'il y a du nouveau, sinon une mise à jour peut mettre 10 min à arriver
+const fresh = (req) => (req.mode === "navigate" ? fetch(req.url, { cache: "no-cache", credentials: "same-origin" }) : fetch(req, { cache: "no-cache" }));
+const net = (req) => fresh(req).then((r) => { if (r.ok) { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(keyOf(req), copy)); } return r; }).catch(() => caches.match(keyOf(req)));
 const eco = () => caches.open("rprefs").then((c) => c.match("eco")).then((r) => (r ? r.text() : "0")).catch(() => "0");
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;

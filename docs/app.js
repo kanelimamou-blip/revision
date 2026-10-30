@@ -148,6 +148,7 @@ function viewHome() {
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   $view.innerHTML = `
+    ${Compte.isAdmin && Compte.isAdmin() ? `<a class="btn" href="#admin/activite">🛠️ Espace admin : inscrits, connexions, erreurs</a>` : ""}
     ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
