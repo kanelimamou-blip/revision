@@ -13,6 +13,8 @@ from pathlib import Path
 
 from annales import ANNALES, GUIDED, HOST
 from q_plus import EXTRA
+from q_plus_college import EXTRA_COLLEGE
+from q_plus_lycee import EXTRA_LYCEE
 from fiches import FICHES
 from catalogue import LIBRARY, LIB_HOST
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
@@ -101,7 +103,7 @@ def new_codes(n, dest):
 def build():
     questions, subjects = [], []
     for sid, levels, name, items in SUBJECTS:
-        items = items + EXTRA.get(sid, [])
+        items = items + EXTRA.get(sid, []) + EXTRA_COLLEGE.get(sid, []) + EXTRA_LYCEE.get(sid, [])
         fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
         assert set(levels) <= set(LEVELS) | fams, (sid, levels)
         subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items)), "fiche": sid in FICHES})
@@ -126,7 +128,7 @@ def build():
                 random.Random(f'{an["id"]}-{k}-{j}').shuffle(order)
                 steps.append({"q": q, "c": [choices[i] for i in order], "a": order.index(a), "e": ex, "pts": pts})
             an["guided"].append({"title": part["title"], "context": part["context"], "steps": steps})
-    assert set(EXTRA) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
+    assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
     for e in LIBRARY:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
