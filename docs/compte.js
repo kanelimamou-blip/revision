@@ -148,7 +148,7 @@ const Compte = (() => {
   const ts = (v) => (v && v.toDate ? v.toDate() : null);
   async function adminUsers() {
     const snap = await db.collection("users").limit(5000).get();
-    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
+    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
   }
   async function adminErrors() {
     const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();

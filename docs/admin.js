@@ -64,7 +64,7 @@
     const liste = users.filter((u) => !filtre || `${u.name} ${u.email}`.toLowerCase().includes(filtre)).sort((a, b) => (b.lastSeen || b.created || 0) - (a.lastSeen || a.created || 0));
     box.innerHTML = `<input class="field" id="af" type="search" placeholder="Chercher un nom ou un e-mail" value="${esc(filtre)}" aria-label="Chercher un compte">
       <p class="small muted">${liste.length} compte${liste.length > 1 ? "s" : ""}</p>
-      ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? " · ⭐ premium" : ""}</p>
+      ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? ` · ⭐ premium${u.code ? " (code " + esc(u.code) + ")" : ""}` : ""}</p>
         <p class="small muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
         <button class="btn alt small" data-sus="${esc(u.uid)}" data-on="${u.suspended ? 0 : 1}">${u.suspended ? "Réactiver le compte" : "Suspendre le compte"}</button></div>`).join("")}`;
     const f = document.getElementById("af"); f.oninput = () => { filtre = f.value.trim().toLowerCase(); comptes(box); const g = document.getElementById("af"); g.focus(); g.setSelectionRange(g.value.length, g.value.length); };
