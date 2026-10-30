@@ -26,6 +26,8 @@ const blancName = () => (examOf() ? "Examen blanc" : "Devoir blanc");
 const TRIAL_DAYS = 10;
 if (!S.trialStart) { S.trialStart = today(); store.save(); }
 const trialLeft = () => Math.max(0, TRIAL_DAYS - Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5));
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const isPremium = () => S.premium || trialLeft() > 0;
 const open = (q) => isPremium() || q.free;
 const qsOf = (sid) => DATA.questions.filter((q) => q.s === sid);
@@ -79,6 +81,7 @@ function viewHome() {
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   $view.innerHTML = `
+    ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     <div class="card">
       <div class="row">${ex ? `<div><p class="small muted">${ex[0]} ${ex[1].slice(0, 4)}, date indicative</p><p class="count">J−${days}</p></div>`
