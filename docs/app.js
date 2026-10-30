@@ -677,6 +677,7 @@ function viewLogin(err = "", ok = "") {
     <input class="field" id="mail" type="email" autocomplete="email" placeholder="Adresse e-mail">
     <input class="field" id="pass" type="password" autocomplete="current-password" placeholder="Mot de passe (6 caractères minimum)">
     <div class="row"><button class="btn alt" style="flex:1" id="login">Se connecter</button><button class="btn alt" style="flex:1" id="signup">Créer un compte</button></div>
+    <p class="small muted" style="text-align:center">Première fois ? Choisis un <b>nouveau</b> mot de passe pour l'appli (pas celui de ta boîte mail), puis touche « Créer un compte ».</p>
     <button class="linkbtn small" id="forgot">Mot de passe oublié ?</button>
     ${err ? `<p class="msg-ko small">${esc(err)}</p>` : ""}${ok ? `<p class="msg-ok small">${esc(ok)}</p>` : ""}</div>`;
   const done = (p) => { applyProfile(p); render(); };
