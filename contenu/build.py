@@ -14,6 +14,9 @@ import secrets
 from pathlib import Path
 
 from annales import ANNALES, GUIDED, HOST
+from sujets_types import MODELE_ANNALES, MODELE_GUIDED
+ANNALES = MODELE_ANNALES + ANNALES
+GUIDED = {**GUIDED, **MODELE_GUIDED}
 from q_plus import EXTRA
 from q_plus_college import EXTRA_COLLEGE
 from q_plus_lycee import EXTRA_LYCEE

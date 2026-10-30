@@ -388,11 +388,11 @@ function viewDevoir(arg) {
 function viewAnnales() {
   const list = annalesOf(S.level);
   $view.innerHTML = `${examOf() ? `<h1>Sujets du ${esc(examOf()[0])}</h1>
-    <p class="muted">Vrais sujets officiels du ${esc(examOf()[0])}. Les questions sourcées de l'appli en sont tirées.</p>` : `<h1>Devoirs et compositions</h1>
+    <p class="muted">Des sujets complets du ${esc(examOf()[0])}, avec la structure, le barème et les notions des épreuves officielles. Tu les traites étape par étape et chaque réponse est corrigée.</p>` : `<h1>Devoirs et compositions</h1>
     <p class="muted">Ta classe n'a pas d'examen national : voici de vrais devoirs et compositions de ${esc(S.level)} pour t'entraîner.</p>`}
     ${list.length ? list.map((a) => `<div class="card">
-      <div class="row"><h2>${esc(a.exam)} ${a.year}</h2><span class="tag">${esc(a.subject)}</span></div>
-      <p class="small muted">Séries ${esc(a.series)}${a.duration ? " · " + esc(a.duration) : ""}${a.coef ? " · coefficient " + a.coef : ""}</p>
+      <div class="row"><h2>${a.modele ? `Sujet ${esc(a.exam)} ${esc(a.year)}` : `${esc(a.exam)} ${a.year}`}</h2><span class="tag">${esc(a.subject)}</span></div>
+      ${a.modele ? `<p class="small muted">Sur le modèle de l'épreuve officielle</p>` : ""}<p class="small muted">${a.series ? "Séries " + esc(a.series) : esc(a.levels.join(", "))}${a.duration ? " · " + esc(a.duration) : ""}${a.coef ? " · coefficient " + a.coef : ""}</p>
       ${a.parts ? `<ul class="steps small">${a.parts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
       ${a.guided ? `<a class="btn hi-btn" href="#sujet/${a.id}">Faire ce sujet en mode guidé, corrigé à chaque étape${isPremium() ? "" : " 🔒"}</a>` : ""}</div>`).join("")
     : ""}
@@ -404,7 +404,7 @@ function viewExercices() {
   const ann = annalesOf(S.level).filter((a) => a.guided), exs = exercisesOf(S.level);
   const card = (href, title, sub, lock) => `<a class="card lib-card" href="${href}"><b>${esc(title)}</b><span class="small muted">${esc(sub)}${lock ? " 🔒" : ""}</span></a>`;
   $view.innerHTML = `<h1>Exercices corrigés</h1><p class="muted">Tu réponds étape par étape ; après chaque réponse, le corrigé s'affiche avec les points gagnés.</p>
-    ${ann.length ? `<h2>Sujets complets du ${esc(examOf() ? examOf()[0] : "BAC")}</h2>${ann.map((a) => card(`#sujet/${a.id}`, `${a.exam} ${a.year} · ${a.subject}`, `Séries ${a.series} · sujet entier noté sur 20`, !isPremium())).join("")}` : ""}
+    ${ann.length ? `<h2>Sujets complets du ${esc(examOf() ? examOf()[0] : "BAC")}</h2>${ann.map((a) => card(`#sujet/${a.id}`, `${a.exam} ${a.year} · ${a.subject}`, `${a.series ? `Séries ${a.series} · ` : ""}${a.modele ? "sur le modèle officiel · " : ""}sujet entier noté sur 20`, !isPremium())).join("")}` : ""}
     ${exs.length ? `<h2>Exercices</h2>${exs.map((e) => card(`#sujet/${e.id}`, `${e.subject} · ${e.title}`, `${e.src} · ${e.guided.reduce((n, p) => n + p.steps.length, 0)} étapes${e.free ? " · gratuit" : ""}`, !isPremium() && !e.free)).join("")}` : ""}
     ${ann.length + exs.length ? "" : `<div class="card"><p>Les exercices corrigés de ta classe arrivent. En attendant, fais les QCM corrigés.</p><a class="btn" href="#qcm-list">QCM corrigés</a></div>`}`;
 }
@@ -512,7 +512,7 @@ function viewGuided(id) {
   const byPart = an.guided.map(() => 0), picks = [];
   function intro() {
     $view.innerHTML = `<div class="card"><p class="tag-src">${an.title ? "Exercice corrigé" : "Sujet guidé"}</p><h1>${esc(head)}</h1>
-      ${an.src ? `<p class="src">📄 ${esc(an.src)}</p>` : `<p class="muted">Séries ${esc(an.series)}${an.duration ? " · " + esc(an.duration) : ""}${an.coef ? " · coefficient " + an.coef : ""}</p>`}
+      ${an.src ? `<p class="src">📄 ${esc(an.src)}</p>` : `<p class="muted">${an.modele ? "Sur le modèle de l'épreuve officielle · " : ""}${an.series ? "Séries " + esc(an.series) : esc(an.levels.join(", "))}${an.duration ? " · " + esc(an.duration) : ""}${an.coef ? " · coefficient " + an.coef : ""}</p>`}
       <p>Tu réponds étape par étape. Choisis si tu veux le corrigé après chaque réponse ou seulement à la fin.</p>
       <p class="small muted">${steps.length} étapes, ${pts(max)} points.${an.title ? "" : " Les tableaux et les tracés de courbes ne sont pas notés ici. Énoncé reformulé ; l'original est en PDF dans les annales."}</p>
       <button class="btn" id="go">🧑‍🏫 Avec support<br><span class="small">Corrigé et points après chaque réponse</span></button>
