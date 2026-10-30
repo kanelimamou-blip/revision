@@ -92,17 +92,20 @@ function viewLevel() {
 // ---------- Accueil
 const notionsOf = (level) => subjectsOf(level).flatMap((s) => ((DATA.notions || {})[s.id] || []).map((c) => ({ ...c, sid: s.id, sname: s.name })));
 const exercisesOf = (level) => (DATA.exercises || []).filter((e) => matches(e.levels, level));
+// Exercices et sujets types fabriqués à la demande (exos_gen.js) : nombres nouveaux à chaque essai
+const genExosOf = (level) => (typeof EXGEN === "undefined" ? [] : subjectsOf(level).flatMap((s) => (EXGEN[s.id] || []).map((t, k) => ({ id: `gx-${s.id}-${k}`, subject: s.name, title: t.t }))));
+const genSujetsOf = (level) => (typeof EXGEN === "undefined" ? [] : subjectsOf(level).filter((s) => (EXGEN[s.id] || []).length >= 3).map((s) => ({ id: `gs-${s.id}`, subject: s.name })));
 function rubriques() {
-  const nAnn = annalesOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length;
+  const nAnn = annalesOf(S.level).length, nGs = genSujetsOf(S.level).length, nGx = genExosOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length + nGx;
   const exam = examOf() ? examOf()[0] : "BAC", nNot = notionsOf(S.level).length;
   const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
-    nAnn ? tile("#annales", "📚", `Sujets du ${exam}`, `${nAnn} sujet${nAnn > 1 ? "s" : ""} complet${nAnn > 1 ? "s" : ""}, corrigé${nAnn > 1 ? "s" : ""} pas à pas`) : "",
+    nAnn || nGs ? tile("#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs types", `${nAnn ? `${nAnn} sujet${nAnn > 1 ? "s" : ""} rédigé${nAnn > 1 ? "s" : ""}` : ""}${nAnn && nGs ? " + " : ""}${nGs ? "un sujet neuf à chaque essai" : ""}, corrigés pas à pas`) : "",
     tile("#agenda", "🗓️", "Mon agenda", "Emploi du temps, devoirs à rendre, rappels du soir"),
     tile("#assistant", "💬", "Pose ta question", "Une notion pas claire ? Je réponds avec le cours"),
     tile("#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"),
     tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
-    tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas` : "Bientôt pour ta classe"),
+    tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas${nGx ? ", nombres nouveaux à chaque essai" : ""}` : "Bientôt pour ta classe"),
     nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
     tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
     tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
@@ -389,14 +392,16 @@ function viewAnnales() {
   const list = annalesOf(S.level);
   $view.innerHTML = `${examOf() ? `<h1>Sujets du ${esc(examOf()[0])}</h1>
     <p class="muted">Des sujets complets du ${esc(examOf()[0])}, avec la structure, le barème et les notions des épreuves officielles. Tu les traites étape par étape et chaque réponse est corrigée.</p>` : `<h1>Devoirs et compositions</h1>
-    <p class="muted">Ta classe n'a pas d'examen national : voici de vrais devoirs et compositions de ${esc(S.level)} pour t'entraîner.</p>`}
+    <p class="muted">Ta classe n'a pas d'examen national : voici des devoirs types de ${esc(S.level)} pour t'entraîner, corrigés étape par étape.</p>`}
     ${list.length ? list.map((a) => `<div class="card">
       <div class="row"><h2>${a.modele ? `Sujet ${esc(a.exam)} ${esc(a.year)}` : `${esc(a.exam)} ${a.year}`}</h2><span class="tag">${esc(a.subject)}</span></div>
       ${a.modele ? `<p class="small muted">Sur le modèle de l'épreuve officielle</p>` : ""}<p class="small muted">${a.series ? "Séries " + esc(a.series) : esc(a.levels.join(", "))}${a.duration ? " · " + esc(a.duration) : ""}${a.coef ? " · coefficient " + a.coef : ""}</p>
       ${a.parts ? `<ul class="steps small">${a.parts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
       ${a.guided ? `<a class="btn hi-btn" href="#sujet/${a.id}">Faire ce sujet en mode guidé, corrigé à chaque étape${isPremium() ? "" : " 🔒"}</a>` : ""}</div>`).join("")
     : ""}
-    ${list.length ? "" : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
+    ${genSujetsOf(S.level).length ? `<h2>${examOf() ? "Sujets types" : "Devoirs types"} à nombres nouveaux</h2><p class="small muted">4 exercices de chapitres différents, notés sur 20. Un sujet différent à chaque essai.</p>
+      ${genSujetsOf(S.level).map((g) => `<a class="card lib-card" href="#sujet/${g.id}"><b>${esc(g.subject)} : nouveau sujet</b><span class="small muted">${examOf() ? `Sur le modèle du ${esc(examOf()[0])}` : "Devoir de 2 h"} · noté sur 20${isPremium() ? "" : " 🔒"}</span></a>`).join("")}` : ""}
+    ${list.length || genSujetsOf(S.level).length ? "" : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
 }
 
 // ---------- Exercices corrigés : sujets guidés et exercices pas à pas de la classe
@@ -406,7 +411,8 @@ function viewExercices() {
   $view.innerHTML = `<h1>Exercices corrigés</h1><p class="muted">Tu réponds étape par étape ; après chaque réponse, le corrigé s'affiche avec les points gagnés.</p>
     ${ann.length ? `<h2>Sujets complets du ${esc(examOf() ? examOf()[0] : "BAC")}</h2>${ann.map((a) => card(`#sujet/${a.id}`, `${a.exam} ${a.year} · ${a.subject}`, `${a.series ? `Séries ${a.series} · ` : ""}${a.modele ? "sur le modèle officiel · " : ""}sujet entier noté sur 20`, !isPremium())).join("")}` : ""}
     ${exs.length ? `<h2>Exercices</h2>${exs.map((e) => card(`#sujet/${e.id}`, `${e.subject} · ${e.title}`, `${e.src} · ${e.guided.reduce((n, p) => n + p.steps.length, 0)} étapes${e.free ? " · gratuit" : ""}`, !isPremium() && !e.free)).join("")}` : ""}
-    ${ann.length + exs.length ? "" : `<div class="card"><p>Les exercices corrigés de ta classe arrivent. En attendant, fais les QCM corrigés.</p><a class="btn" href="#qcm-list">QCM corrigés</a></div>`}`;
+    ${genExosOf(S.level).length ? `<h2>Exercices à nombres nouveaux</h2><p class="small muted">Les nombres changent à chaque essai : refais-les autant que tu veux.</p>${genExosOf(S.level).map((e) => card(`#sujet/${e.id}`, `${e.subject} · ${e.title}`, "Énoncé suivi · noté sur 5 · ∞", !isPremium())).join("")}` : ""}
+    ${ann.length + exs.length + genExosOf(S.level).length ? "" : `<div class="card"><p>Les exercices corrigés de ta classe arrivent. En attendant, fais les QCM corrigés.</p><a class="btn" href="#qcm-list">QCM corrigés</a></div>`}`;
 }
 function viewQcmList() {
   $view.innerHTML = `<h1>QCM corrigés</h1><p class="muted">Pour chaque question, tu vois si ton choix est juste, la bonne réponse et l'explication. Les erreurs sont gardées pour les revoir.</p>
@@ -502,7 +508,10 @@ function viewChallenge() {
 // ---------- Sujet guidé : un vrai sujet, étape par étape, corrigé tout de suite
 const pts = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
 function viewGuided(id) {
-  const an = [...(DATA.annales || []), ...(DATA.exercises || [])].find((x) => x.id === id && x.guided);
+  const gid = String(id), cut = gid.lastIndexOf("-");
+  const an = [...(DATA.annales || []), ...(DATA.exercises || [])].find((x) => x.id === id && x.guided)
+    || (typeof genExercise === "function" && gid.startsWith("gx-") ? genExercise(gid.slice(3, cut), +gid.slice(cut + 1)) : null)
+    || (typeof genSujet === "function" && gid.startsWith("gs-") ? genSujet(gid.slice(3)) : null);
   if (!an) return go("exercices");
   if (!isPremium() && !an.free) return viewPremium("Les sujets guidés et les exercices corrigés font partie du pack premium.");
   const head = an.title ? `${an.subject} · ${an.title}` : `${an.exam} ${an.year} · ${an.subject}`;
@@ -514,7 +523,7 @@ function viewGuided(id) {
     $view.innerHTML = `<div class="card"><p class="tag-src">${an.title ? "Exercice corrigé" : "Sujet guidé"}</p><h1>${esc(head)}</h1>
       ${an.src ? `<p class="src">📄 ${esc(an.src)}</p>` : `<p class="muted">${an.modele ? "Sur le modèle de l'épreuve officielle · " : ""}${an.series ? "Séries " + esc(an.series) : esc(an.levels.join(", "))}${an.duration ? " · " + esc(an.duration) : ""}${an.coef ? " · coefficient " + an.coef : ""}</p>`}
       <p>Tu réponds étape par étape. Choisis si tu veux le corrigé après chaque réponse ou seulement à la fin.</p>
-      <p class="small muted">${steps.length} étapes, ${pts(max)} points.${an.title ? "" : " Les tableaux et les tracés de courbes ne sont pas notés ici. Énoncé reformulé ; l'original est en PDF dans les annales."}</p>
+      <p class="small muted">${steps.length} étapes, ${pts(max)} points.${an.gen ? " Les nombres changent à chaque essai : tu peux le refaire autant de fois que tu veux." : an.title ? "" : " Les tableaux et les tracés de courbes ne sont pas notés ici."}</p>
       <button class="btn" id="go">🧑‍🏫 Avec support<br><span class="small">Corrigé et points après chaque réponse</span></button>
       <button class="btn alt" id="solo">💪 Tout seul<br><span class="small">Tu fais tout l'exercice, corrigé ligne par ligne à la fin</span></button></div>`;
     document.getElementById("go").onclick = () => { solo = false; k = 0; markDone("exo"); step(); };
@@ -552,11 +561,11 @@ function viewGuided(id) {
       <p class="score">${pts(note)} / 20</p><p>${pts(got)} points sur ${pts(max)} notés</p></div>
       <div class="card">${an.guided.map((p, i) => `<div class="row small"><span>${esc(p.title)}</span><b>${pts(byPart[i])} / ${pts(p.steps.reduce((n, x) => n + x.pts, 0))}</b></div>`).join("")}</div>
       <div class="btns">
-      <button class="btn" id="again">Recommencer</button>${an.chapter ? `<a class="btn alt" href="#notion/${an.chapter}">Revoir le cours</a>` : ""}<a class="btn alt" href="#exercices">Autres exercices</a></div>
+      <button class="btn" id="again">${an.gen ? "Nouveaux nombres" : "Recommencer"}</button>${an.chapter ? `<a class="btn alt" href="#notion/${an.chapter}">Revoir le cours</a>` : ""}<a class="btn alt" href="#exercices">Autres exercices</a></div>
       ${solo ? `<h2>Corrigé ligne par ligne</h2>${steps.map((st, i) => { const ok = picks[i] === st.a;
         return `<div class="card"><p class="small muted">${esc(an.guided[st.pi].title)} · ${pts(st.pts)} pt</p><p><b>${esc(st.q)}</b></p>
           <p class="${ok ? "msg-ok" : "msg-ko"}">${ok ? "✓ Juste" : "✗ Ta réponse : " + esc(st.c[picks[i]])} · Bonne réponse : ${esc(st.c[st.a])}</p><p class="small">${esc(st.e)}</p></div>`; }).join("")}` : ""}`;
-    document.getElementById("again").onclick = () => { got = 0; byPart.fill(0); picks.length = 0; intro(); };
+    document.getElementById("again").onclick = () => (an.gen ? viewGuided(id) : (got = 0, byPart.fill(0), picks.length = 0, intro()));
     window.scrollTo(0, 0);
   }
   intro();

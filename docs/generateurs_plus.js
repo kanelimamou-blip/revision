@@ -397,7 +397,7 @@
       ["Amplificateur opérationnel", (r) => { const R1 = pick(r, [2, 5, 10]), R2 = pick(r, [10, 20, 47]), ue = ri(r, 1, 3) / 10;
         return { q: `Montage inverseur : R₁ = ${R1} kΩ, R₂ = ${R2} kΩ, uₑ = ${nf(ue, 1)} V. Tension de sortie :`, ok: `${nf(-R2 / R1 * ue, 2)} V`, faux: [`${nf(R2 / R1 * ue, 2)} V`, `${nf(-R1 / R2 * ue, 3)} V`, `${nf((1 + R2 / R1) * ue, 2)} V`], e: `Inverseur : uₛ = −(R₂/R₁) uₑ = −${nf(R2 / R1, 1)} × ${nf(ue, 1)} = ${nf(-R2 / R1 * ue, 2)} V.` }; }],
       ["Piles, électrolyse et dosages d'oxydoréduction", (r) => { const [p, E1, n1, E2, n2] = pick(r, [["Daniell (Zn/Cu)", -0.76, "Zn", 0.34, "Cu"], ["Fe/Cu", -0.44, "Fe", 0.34, "Cu"], ["Zn/Ag", -0.76, "Zn", 0.8, "Ag"], ["Cu/Ag", 0.34, "Cu", 0.8, "Ag"]]);
-        return { q: `Pile ${p} : E°(${n1}) = ${nf(E1)} V, E°(${n2}) = ${nf(E2)} V. Force électromotrice :`, ok: `${nf(E2 - E1)} V`, faux: [`${nf(E1 + E2)} V`, `${nf(E1 - E2)} V`, `${nf(E2)} V`], e: `e = E°(pôle +) − E°(pôle −) = ${nf(E2)} − ${par(Number(nf(E1).replace("−", "-").replace(",", ".")))} = ${nf(E2 - E1)} V.` }; }],
+        return { q: `Pile ${p} : E°(${n1}) = ${nf(E1)} V, E°(${n2}) = ${nf(E2)} V. Force électromotrice :`, ok: `${nf(E2 - E1)} V`, faux: [`${nf(E1 + E2)} V`, `${nf(E1 - E2)} V`, `${nf(E2)} V`], e: `e = E°(pôle +) − E°(pôle −) = ${nf(E2)} − (${nf(E1)}) = ${nf(E2 - E1)} V.` }; }],
       ["Travail, énergie et puissance", (r) => { const mm = ri(r, 1, 20), v = ri(r, 2, 15);
         return { q: `Énergie cinétique d'un corps de ${mm} kg à ${v} m/s :`, ok: `${nf(mm * v * v / 2)} J`, faux: [`${mm * v * v} J`, `${nf(mm * v / 2)} J`, `${mm * v} J`], e: `Ec = ½ m v² = 0,5 × ${mm} × ${v * v} = ${nf(mm * v * v / 2)} J.` }; }],
     ],
@@ -422,9 +422,10 @@
     for (let k = 0; faux.length < 3 && k < 12; k++) { const f = shift(g.ok, k); if (f && !seen.has(f)) { seen.add(f); faux.push(f); } }
     return faux.length === 3 ? { ...g, ok: String(g.ok), faux } : null;
   };
+  const clean = (g) => { const c = (t) => String(t).replace(/(\d+)\.(\d{5,})/g, (x) => Number(Number(x).toFixed(2)).toLocaleString("fr-FR")); return { ...g, q: c(g.q), ok: c(g.ok), faux: g.faux.map(c), e: c(g.e) }; };
   for (const list of Object.values(GEN)) list.forEach((item) => {
     const f = item[1];
-    const clean = (g) => { const c = (t) => String(t).replace(/(\d+)\.(\d{5,})/g, (x) => Number(Number(x).toFixed(2)).toLocaleString("fr-FR")); return { ...g, q: c(g.q), ok: c(g.ok), faux: g.faux.map(c), e: c(g.e) }; };
     item[1] = (r) => { let g = null; for (let i = 0; i < 12; i++) { try { g = f(r); } catch (e) { g = null; } if (bad(g)) continue; g = clean(g); const a = [g.ok, ...g.faux].map(String); if (a.length === 4 && new Set(a).size === 4) return g; } return bad(g) ? null : fix(clean(g)); };
   });
+  globalThis.GH = { nf, sci, ri, pick, nz, m, sg, par, co, gcd, fr, sup, sub, C, TRIPLES, fix, clean };
 })();
