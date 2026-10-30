@@ -28,7 +28,8 @@ from q_programme import QCM_CH
 from q_svt_plus import QCM_SVT
 from q_tle_plus import QCM_TLE
 from q_tle_plus2 import QCM_TLE2
-for _sid, _chs in [*QCM_SVT.items(), *QCM_TLE.items(), *QCM_TLE2.items()]:
+from q_tle_plus3 import QCM_TLE3
+for _sid, _chs in [*QCM_SVT.items(), *QCM_TLE.items(), *QCM_TLE2.items(), *QCM_TLE3.items()]:
     for _t, _qs in _chs.items():
         QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
 from fiches import FICHES

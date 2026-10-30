@@ -261,9 +261,23 @@ function chooseMode(title, sub, start) {
   document.getElementById("m-help").onclick = () => start(false);
   document.getElementById("m-solo").onclick = () => start(true);
 }
-function viewQuiz(sid) {
-  const s = DATA.subjects.find((x) => x.id === sid);
+function viewQuiz(arg = "") {
+  const [sid, theme] = arg.split("/"), s = DATA.subjects.find((x) => x.id === sid);
   if (!s) return go("accueil");
+  const titres = (DATA.programmes || {})[sid] || [];
+  // QCM par thème : un chapitre du programme, pour préparer un devoir
+  if (theme === "themes") {
+    const n = (i) => qsOf(sid).filter((q) => q.ch === i).length;
+    $view.innerHTML = `<h1>${esc(s.name)} : QCM par thème</h1><p class="muted">Choisis le chapitre de ton prochain devoir : les questions portent uniquement sur ce chapitre.</p>
+      ${titres.map((t, i) => n(i) ? `<a class="card lib-card" href="#quiz/${sid}/${i}"><b>${i + 1}. ${esc(t)}</b><span class="small muted">${n(i)} questions${(GEN[sid] || []).some(([c]) => c === t || c === i) ? " + ∞ à nombres nouveaux" : ""}${isPremium() ? "" : " 🔒"}</span></a>` : "").join("")}
+      <a class="btn alt" href="#quiz/${sid}">Toutes les questions de ${esc(s.name)}</a><a class="btn alt" href="#qcm-list">Retour aux matières</a>`;
+    return;
+  }
+  const ch = theme !== undefined && theme !== "" ? Number(theme) : null;
+  if (ch !== null) {
+    const qs = mixQuestions(sid, qsOf(sid).filter((q) => q.ch === ch && open(q)), QUIZ_LEN, [ch, titres[ch]]);
+    return chooseMode(`QCM · ${titres[ch] || s.name}`, `${qs.length} questions sur ce chapitre`, (solo) => { markDone("qcm"); runQuiz(`${S.level} · ${titres[ch] || s.name}`, qs, `#quiz/${sid}/themes`, { solo }); });
+  }
   const qs = mixQuestions(sid, qsOf(sid).filter(open), QUIZ_LEN);
   chooseMode(`QCM · ${s.name}`, `${qs.length} questions de ${S.level}`, (solo) => { markDone("qcm"); runQuiz(`${S.level} · ${s.name}`, qs, "#qcm-list", { solo }); });
 }
@@ -426,6 +440,8 @@ function viewQcmList() {
   $view.innerHTML = `<h1>QCM corrigés</h1><p class="muted">Pour chaque question, tu vois si ton choix est juste, la bonne réponse et l'explication. Les erreurs sont gardées pour les revoir.</p>
     <div class="grid">${subjectsOf(S.level).map((s) => `<a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit"><b>${esc(s.name)}</b>
       <span class="small muted">${isPremium() ? s.count : s.free} questions${isPremium() && (GEN[s.id] || []).length ? " + ∞" : ""}</span><span class="bar"><i style="width:${mastery(s.id)}%"></i></span></a>`).join("")}</div>
+    <h2>🎯 Par thème, pour préparer un devoir</h2><p class="small muted">Choisis la matière, puis le chapitre de ton devoir.</p>
+    <div class="row onglets">${subjectsOf(S.level).filter((s) => ((DATA.programmes || {})[s.id] || []).length).map((s) => `<a class="btn alt small" href="#quiz/${s.id}/themes">${esc(s.name)}</a>`).join("")}</div>
     <a class="btn alt" href="#erreurs">Revoir mes erreurs</a>`;
 }
 
