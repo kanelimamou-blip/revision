@@ -90,6 +90,12 @@ function rubriques() {
     tile("#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`),
   ].join("");
 }
+// Vidéo de présentation (45 s), proposée sur l'accueil pendant les premiers jours
+function tutoCard() {
+  if (S.premium || S.tutoVu) return "";
+  return `<div class="card tuto"><div class="row"><h2>▶️ Découvre l'appli en 45 secondes</h2><button class="btn alt small" id="tuto-x" aria-label="Fermer">✕</button></div>
+    <video src="tuto.mp4" controls playsinline preload="none" poster="apercu.png"></video></div>`;
+}
 function programme() {
   const n = Math.min(TRIAL_DAYS, Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5) + 1);
   const weakest = subjectsOf(S.level).filter((s) => !/annales/.test(s.id)).sort((a, b) => mastery(a.id) - mastery(b.id))[0];
@@ -123,6 +129,7 @@ function viewHome() {
         : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
       <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
     </div>
+    ${tutoCard()}
     ${programme()}
     <h2>Rubriques</h2>
     <div class="grid rub">${rubriques()}</div>
@@ -139,6 +146,8 @@ function viewHome() {
     </div>`;
   bindQuestion($view.querySelector("#daily"), daily, () => {});
   $view.querySelector("#share").onclick = share;
+  const tx = $view.querySelector("#tuto-x");
+  if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };
 }
 
 const srcLine = (q) => (q.src ? `<p class="src">📄 Source : ${esc(q.src)}</p>` : "");
@@ -592,8 +601,16 @@ function viewPremium(reason = "", pay = "wave") {
   };
 }
 
-function share() {
-  const url = location.href.split("#")[0], text = `Je révise mes cours de la 6e à la Terminale avec cette appli gratuite, avec les corrections expliquées : ${url}`;
+// Partage : sur Android, la vidéo de présentation part avec le lien (WhatsApp l'affiche directement) ;
+// sinon, le lien seul, dont l'aperçu montre l'image de présentation.
+async function share() {
+  const url = location.href.split("#")[0];
+  const text = `Je révise le BAC et le BFEM avec cette appli : 1 300 QCM corrigés, sujets officiels, cours et devoirs. 10 jours gratuits 👉 ${url}`;
+  try {
+    const blob = await fetch("tuto.mp4").then((r) => r.blob());
+    const files = [new File([blob], "revision-bac-bfem.mp4", { type: "video/mp4" })];
+    if (navigator.canShare && navigator.canShare({ files })) return await navigator.share({ files, text, title: "Révision BAC BFEM" });
+  } catch (e) { if (e && e.name === "AbortError") return; }
   if (navigator.share) navigator.share({ title: "Révision BAC BFEM", text, url }).catch(() => {});
   else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
 }

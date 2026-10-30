@@ -96,3 +96,4 @@ input.code{font:inherit;font-size:1.2rem;letter-spacing:.12em;text-transform:upp
 .chk{padding:8px 0;white-space:normal;border-top:1px solid var(--line);align-items:flex-start;gap:8px}
 .chk input,#all{width:18px;height:18px;vertical-align:-3px;margin-right:6px}
 .chk .small{white-space:nowrap}
+.tuto video{width:100%;border-radius:12px;margin-top:8px;background:#000;max-height:70vh}
