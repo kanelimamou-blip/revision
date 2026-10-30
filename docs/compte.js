@@ -40,7 +40,11 @@ const Compte = (() => {
       snap = await ref.get();
     }
     doc = snap.data();
-    return { created: doc.created ? doc.created.toDate() : new Date(), premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+    // dernière activité, au plus une écriture par 12 h (reste dans le quota gratuit)
+    const seen = doc.lastSeen && doc.lastSeen.toDate ? doc.lastSeen.toDate() : null;
+    if (!seen || Date.now() - seen.getTime() > 12 * 3600e3)
+      ref.update({ lastSeen: firebase.firestore.FieldValue.serverTimestamp(), name: user.displayName || doc.name || "", email: user.email || "" }).catch((e) => logError("Mise à jour du profil refusée : " + (e.code || e.message)));
+    return { suspended: !!doc.suspended, created: doc.created ? doc.created.toDate() : new Date(), premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
   }
 
   async function signIn() {
@@ -80,7 +84,7 @@ const Compte = (() => {
     const state = pending; pending = null; clearTimeout(timer); timer = null;
     const last = (o, n) => Object.fromEntries(Object.entries(o || {}).sort().slice(-n));
     const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14), edt: state.edt || {}, todo: (state.todo || []).slice(-100) };
-    db.collection("users").doc(user.uid).update({ data }).catch(() => {});
+    db.collection("users").doc(user.uid).update({ data }).catch((e) => logError("Sauvegarde des progrès refusée : " + (e.code || e.message)));
   }
   function save(state) {
     if (!user || !db) return;
@@ -101,5 +105,32 @@ const Compte = (() => {
       .onSnapshot((snap) => cb(snap.docs.map((d) => ({ ...d.data(), me: d.id === user.uid }))), err);
   }
 
-  return { enabled, start, postScore, listenScores, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  // Journal des erreurs : au plus 5 envois par session, sans doublon ; lisible seulement par l'admin
+  const sent = new Set();
+  function logError(msg) {
+    msg = String(msg || "Erreur inconnue").slice(0, 500);
+    if (!db || sent.size >= 5 || sent.has(msg)) return;
+    sent.add(msg);
+    let level = ""; try { level = (JSON.parse(localStorage.getItem("rev") || "{}").level || "").slice(0, 20); } catch (e) {}
+    db.collection("errors").add({ uid: user ? user.uid : null, email: user ? (user.email || "").slice(0, 100) : "", page: (location.hash || "#accueil").slice(0, 100), msg, ua: navigator.userAgent.slice(0, 200), level, at: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+  }
+  window.addEventListener("error", (e) => logError(`${e.message || "Erreur"} (${(e.filename || "").split("/").pop()}:${e.lineno || 0})`));
+  window.addEventListener("unhandledrejection", (e) => logError("Promesse rejetée : " + ((e.reason && (e.reason.code || e.reason.message)) || e.reason)));
+
+  // Espace propriétaire : seul ce compte Google y a accès (même adresse dans les règles Firestore)
+  const ADMIN_EMAIL = "kanelimamou@gmail.com";
+  const isAdmin = () => !!user && user.email === ADMIN_EMAIL && user.emailVerified;
+  const ts = (v) => (v && v.toDate ? v.toDate() : null);
+  async function adminUsers() {
+    const snap = await db.collection("users").limit(5000).get();
+    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
+  }
+  async function adminErrors() {
+    const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at) }));
+  }
+  const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
+  const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
+
+  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

@@ -699,6 +699,7 @@ function applyProfile(p) {
   if (!p) return;
   S.trialStart = p.created.toISOString().slice(0, 10);
   S.premium = p.premium;
+  S.suspended = p.suspended;
   const d = p.data || {};
   if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [], daily: d.daily || {}, challenges: d.challenges || {}, done: d.done || {} });
   if (!S.level && d.level) S.level = d.level;
@@ -713,6 +714,8 @@ function render() {
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
   const [tab, ...rest] = (location.hash.slice(1) || "accueil").split("/"), arg = rest.length ? rest.join("/") : undefined;
+  if (tab === "admin" && globalThis.viewAdmin) { viewAdmin(arg); window.scrollTo(0, 0); return; }
+  if (S.suspended) { $view.innerHTML = `<div class="card"><h1>Compte suspendu</h1><p>Ton compte est suspendu pour le moment. Contacte-nous pour le réactiver.</p>${CFG.wave_number || CFG.whatsapp ? `<p class="small muted">WhatsApp : ${esc(CFG.wave_number || CFG.whatsapp)}</p>` : ""}</div>`; return; }
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
