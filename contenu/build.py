@@ -19,6 +19,7 @@ from fiches import FICHES
 from fiches_autres import FICHES_AUTRES
 FICHES = {**FICHES, **FICHES_AUTRES}
 from catalogue import LIBRARY, LIB_HOST
+from exercices import EXERCISES
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
@@ -116,26 +117,31 @@ def build():
             order = list(range(4))
             random.Random(qid).shuffle(order)
             questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, **({"src": src[0]} if src else {})})
-    # sujets guidés : mêmes choix mélangés que les questions, attachés à leur annale
-    for an in ANNALES:
-        parts = GUIDED.get(an["id"])
-        if not parts:
-            continue
-        an["guided"] = []
+    # sujets guidés et exercices corrigés : choix mélangés de la même façon, étape par étape
+    def guided(key, parts):
+        out = []
         for k, part in enumerate(parts):
             steps = []
             for j, (q, choices, a, ex, pts) in enumerate(part["steps"]):
-                assert len(choices) == 4 and 0 <= a < 4, (an["id"], q)
+                assert len(choices) == 4 and 0 <= a < 4, (key, q)
                 order = list(range(4))
-                random.Random(f'{an["id"]}-{k}-{j}').shuffle(order)
+                random.Random(f"{key}-{k}-{j}").shuffle(order)
                 steps.append({"q": q, "c": [choices[i] for i in order], "a": order.index(a), "e": ex, "pts": pts})
-            an["guided"].append({"title": part["title"], "context": part["context"], "steps": steps})
+            out.append({"title": part["title"], "context": part["context"], "steps": steps})
+        return out
+    for an in ANNALES:
+        if GUIDED.get(an["id"]):
+            an["guided"] = guided(an["id"], GUIDED[an["id"]])
+    exercises = []
+    for ex in EXERCISES:
+        assert set(ex["levels"]) <= set(LEVELS) | fams, ex["id"]
+        exercises.append({**{k: v for k, v in ex.items() if k != "parts"}, "guided": guided(ex["id"], ex["parts"])})
     assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
     for e in LIBRARY:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 
