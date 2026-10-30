@@ -198,7 +198,7 @@
       const subs = subjectsOf(S.level).filter((s) => (DATA.formules || {})[s.id]), sid = arg.split("/")[1], cur = subs.find((s) => s.id === sid) || subs[0];
       if (!cur) { $view.innerHTML = `<h1>Formulaire</h1><div class="card"><p>Pas de formules pour ta classe.</p></div>${back}`; return; }
       const chs = DATA.formules[cur.id], nb = chs.reduce((a, c) => a + c.f.length, 0);
-      $view.innerHTML = `<h1>Formulaire</h1><p class="muted">${esc(cur.name)} · ${chs.length} chapitres, ${nb} formules, dans l'ordre du programme. Garde-le ouvert pendant tes exercices.</p>${pick(subs, cur.id, "formules")}
+      $view.innerHTML = `<h1>Formulaire</h1><p class="muted">${esc(cur.name)} · ${chs.length} chapitres, ${nb} ${/maths|pc|svt|eco|compta/.test(cur.id) ? "formules et valeurs" : "repères à retenir"}, dans l'ordre du programme. Garde-le ouvert pendant tes exercices.</p>${pick(subs, cur.id, "formules")}
         <input class="field" id="fq" type="search" placeholder="Chercher dans toutes les matières (ex. : vitesse, Thalès)" aria-label="Chercher une formule">
         <div id="fl">${subs.flatMap((sb) => DATA.formules[sb.id].map((c) => { const n = nota(sb.id, c.p); return `<div class="card fch" data-s="${sb.id}"${sb.id === cur.id ? "" : " hidden"}><h2>${sb.id === cur.id ? "" : `<span class="small muted">${esc(sb.name)} · </span>`}${c.p + 1}. ${esc(c.t)}</h2><ul class="steps">${c.f.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${n ? `<a class="small" href="#notion/${n.id}">📖 Revoir le cours de ce chapitre</a>` : ""}</div>`; })).join("")}</div>
         <p class="small muted" id="fv" hidden>Aucune formule trouvée.</p>${back}`;

@@ -1,6 +1,7 @@
 # Formulaire chapitre par chapitre, construit à partir des synthèses et des notions de cours (lignes qui contiennent
 # une formule), complété à la main pour les chapitres dont le cours n'a pas de formule écrite.
 import re
+from formules_memo import MEMO
 
 MATIERES = re.compile(r"maths|-pc|eco|compta|svt")
 FORMULE = re.compile(r"[=≈≤≥×÷√²³ⁿ∑∫→⇌]|\b(ln|exp|cos|sin|tan)\b|\d\s*%")
@@ -258,12 +259,12 @@ def formulaire(fiches, notions, programmes):
     """{matière: [{"p": indice du chapitre, "t": titre, "f": [formules]}]} pour les matières scientifiques et de gestion."""
     out = {}
     for sid, prog in programmes.items():
-        if not MATIERES.search(sid) or "annales" in sid:
+        if (not MATIERES.search(sid) and sid not in MEMO) or "annales" in sid:
             continue
         titres = [t for t, _ in prog]
         chs = []
         for i, t in enumerate(titres):
-            lignes = [k for c in fiches.get(sid, []) if c.get("p") == i for k in c["cles"]]
+            lignes = [] if not MATIERES.search(sid) else [k for c in fiches.get(sid, []) if c.get("p") == i for k in c["cles"]]
             lignes += [k for n in notions.get(sid, []) if n["pch"] == i for k in n["enonce"]]
             lignes += PLUS.get(sid, {}).get(t, [])
             vus, f = set(), []
@@ -274,6 +275,7 @@ def formulaire(fiches, notions, programmes):
                 if FORMULE.search(k) and cle not in vus:
                     vus.add(cle)
                     f.append(k)
+            f += [k for k in MEMO.get(sid, {}).get(t, []) if k not in f]
             if f:
                 chs.append({"p": i, "t": t, "f": f})
         if chs:
