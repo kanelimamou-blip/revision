@@ -1,6 +1,6 @@
 # Banque de questions de l'appli Révision BAC et BFEM.
 # Chaque matière : (identifiant, [classes concernées], nom, questions).
-# Chaque question : (énoncé, [4 choix], indice de la bonne réponse, explication).
+# Chaque question : (énoncé, [4 choix], indice de la bonne réponse, explication[, source]).
 # Les FREE premières questions de chaque matière sont gratuites, les autres sont premium.
 
 FREE = 5
@@ -176,7 +176,7 @@ SUBJECTS_3E_TLE = [
     ("Le réflexe myotatique est :", ["Polysynaptique", "Monosynaptique", "Volontaire", "Hormonal"], 1, "Une seule synapse entre neurone sensitif et motoneurone."),
     ("Les lymphocytes T8 cytotoxiques :", ["Produisent des anticorps", "Détruisent les cellules infectées", "Transportent l'oxygène", "Fabriquent l'insuline"], 1, "Ils reconnaissent et tuent les cellules infectées."),
   ]),
-  ("tle-philo", ["Tle L", "Tle S"], "Philosophie", [
+  ("tle-philo", ["Tle L", "Tle S", "Tle G"], "Philosophie", [
     ("« Je pense, donc je suis » est de :", ["Platon", "Descartes", "Kant", "Sartre"], 1, "Le cogito, dans le Discours de la méthode (1637)."),
     ("« L'homme est un animal politique » est de :", ["Aristote", "Hobbes", "Rousseau", "Marx"], 0, "Aristote, dans Les Politiques."),
     ("« L'existence précède l'essence » est une thèse de :", ["Hegel", "Sartre", "Spinoza", "Pascal"], 1, "Sartre, L'existentialisme est un humanisme."),
@@ -193,7 +193,7 @@ SUBJECTS_3E_TLE = [
     ("L'épistémologie est :", ["L'étude de la morale", "L'étude critique des sciences", "L'étude de l'art", "L'étude de la politique"], 1, "Elle examine les méthodes et la valeur des connaissances scientifiques."),
     ("« Le cœur a ses raisons que la raison ne connaît point » est de :", ["Pascal", "Montaigne", "Rousseau", "Descartes"], 0, "Blaise Pascal, Pensées."),
   ]),
-  ("tle-hg", ["Tle L", "Tle S"], "Histoire-Géographie", [
+  ("tle-hg", ["Tle L", "Tle S", "Tle G"], "Histoire-Géographie", [
     ("La guerre froide oppose principalement :", ["La France et l'Allemagne", "Les États-Unis et l'URSS", "La Chine et le Japon", "L'Angleterre et l'Inde"], 1, "Deux blocs rivaux de 1947 à 1991."),
     ("Le mur de Berlin tombe en :", ["1961", "1989", "1991", "1975"], 1, "Le 9 novembre 1989."),
     ("La conférence de Bandung, qui réunit des pays d'Afrique et d'Asie, a lieu en :", ["1945", "1955", "1960", "1963"], 1, "En Indonésie, en 1955 : naissance du tiers-monde sur la scène internationale."),
@@ -210,7 +210,7 @@ SUBJECTS_3E_TLE = [
     ("Le pays le plus peuplé d'Afrique est :", ["L'Éthiopie", "L'Égypte", "Le Nigeria", "La RD Congo"], 2, "Le Nigeria dépasse 200 millions d'habitants."),
     ("Le siège de la BCEAO se trouve à :", ["Abidjan", "Dakar", "Bamako", "Lomé"], 1, "La Banque centrale des États de l'Afrique de l'Ouest est à Dakar."),
   ]),
-  ("tle-francais", ["Tle L", "Tle S"], "Français", [
+  ("tle-francais", ["Tle L", "Tle S", "Tle G"], "Français", [
     ("Les fondateurs de la Négritude sont :", ["Senghor, Césaire et Damas", "Sembène, Diop et Kane", "Camus, Sartre et Gide", "Hugo, Zola et Balzac"], 0, "Léopold Sédar Senghor, Aimé Césaire et Léon-Gontran Damas, dans les années 1930."),
     ("« Cahier d'un retour au pays natal » est d'Aimé Césaire. C'est :", ["Un roman", "Un long poème", "Une pièce de théâtre", "Un essai"], 1, "Poème publié en 1939, texte fondateur de la Négritude."),
     ("« Les Soleils des indépendances » est de :", ["Ahmadou Kourouma", "Camara Laye", "Mongo Beti", "Ferdinand Oyono"], 0, "Ahmadou Kourouma, 1968."),
@@ -227,7 +227,7 @@ SUBJECTS_3E_TLE = [
     ("Dans une dissertation, l'antithèse sert à :", ["Résumer le texte", "Présenter le point de vue opposé", "Conclure", "Citer l'auteur"], 1, "Plan dialectique : thèse, antithèse, synthèse."),
     ("Le mouvement littéraire de Victor Hugo au XIXe siècle est :", ["Le classicisme", "Le romantisme", "Le réalisme", "Le symbolisme"], 1, "Hugo est la grande figure du romantisme français."),
   ]),
-  ("tle-anglais", ["Tle L", "Tle S"], "Anglais", [
+  ("tle-anglais", ["Tle L", "Tle S", "Tle G"], "Anglais", [
     ("Passif de « They built the house » :", ["The house is built", "The house was built", "The house has build", "The house built"], 1, "Prétérit au passif : was/were + participe passé."),
     ("If I ___ rich, I would travel around the world.", ["am", "was been", "were", "will be"], 2, "Condition irréelle : if + prétérit (were pour toutes les personnes)."),
     ("If she had studied, she ___ passed.", ["would", "will have", "would have", "had"], 2, "Condition dans le passé : if + past perfect, puis would have + participe."),
@@ -248,7 +248,13 @@ SUBJECTS_3E_TLE = [
 
 
 from q_college import SUBJECTS_COLLEGE
-from q_lycee import SUBJECTS_LYCEE
+from q_lycee import SUBJECTS_G, SUBJECTS_LYCEE
+from annales import SUBJECTS_ANNALES
 
-LEVELS = ["6e", "5e", "4e", "3e", "2nde L", "2nde S", "1ère L", "1ère S", "Tle L", "Tle S"]
-SUBJECTS = SUBJECTS_COLLEGE + SUBJECTS_3E_TLE[:7] + SUBJECTS_LYCEE + SUBJECTS_3E_TLE[7:]
+# Classes et séries ; une matière vise une classe précise (« Tle S2 ») ou une famille de séries (« Tle S »)
+CLASSES = ["6e", "5e", "4e", "3e", "2nde", "1ère", "Tle"]
+SERIES = {"2nde": ["L", "S"], "1ère": ["L1a", "L1b", "L2", "L'", "S1", "S2", "S3", "S4", "S5", "G"]}
+SERIES["Tle"] = SERIES["1ère"]
+FAMILIES = {"L": "L", "L1a": "L", "L1b": "L", "L2": "L", "L'": "L", "S": "S", "S1": "S", "S2": "S", "S3": "S", "S4": "S", "S5": "S", "G": "G"}
+LEVELS = [c if c not in SERIES else f"{c} {s}" for c in CLASSES for s in SERIES.get(c, [None])]
+SUBJECTS = SUBJECTS_COLLEGE + SUBJECTS_3E_TLE[:7] + SUBJECTS_LYCEE + SUBJECTS_G + SUBJECTS_3E_TLE[7:] + SUBJECTS_ANNALES

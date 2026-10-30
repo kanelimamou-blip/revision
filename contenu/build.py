@@ -11,7 +11,8 @@ import random
 import secrets
 from pathlib import Path
 
-from questions import FREE, LEVELS, SUBJECTS
+from annales import ANNALES, HOST
+from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT.parent / "docs" / "data"
@@ -25,7 +26,7 @@ CONFIG = {
     "wave_number": "78 272 19 20",
     "whatsapp": "221782721920",
     # classes d'examen : nom de l'examen et date indicative
-    "exams": {"3e": ["BFEM", "2027-07-06"], "Tle L": ["BAC", "2027-07-01"], "Tle S": ["BAC", "2027-07-01"]},
+    "exams": {"3e": ["BFEM", "2027-07-06"], "Tle": ["BAC", "2027-07-01"]},
 }
 
 
@@ -47,18 +48,19 @@ def new_codes(n, dest):
 def build():
     questions, subjects = [], []
     for sid, levels, name, items in SUBJECTS:
-        assert set(levels) <= set(LEVELS), sid
+        fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
+        assert set(levels) <= set(LEVELS) | fams, (sid, levels)
         subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items))})
-        for i, (q, choices, a, ex) in enumerate(items):
+        for i, (q, choices, a, ex, *src) in enumerate(items):
             assert len(choices) == 4 and 0 <= a < 4, (sid, q)
             qid = f"{sid}-{i + 1}"
             # ordre des choix mélangé (fixe pour chaque question) pour que la bonne réponse ne soit pas toujours à la même place
             order = list(range(4))
             random.Random(qid).shuffle(order)
-            questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE})
+            questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, **({"src": src[0]} if src else {})})
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"levels": LEVELS, "subjects": subjects, "questions": questions}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

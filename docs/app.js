@@ -15,9 +15,12 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 const today = () => new Date().toISOString().slice(0, 10);
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const fcfa = (n) => n.toLocaleString("fr-FR") + " FCFA";
-const subjectsOf = (level) => DATA.subjects.filter((s) => s.levels.includes(level));
+// « Tle S2 » appartient aussi à la famille « Tle S » (matières communes à toutes les séries S)
+const family = (level) => { const [c, sr] = String(level).split(" "); return sr ? `${c} ${DATA.families[sr] || sr}` : c; };
+const matches = (levels, level) => levels.includes(level) || levels.includes(family(level));
+const subjectsOf = (level) => DATA.subjects.filter((s) => matches(s.levels, level));
 const inLevel = (q) => subjectsOf(S.level).some((s) => s.id === q.s);
-const examOf = () => CFG.exams[S.level] || null;
+const examOf = () => CFG.exams[String(S.level).split(" ")[0]] || null;
 const blancName = () => (examOf() ? "Examen blanc" : "Devoir blanc");
 const open = (q) => S.premium || q.free;
 const qsOf = (sid) => DATA.questions.filter((q) => q.s === sid);
@@ -40,13 +43,21 @@ function streak() {
   return n;
 }
 
-// ---------- Choix de la classe
+// ---------- Choix de la classe puis de la série
 function viewLevel() {
-  $view.innerHTML = `<h1>Tu es en quelle classe ?</h1>
-    <p class="muted">Tu pourras changer plus tard en touchant ta classe en haut de l'écran.</p>
-    <div class="grid">${DATA.levels.map((l) => `<button class="subj lvl" data-l="${esc(l)}"${l === S.level ? ' aria-pressed="true"' : ""}>
-      <b>${esc(l)}</b><span class="small muted">${CFG.exams[l] ? "Année du " + CFG.exams[l][0] : subjectsOf(l).length + " matières"}</span></button>`).join("")}</div>`;
-  $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { S.level = b.dataset.l; store.save(); go("accueil"); render(); });
+  const cls = location.hash.split("/")[1] ? decodeURIComponent(location.hash.split("/")[1]) : null;
+  const series = cls && DATA.series[cls];
+  const pick = (l, sub) => `<button class="subj lvl" data-l="${esc(l)}"${l === S.level ? ' aria-pressed="true"' : ""}><b>${esc(l)}</b><span class="small muted">${sub}</span></button>`;
+  const info = (l) => { const ex = CFG.exams[l.split(" ")[0]]; return ex ? "Année du " + ex[0] : subjectsOf(l).length + " matières"; };
+  $view.innerHTML = series
+    ? `<h1>Quelle série en ${esc(cls)} ?</h1><div class="grid">${series.map((sr) => pick(`${cls} ${sr}`, `${subjectsOf(`${cls} ${sr}`).length} matières`)).join("")}</div>
+       <a class="btn alt" href="#classe">Retour aux classes</a>`
+    : `<h1>Tu es en quelle classe ?</h1>
+       <p class="muted">Tu pourras changer plus tard en touchant ta classe en haut de l'écran.</p>
+       <div class="grid">${DATA.classes.map((c) => DATA.series[c]
+         ? `<a class="subj lvl" href="#classe/${encodeURIComponent(c)}" style="text-decoration:none;color:inherit"${String(S.level).startsWith(c + " ") ? ' aria-pressed="true"' : ""}><b>${esc(c)}</b><span class="small muted">${CFG.exams[c] ? "Année du " + CFG.exams[c][0] + " · " : ""}séries ${DATA.series[c].join(", ")}</span></a>`
+         : pick(c, info(c))).join("")}</div>`;
+  $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { S.level = b.dataset.l; store.save(); go("accueil"); });
 }
 
 // ---------- Accueil
@@ -76,6 +87,7 @@ function viewHome() {
     <h2>Choisis une matière</h2>
     <div class="grid">${subs}</div>
     <div class="btns">
+      ${annalesOf(S.level).length ? `<a class="btn" href="#annales">Annales officielles : ${annalesOf(S.level).length} vrais sujets du ${examOf() ? examOf()[0] : "BAC"}</a>` : ""}
       <a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${S.premium ? "" : " 🔒"}</a>
       <button class="btn alt" id="share">Partager l'appli à un camarade</button>
     </div>`;
@@ -83,8 +95,9 @@ function viewHome() {
   $view.querySelector("#share").onclick = share;
 }
 
+const srcLine = (q) => (q.src ? `<p class="src">📄 Source : ${esc(q.src)}</p>` : "");
 function questionBlock(q) {
-  return `<p class="q">${esc(q.q)}</p><div class="choices">${q.c.map((c, i) =>
+  return `${q.src ? `<p class="tag-src">${esc(q.src)}</p>` : ""}<p class="q">${esc(q.q)}</p><div class="choices">${q.c.map((c, i) =>
     `<button class="choice" data-i="${i}"><span class="l">${LETTERS[i]}</span><span>${esc(c)}</span></button>`).join("")}</div>
     <div class="expl" hidden></div>`;
 }
@@ -95,7 +108,7 @@ function bindQuestion(root, q, done, showExpl = true) {
     if (showExpl) {
       if (!ok) b.classList.add("ko");
       const ex = root.querySelector(".expl");
-      ex.innerHTML = `<b class="${ok ? "msg-ok" : "msg-ko"}">${ok ? "Bonne réponse !" : "Pas tout à fait."}</b> ${esc(q.e)}`;
+      ex.innerHTML = `<b class="${ok ? "msg-ok" : "msg-ko"}">${ok ? "Bonne réponse !" : "Pas tout à fait."}</b> ${esc(q.e)}${srcLine(q)}`;
       ex.hidden = false;
     } else b.classList.add("ok");
     record(q, ok); done(ok, i);
@@ -135,7 +148,7 @@ function runQuiz(title, qs, back, { exam = false } = {}) {
     const fixes = exam ? `<h2>Corrections</h2><div class="list">${qs.map((q) => { const a = answers.find((x) => x.q === q);
       return `<div class="card"><p class="small muted">${esc(subjName(q.s))}</p><p><b>${esc(q.q)}</b></p>
         <p class="${a && a.ok ? "msg-ok" : "msg-ko"}">${a ? (a.ok ? "✓ " : "✗ Ta réponse : " + esc(q.c[a.i]) + " · ") : "Sans réponse · "}Bonne réponse : ${esc(q.c[q.a])}</p>
-        <p class="small muted">${esc(q.e)}</p></div>`; }).join("")}</div>` : "";
+        <p class="small muted">${esc(q.e)}</p>${srcLine(q)}</div>`; }).join("")}</div>` : "";
     $view.innerHTML = `<div class="card" style="text-align:center"><p class="muted">${esc(title)}</p><p class="score">${note} / 20</p>
       <p>${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} sur ${total}</p><p><b>${mot}</b></p></div>
       ${!S.premium ? `<div class="card"><p>Il y a encore beaucoup de questions dans cette matière, avec l'examen blanc chronométré.</p><a class="btn hi-btn" href="#premium">Débloquer tout pour ${fcfa(CFG.price_fcfa)}</a></div>` : ""}
@@ -165,6 +178,22 @@ function viewErrors() {
     ${wrong.length ? `<div class="card">${Object.entries(by).map(([sid, n]) => `<div class="row"><span>${esc(subjName(sid))}</span><b>${n}</b></div>`).join("")}</div>
       <a class="btn" href="#erreurs/go">Revoir ${Math.min(wrong.length, QUIZ_LEN)} erreur${wrong.length > 1 ? "s" : ""}</a>`
     : `<div class="card"><p>Aucune erreur à revoir. Fais un quiz depuis l'accueil.</p><a class="btn" href="#accueil">Choisir une matière</a></div>`}`;
+}
+
+// ---------- Annales : vrais sujets, avec leur structure et le lien vers le PDF original
+const annalesOf = (level) => (DATA.annales || []).filter((a) => matches(a.levels, level));
+function viewAnnales() {
+  const list = annalesOf(S.level);
+  $view.innerHTML = `<h1>Annales officielles</h1>
+    <p class="muted">Vrais sujets de l'Office du Bac (UCAD). Les questions « Annales » de l'appli en sont tirées, avec leur source.</p>
+    ${list.length ? list.map((a) => `<div class="card">
+      <div class="row"><h2>${esc(a.exam)} ${a.year}</h2><span class="tag">${esc(a.subject)}</span></div>
+      <p class="small muted">Séries ${esc(a.series)}${a.duration ? " · " + esc(a.duration) : ""}${a.coef ? " · coefficient " + a.coef : ""}</p>
+      ${a.parts ? `<ul class="steps small">${a.parts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
+      <div class="row"><a class="btn" style="flex:1" href="${esc(a.sujet)}" target="_blank" rel="noopener">Sujet (PDF)</a>
+      <a class="btn alt" style="flex:1" href="${esc(a.corrige)}" target="_blank" rel="noopener">Corrigé (PDF)</a></div>
+      <p class="small muted">Fichiers hébergés par ${esc(DATA.annalesHost)}.</p></div>`).join("")
+    : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
 }
 
 // ---------- Progrès
@@ -230,9 +259,9 @@ function render() {
   clearInterval(timer);
   const [tab, arg] = (location.hash.slice(1) || "accueil").split("/");
   document.getElementById("exam-tag").textContent = S.level || "";
-  if (!S.level && tab !== "classe") return viewLevel();
+  if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
@@ -242,6 +271,6 @@ window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); defe
 document.getElementById("install").onclick = () => { if (deferred) { deferred.prompt(); deferred = null; document.getElementById("install").hidden = true; } };
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
-Promise.all([fetch("data/questions.json").then((r) => r.json()), fetch("data/config.json").then((r) => r.json())])
+Promise.all([fetch("data/questions.json", { cache: "no-cache" }).then((r) => r.json()), fetch("data/config.json", { cache: "no-cache" }).then((r) => r.json())])
   .then(([d, c]) => { DATA = d; CFG = c; render(); })
   .catch(() => { $view.innerHTML = `<div class="card"><p>Impossible de charger les questions. Vérifie ta connexion puis recharge la page.</p></div>`; });

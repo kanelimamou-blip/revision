@@ -109,7 +109,7 @@ SUBJECTS_LYCEE = [
     ("L'unité fonctionnelle du rein est :", ["Le néphron", "Le neurone", "L'alvéole", "Le sarcomère"], 0, "Chaque rein en compte environ un million."),
     ("La Terre a environ :", ["6 000 ans", "4,5 millions d'années", "4,5 milliards d'années", "100 milliards d'années"], 2, "Daté par la radioactivité."),
   ]),
-  ("1ere-francais", ["1ère L", "1ère S"], "Français", [
+  ("1ere-francais", ["1ère L", "1ère S", "1ère G"], "Français", [
     ("Le siècle des Lumières est le :", ["XVIe siècle", "XVIIe siècle", "XVIIIe siècle", "XIXe siècle"], 2, "Voltaire, Rousseau, Diderot, Montesquieu."),
     ("« De l'esprit des lois » est de :", ["Rousseau", "Montesquieu", "Voltaire", "Diderot"], 1, "1748, séparation des pouvoirs."),
     ("La règle classique des trois unités concerne :", ["Le temps, le lieu et l'action", "Les personnages, le décor et la musique", "Le début, le milieu et la fin", "Les actes"], 0, "Une seule action, en un seul lieu, en un jour."),
@@ -121,7 +121,7 @@ SUBJECTS_LYCEE = [
     ("« La Tragédie du roi Christophe » est une pièce de :", ["Senghor", "Aimé Césaire", "Bernard Dadié", "Sony Labou Tansi"], 1, "Aimé Césaire, 1963, sur Haïti après l'indépendance."),
     ("Dans une lettre ouverte ou un discours, l'auteur cherche surtout à :", ["Décrire", "Convaincre ou persuader", "Raconter un rêve", "Faire une liste"], 1, "C'est un texte argumentatif."),
   ]),
-  ("1ere-hg", ["1ère L", "1ère S"], "Histoire-Géographie", [
+  ("1ere-hg", ["1ère L", "1ère S", "1ère G"], "Histoire-Géographie", [
     ("La Première Guerre mondiale éclate après un assassinat à :", ["Berlin", "Sarajevo", "Paris", "Vienne"], 1, "Assassinat de l'archiduc François-Ferdinand, 1914."),
     ("Le traité de Versailles est signé en :", ["1914", "1918", "1919", "1939"], 2, "Il fixe la paix avec l'Allemagne."),
     ("La crise économique de 1929 commence :", ["En Europe", "Aux États-Unis", "En Afrique", "Au Japon"], 1, "Krach de la Bourse de Wall Street."),
@@ -133,7 +133,7 @@ SUBJECTS_LYCEE = [
     ("Le siège de l'OMC est à :", ["New York", "Genève", "Paris", "Washington"], 1, "Organisation mondiale du commerce."),
     ("La première puissance économique mondiale par le PIB est :", ["La Chine", "Les États-Unis", "Le Japon", "L'Allemagne"], 1, "La Chine est deuxième."),
   ]),
-  ("1ere-anglais", ["1ère L", "1ère S"], "Anglais", [
+  ("1ere-anglais", ["1ère L", "1ère S", "1ère G"], "Anglais", [
     ("Had I known, I ___ have come earlier.", ["will", "would", "shall", "had"], 1, "Inversion = if I had known…, I would have."),
     ("It's high time we ___.", ["leave", "left", "leaving", "will leave"], 1, "It's high time + prétérit."),
     ("She denied ___ the money.", ["to take", "taking", "take", "took"], 1, "Deny + -ing."),
@@ -144,5 +144,33 @@ SUBJECTS_LYCEE = [
     ("« As long as » veut dire :", ["Aussi long que", "Tant que, pourvu que", "Dès que", "Bien que"], 1, "You can go out as long as you come back early."),
     ("They made him ___ all night.", ["to work", "work", "working", "worked"], 1, "Make somebody do something."),
     ("It was ___ a nice day that we went to the beach.", ["so", "such", "too", "very"], 1, "Such a + adjectif + nom."),
+  ]),
+]
+
+# Série G (économie et gestion), 1ère et Terminale
+SUBJECTS_G = [
+  ("g-eco", ["1ère G", "Tle G"], "Économie", [
+    ("Le PIB mesure :", ["La richesse produite dans un pays pendant une période", "L'argent en banque", "La population active", "Les exportations seulement"], 0, "Produit intérieur brut : somme des valeurs ajoutées produites sur le territoire, en général sur un an."),
+    ("L'inflation est :", ["Une baisse durable des prix", "Une hausse générale et durable des prix", "La hausse d'un seul prix", "Une hausse des salaires"], 1, "Elle réduit le pouvoir d'achat de la monnaie."),
+    ("La banque centrale des pays de l'UEMOA est :", ["La BCEAO", "La BAD", "La BEAC", "Le FMI"], 0, "Banque centrale des États de l'Afrique de l'Ouest, siège à Dakar."),
+    ("Si la demande d'un bien augmente et que l'offre ne change pas, son prix :", ["Baisse", "Augmente", "Ne bouge pas", "Devient nul"], 1, "Loi de l'offre et de la demande."),
+    ("Un chômeur est une personne :", ["Qui ne veut pas travailler", "Sans emploi, disponible et qui cherche activement un travail", "À la retraite", "Étudiante"], 1, "Définition du Bureau international du travail."),
+    ("La balance commerciale est :", ["Exportations − importations de biens", "Recettes − dépenses de l'État", "Épargne − investissement", "Salaires − impôts"], 0, "Excédentaire si on exporte plus qu'on importe."),
+    ("La pêche appartient au secteur :", ["Primaire", "Secondaire", "Tertiaire", "Quaternaire"], 0, "Primaire : agriculture, élevage, pêche. Secondaire : industrie. Tertiaire : services."),
+    ("Lequel est un impôt indirect ?", ["L'impôt sur le revenu", "La TVA", "L'impôt sur les sociétés", "La contribution foncière"], 1, "La TVA est payée par le consommateur au moment de l'achat."),
+    ("Le taux normal de TVA au Sénégal est de :", ["10 %", "15 %", "18 %", "20 %"], 2, "18 %, comme dans la plupart des pays de l'UEMOA."),
+    ("Les trois fonctions de la monnaie sont :", ["Produire, vendre, acheter", "Unité de compte, intermédiaire des échanges, réserve de valeur", "Épargner, prêter, investir", "Taxer, dépenser, emprunter"], 1, "Fonctions classiques depuis Aristote."),
+  ]),
+  ("g-compta", ["1ère G", "Tle G"], "Techniques comptables", [
+    ("Le référentiel comptable utilisé au Sénégal est :", ["Le plan comptable français", "Le SYSCOHADA", "Les IFRS seulement", "Le SYSCOA ancien"], 1, "Système comptable de l'OHADA, révisé en 2017."),
+    ("Le bilan présente :", ["Les ventes du mois", "Le patrimoine de l'entreprise à une date donnée", "Les salaires", "Les prix de vente"], 1, "À l'actif les emplois, au passif les ressources."),
+    ("L'égalité fondamentale du bilan est :", ["Actif = Passif", "Charges = Produits", "Actif = Charges", "Passif = Produits"], 0, "Le total de l'actif est toujours égal au total du passif."),
+    ("Le résultat de l'exercice se calcule par :", ["Actif − Passif", "Produits − Charges", "Ventes − Achats", "Capital − Dettes"], 1, "Bénéfice si positif, perte si négatif."),
+    ("Dans le SYSCOHADA, la classe 6 regroupe :", ["Les produits", "Les charges des activités ordinaires", "La trésorerie", "Les stocks"], 1, "Classe 7 : produits ; classe 5 : trésorerie ; classe 3 : stocks."),
+    ("La classe 5 du SYSCOHADA correspond à :", ["La trésorerie", "Les tiers", "Les immobilisations", "Les capitaux"], 0, "Banque, caisse, chèques postaux…"),
+    ("Le compte de la caisse dans le SYSCOHADA est :", ["521", "571", "411", "601"], 1, "571 Caisse ; 521 Banques ; 411 Clients ; 601 Achats de marchandises."),
+    ("Principe de la partie double :", ["Chaque opération est notée deux fois au débit", "Chaque opération touche au moins deux comptes, total débit = total crédit", "On compte tout en double", "On enregistre seulement les ventes"], 1, "Un compte est débité, un autre crédité, pour le même montant total."),
+    ("L'amortissement constate :", ["Une hausse de valeur", "La dépréciation irréversible d'une immobilisation", "Un paiement de salaire", "Une vente"], 1, "Exemple : un véhicule qui s'use avec le temps."),
+    ("Le compte 411 Clients se trouve dans la classe :", ["2", "4", "6", "7"], 1, "Classe 4 : comptes de tiers (clients, fournisseurs, État…)."),
   ]),
 ]
