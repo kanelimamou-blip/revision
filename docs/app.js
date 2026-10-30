@@ -41,8 +41,12 @@ function record(q, ok) {
   const st = S.stats[q.id] || { ok: 0, ko: 0 };
   st[ok ? "ok" : "ko"]++; st.last = ok; S.stats[q.id] = st;
   if (!S.days.includes(today())) S.days.push(today());
+  const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d;
   store.save();
 }
+// Missions du jour (programme des 10 jours d'essai, puis programme quotidien)
+const doneToday = (tag) => ((S.done || {})[today()] || []).includes(tag);
+function markDone(tag) { S.done = S.done || {}; const t = S.done[today()] || []; if (!t.includes(tag)) { t.push(tag); S.done[today()] = t; store.save(); } }
 function streak() {
   let n = 0; const d = new Date();
   if (!S.days.includes(today())) d.setDate(d.getDate() - 1);
@@ -78,9 +82,22 @@ function rubriques() {
     tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
     tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas` : "Bientôt pour ta classe"),
     tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
+    tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
     tile("#duo", "🤝", "Session à deux", "Défie un camarade de ta classe"),
     tile("#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`),
   ].join("");
+}
+function programme() {
+  const n = Math.min(TRIAL_DAYS, Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5) + 1);
+  const weakest = subjectsOf(S.level).filter((s) => !/annales/.test(s.id)).sort((a, b) => mastery(a.id) - mastery(b.id))[0];
+  const third = n % 3 === 1 ? ["exo", "#exercices", "Fais un exercice corrigé"] : n % 3 === 2 ? ["fiche", weakest ? `#fiche/${weakest.id}` : "#fiches", "Lis une synthèse de cours"] : ["duo", "#duo", "Fais une session à deux avec un camarade"];
+  const missions = [["challenge", "#challenge", "Fais le challenge du jour (toutes matières)"],
+    ["qcm", weakest ? `#quiz/${weakest.id}` : "#qcm-list", `QCM dans ta matière la plus faible${weakest ? " : " + weakest.name : ""}`], third];
+  const done = missions.filter(([t]) => doneToday(t)).length;
+  const trial = !S.premium && n <= TRIAL_DAYS;
+  return `<div class="card prog"><div class="row"><h2>${trial ? `Mon programme : jour ${n} / ${TRIAL_DAYS}` : "Mes missions du jour"}</h2><b>${done}/3</b></div>
+    ${missions.map(([t, href, label]) => `<a class="mission${doneToday(t) ? " done" : ""}" href="${href}"><span>${doneToday(t) ? "✅" : "⬜"}</span><span>${esc(label)}</span></a>`).join("")}
+    ${done === 3 ? `<p class="msg-ok small">Bravo, journée réussie ! Reviens demain pour garder ta série 🔥</p>` : `<p class="small muted">3 missions par jour, environ 20 minutes.</p>`}</div>`;
 }
 function viewHome() {
   const ex = examOf();
@@ -102,6 +119,7 @@ function viewHome() {
         : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
       <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
     </div>
+    ${programme()}
     <h2>Rubriques</h2>
     <div class="grid rub">${rubriques()}</div>
     <div class="card" id="daily">
@@ -142,7 +160,8 @@ function bindQuestion(root, q, done, showExpl = true) {
 }
 
 // ---------- Quiz par matière, erreurs, examen blanc
-function runQuiz(title, qs, back, { exam = false, duo = null } = {}) {
+function runQuiz(title, qs, back, { exam = false, duo = null, solo = false, onEnd = null } = {}) {
+  const hide = exam || solo;
   clearInterval(timer);
   if (!qs.length) { $view.innerHTML = `<div class="card"><h2>${esc(title)}</h2><p class="muted">Aucune question ici pour l'instant.</p><a class="btn" href="${back}">Retour</a></div>`; return; }
   let k = 0, score = 0; const answers = [];
@@ -156,22 +175,22 @@ function runQuiz(title, qs, back, { exam = false, duo = null } = {}) {
     const q = qs[k];
     $view.innerHTML = `<div class="progress"><span>${esc(title)}</span><span>${exam ? `<span class="timer" id="timer"></span> · ` : ""}${k + 1} / ${qs.length}</span></div>
       <div class="bar"><i style="width:${(100 * k) / qs.length}%"></i></div>
-      <div class="card" id="qc">${exam ? `<p class="small muted">${esc(subjName(q.s))}</p>` : ""}${questionBlock(q)}</div>
+      <div class="card" id="qc">${hide ? `<p class="small muted">${esc(subjName(q.s))}</p>` : ""}${questionBlock(q)}</div>
       <button class="btn" id="next" hidden>${k + 1 < qs.length ? "Question suivante" : "Voir mon score"}</button>`;
     const next = document.getElementById("next");
     bindQuestion(document.getElementById("qc"), q, (ok, i) => {
       score += ok; answers.push({ q, i, ok });
-      if (exam) { k + 1 < qs.length ? (k++, step()) : finish(); } else next.hidden = false;
-    }, !exam);
+      if (hide) { k + 1 < qs.length ? (k++, step()) : finish(); } else next.hidden = false;
+    }, !hide);
     next.onclick = () => (k + 1 < qs.length ? (k++, step()) : finish());
     window.scrollTo(0, 0);
   }
   function finish() {
     clearInterval(timer);
-    const total = exam ? qs.length : answers.length, note = Math.round((20 * score) / total * 10) / 10;
+    const total = hide ? qs.length : answers.length, note = Math.round((20 * score) / total * 10) / 10;
     S.sessions.push({ t: title, score, total, d: today() }); store.save();
     const mot = note >= 16 ? "Excellent, continue comme ça !" : note >= 12 ? "Bien joué, encore un effort." : note >= 10 ? "C'est juste, revois tes erreurs." : "Courage, revois les corrections et recommence.";
-    const fixes = exam ? `<h2>Corrections</h2><div class="list">${qs.map((q) => { const a = answers.find((x) => x.q === q);
+    const fixes = hide ? `<h2>Corrigé ligne par ligne</h2><div class="list">${qs.map((q) => { const a = answers.find((x) => x.q === q);
       return `<div class="card"><p class="small muted">${esc(subjName(q.s))}</p><p><b>${esc(q.q)}</b></p>
         <p class="${a && a.ok ? "msg-ok" : "msg-ko"}">${a ? (a.ok ? "✓ " : "✗ Ta réponse : " + esc(q.c[a.i]) + " · ") : "Sans réponse · "}Bonne réponse : ${esc(q.c[q.a])}</p>
         <p class="small muted">${esc(q.e)}</p>${srcLine(q)}</div>`; }).join("")}</div>` : "";
@@ -179,6 +198,7 @@ function runQuiz(title, qs, back, { exam = false, duo = null } = {}) {
       <p>${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} sur ${total}</p><p><b>${mot}</b></p></div>
       ${!isPremium() ? `<div class="card"><p>Il y a encore beaucoup de questions dans cette matière, avec l'examen blanc chronométré.</p><a class="btn hi-btn" href="#premium">Débloquer tout pour ${fcfa(CFG.price_fcfa)}</a></div>` : ""}
       ${duo ? `<a class="btn hi-btn" href="https://wa.me/?text=${encodeURIComponent(`Session à deux ${duo} (${S.level}) : j'ai eu ${note}/20 (${score}/${total}). Et toi ? ${duoLink(duo)}`)}" target="_blank" rel="noopener">Envoyer ma note à mon camarade</a>` : ""}
+      ${onEnd ? onEnd(score, total, answers) : ""}
       <div class="btns"><button class="btn" id="again">Recommencer</button><a class="btn alt" href="${back}">Retour</a></div>${fixes}`;
     document.getElementById("again").onclick = () => render();
     window.scrollTo(0, 0);
@@ -186,10 +206,20 @@ function runQuiz(title, qs, back, { exam = false, duo = null } = {}) {
   step();
 }
 
+// Avant chaque QCM ou exercice, l'élève choisit : avec support (corrigé après chaque réponse) ou tout seul (corrigé à la fin)
+function chooseMode(title, sub, start) {
+  $view.innerHTML = `<div class="card"><h1>${esc(title)}</h1><p class="muted">${esc(sub)}</p>
+    <h2>Comment veux-tu travailler ?</h2>
+    <button class="btn" id="m-help">🧑‍🏫 Avec support<br><span class="small">Corrigé et explication après chaque réponse</span></button>
+    <button class="btn alt" id="m-solo">💪 Tout seul<br><span class="small">Tu réponds à tout, corrigé ligne par ligne à la fin</span></button></div>`;
+  document.getElementById("m-help").onclick = () => start(false);
+  document.getElementById("m-solo").onclick = () => start(true);
+}
 function viewQuiz(sid) {
   const s = DATA.subjects.find((x) => x.id === sid);
   if (!s) return go("accueil");
-  runQuiz(`${S.level} · ${s.name}`, shuffle(qsOf(sid).filter(open)).slice(0, QUIZ_LEN), "#accueil");
+  const qs = shuffle(qsOf(sid).filter(open)).slice(0, QUIZ_LEN);
+  chooseMode(`QCM · ${s.name}`, `${qs.length} questions de ${S.level}`, (solo) => { markDone("qcm"); runQuiz(`${S.level} · ${s.name}`, qs, "#qcm-list", { solo }); });
 }
 function viewExam() {
   if (!isPremium()) return viewPremium(`${examOf() ? "L'examen blanc" : "Le devoir blanc"} fait partie du pack premium.`);
@@ -230,6 +260,7 @@ function viewFiches() {
 function viewFiche(sid) {
   const s = DATA.subjects.find((x) => x.id === sid), f = DATA.fiches && DATA.fiches[sid];
   if (!s || !f) return go("fiches");
+  markDone("fiche");
   $view.innerHTML = `<p class="tag-src">Synthèse de cours · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
     ${f.map(([t, pts]) => `<div class="card"><h2>${esc(t)}</h2><ul class="steps">${pts.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join("")}
     <a class="btn" href="#quiz/${s.id}">M'entraîner sur ${esc(s.name)}</a>
@@ -281,6 +312,7 @@ function viewDuo(arg) {
   if (arg) {
     const [code, lv] = decodeURIComponent(arg).split("~");
     if (lv && lv !== S.level && DATA.levels.includes(lv)) { S.level = lv; store.save(); }
+    markDone("duo");
     return runQuiz(`Session à deux · ${code}`, duoQuestions(code, S.level), "#duo", { duo: code });
   }
   $view.innerHTML = `<h1>Session à deux</h1>
@@ -301,6 +333,39 @@ function viewDuo(arg) {
   };
 }
 
+// ---------- Challenge du jour : 20 questions qui mélangent tout le programme, résultats en graphique
+const CHAL_LEN = 20;
+function challengeQuestions(level, day) {
+  const rnd = seeded("challenge|" + level + "|" + day), subs = subjectsOf(level);
+  const pools = subs.map((s) => { const a = qsOf(s.id); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; });
+  const out = []; for (let r = 0; out.length < CHAL_LEN && r < 50; r++) pools.forEach((p) => { if (p[r] && out.length < CHAL_LEN) out.push(p[r]); });
+  return out;
+}
+function barChart(rows) {
+  return `<div class="chart">${rows.map(([label, val, sub]) => `<div class="crow"><span class="clab">${esc(label)}</span>
+    <span class="ctrack"><i style="width:${Math.max(2, val)}%;background:${val >= 70 ? "var(--ok)" : val >= 50 ? "var(--hi)" : "var(--ko)"}"></i></span><b>${sub}</b></div>`).join("")}</div>`;
+}
+function viewChallenge() {
+  const day = today(), qs = challengeQuestions(S.level, day), prev = (S.challenges || {})[day];
+  const hist = Object.entries(S.challenges || {}).sort().slice(-10);
+  $view.innerHTML = `<h1>Challenge du jour</h1>
+    <p class="muted">${CHAL_LEN} questions qui mélangent toutes les matières de ${esc(S.level)}. Toute ta classe a le même challenge aujourd'hui : compare ta note avec tes camarades.</p>
+    ${prev ? `<div class="card"><p>Déjà fait aujourd'hui : <b>${pts(prev.note)} / 20</b>. Tu peux le refaire pour t'entraîner, ta première note reste enregistrée.</p></div>` : ""}
+    <button class="btn hi-btn" id="go">Lancer le challenge</button>
+    ${hist.length ? `<div class="card"><h2>Mes derniers challenges</h2>${barChart(hist.map(([d, c]) => [d.slice(5).split("-").reverse().join("/"), c.note * 5, pts(c.note) + "/20"]))}</div>` : ""}`;
+  document.getElementById("go").onclick = () => runQuiz(`Challenge du ${day.slice(5).split("-").reverse().join("/")}`, qs, "#challenge", { solo: true, onEnd: (score, total, answers) => {
+    const by = {}; answers.forEach((a) => { const b = (by[a.q.s] = by[a.q.s] || { ok: 0, n: 0 }); b.n++; b.ok += a.ok; });
+    const note = Math.round((20 * score) / total * 10) / 10;
+    if (!prev) { S.challenges = S.challenges || {}; S.challenges[day] = { note, by }; store.save(); }
+    markDone("challenge");
+    const weak = Object.entries(by).sort((a, b) => a[1].ok / a[1].n - b[1].ok / b[1].n)[0];
+    const text = `Challenge du jour Révision (${S.level}) : j'ai eu ${note}/20. Fais mieux ! ${location.href.split("#")[0]}`;
+    return `<div class="card"><h2>Tes résultats par matière</h2>${barChart(Object.entries(by).map(([sid, b]) => [subjName(sid), Math.round((100 * b.ok) / b.n), `${b.ok}/${b.n}`]))}
+      ${weak ? `<p class="small">À travailler en priorité : <b>${esc(subjName(weak[0]))}</b>.</p><a class="btn alt" href="#fiche/${weak[0]}">Revoir la synthèse</a>` : ""}</div>
+      <a class="btn hi-btn" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_blank" rel="noopener">Défier mes camarades sur WhatsApp</a>`;
+  } });
+}
+
 // ---------- Sujet guidé : un vrai sujet, étape par étape, corrigé tout de suite
 const pts = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
 function viewGuided(id) {
@@ -310,19 +375,21 @@ function viewGuided(id) {
   const head = an.title ? `${an.subject} · ${an.title}` : `${an.exam} ${an.year} · ${an.subject}`;
   const steps = an.guided.flatMap((p, pi) => p.steps.map((st) => ({ ...st, pi })));
   const max = steps.reduce((n, st) => n + st.pts, 0);
-  let k = -1, got = 0;
-  const byPart = an.guided.map(() => 0);
+  let k = -1, got = 0, solo = false;
+  const byPart = an.guided.map(() => 0), picks = [];
   function intro() {
     $view.innerHTML = `<div class="card"><p class="tag-src">${an.title ? "Exercice corrigé" : "Sujet guidé"}</p><h1>${esc(head)}</h1>
       ${an.src ? `<p class="src">📄 ${esc(an.src)}</p>` : `<p class="muted">Séries ${esc(an.series)}${an.duration ? " · " + esc(an.duration) : ""}${an.coef ? " · coefficient " + an.coef : ""}</p>`}
-      <p>Tu réponds étape par étape. Après chaque réponse, tu vois tout de suite le corrigé et les points gagnés.</p>
+      <p>Tu réponds étape par étape. Choisis si tu veux le corrigé après chaque réponse ou seulement à la fin.</p>
       <p class="small muted">${steps.length} étapes, ${pts(max)} points.${an.title ? "" : " Les tableaux et les tracés de courbes ne sont pas notés ici. Énoncé reformulé ; l'original est en PDF dans les annales."}</p>
-      <button class="btn" id="go">Commencer</button></div>`;
-    document.getElementById("go").onclick = () => { k = 0; step(); };
+      <button class="btn" id="go">🧑‍🏫 Avec support<br><span class="small">Corrigé et points après chaque réponse</span></button>
+      <button class="btn alt" id="solo">💪 Tout seul<br><span class="small">Tu fais tout l'exercice, corrigé ligne par ligne à la fin</span></button></div>`;
+    document.getElementById("go").onclick = () => { solo = false; k = 0; markDone("exo"); step(); };
+    document.getElementById("solo").onclick = () => { solo = true; k = 0; markDone("exo"); step(); };
   }
   function step() {
     const st = steps[k], part = an.guided[st.pi];
-    $view.innerHTML = `<div class="progress"><span>${esc(an.title || an.exam + " " + an.year)} · étape ${k + 1} / ${steps.length}</span><span><b>${pts(got)}</b> / ${pts(max)} pts</span></div>
+    $view.innerHTML = `<div class="progress"><span>${esc(an.title || an.exam + " " + an.year)} · étape ${k + 1} / ${steps.length}</span><span>${solo ? "💪 Tout seul" : `<b>${pts(got)}</b> / ${pts(max)} pts`}</span></div>
       <div class="bar"><i style="width:${(100 * k) / steps.length}%"></i></div>
       <div class="card"><h2>${esc(part.title)}</h2><p class="small">${esc(part.context)}</p></div>
       <div class="card" id="qc"><p class="tag-src">${pts(st.pts)} point${st.pts > 1 ? "s" : ""}</p>${questionBlock(st)}</div>
@@ -330,9 +397,11 @@ function viewGuided(id) {
     const qc = document.getElementById("qc");
     qc.querySelectorAll(".choice").forEach((b) => b.onclick = () => {
       const ok = +b.dataset.i === st.a;
+      picks[k] = +b.dataset.i;
+      if (ok) { got += st.pts; byPart[st.pi] += st.pts; }
+      if (solo) return k + 1 < steps.length ? (k++, step()) : finish();
       qc.querySelectorAll(".choice").forEach((x) => { x.disabled = true; if (+x.dataset.i === st.a) x.classList.add("ok"); });
       if (!ok) b.classList.add("ko");
-      if (ok) { got += st.pts; byPart[st.pi] += st.pts; }
       const ex = qc.querySelector(".expl");
       ex.innerHTML = ok ? `<b class="msg-ok">Juste : +${pts(st.pts)} pt</b><br><b>Corrigé :</b> ${esc(st.e)}`
         : `<b class="msg-ko">Faux : 0 pt</b><br>Tu as répondu : <s>${esc(st.c[+b.dataset.i])}</s><br>La bonne réponse est <b>${LETTERS[st.a]} : ${esc(st.c[st.a])}</b><p><b>Corrigé :</b> ${esc(st.e)}</p>`;
@@ -350,14 +419,24 @@ function viewGuided(id) {
       <p class="score">${pts(note)} / 20</p><p>${pts(got)} points sur ${pts(max)} notés</p></div>
       <div class="card">${an.guided.map((p, i) => `<div class="row small"><span>${esc(p.title)}</span><b>${pts(byPart[i])} / ${pts(p.steps.reduce((n, x) => n + x.pts, 0))}</b></div>`).join("")}</div>
       <div class="btns">${an.corrige ? `<a class="btn alt" href="${esc(an.corrige)}" target="_blank" rel="noopener">Corrigé officiel complet (PDF)</a>` : ""}
-      <button class="btn" id="again">Recommencer</button><a class="btn alt" href="#exercices">Autres exercices</a></div>`;
-    document.getElementById("again").onclick = () => { k = 0; got = 0; byPart.fill(0); step(); };
+      <button class="btn" id="again">Recommencer</button><a class="btn alt" href="#exercices">Autres exercices</a></div>
+      ${solo ? `<h2>Corrigé ligne par ligne</h2>${steps.map((st, i) => { const ok = picks[i] === st.a;
+        return `<div class="card"><p class="small muted">${esc(an.guided[st.pi].title)} · ${pts(st.pts)} pt</p><p><b>${esc(st.q)}</b></p>
+          <p class="${ok ? "msg-ok" : "msg-ko"}">${ok ? "✓ Juste" : "✗ Ta réponse : " + esc(st.c[picks[i]])} · Bonne réponse : ${esc(st.c[st.a])}</p><p class="small">${esc(st.e)}</p></div>`; }).join("")}` : ""}`;
+    document.getElementById("again").onclick = () => { got = 0; byPart.fill(0); picks.length = 0; intro(); };
     window.scrollTo(0, 0);
   }
   intro();
 }
 
 // ---------- Progrès
+function daysChart() {
+  const days = [...Array(10)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 9 + i); return d.toISOString().slice(0, 10); });
+  const data = days.map((d) => (S.daily || {})[d] || { n: 0, ok: 0 }), top = Math.max(10, ...data.map((x) => x.n));
+  return `<div class="days">${days.map((d, i) => `<div class="day"><span class="dbar"><i style="height:${(100 * data[i].n) / top}%"></i><i class="okp" style="height:${(100 * data[i].ok) / top}%"></i></span>
+    <span class="small muted">${d.slice(8)}</span><span class="small"><b>${data[i].n || ""}</b></span></div>`).join("")}</div>
+    <p class="small muted">Barre claire : questions répondues ; barre verte : bonnes réponses.</p>`;
+}
 function viewProgress() {
   const answered = Object.values(S.stats).reduce((n, s) => n + s.ok + s.ko, 0);
   const good = Object.values(S.stats).reduce((n, s) => n + s.ok, 0);
@@ -367,6 +446,7 @@ function viewProgress() {
     <div class="card"><div class="row"><div><p class="small muted">Réponses</p><p class="count">${answered}</p></div>
       <div><p class="small muted">Réussite</p><p class="count">${answered ? Math.round((100 * good) / answered) : 0} %</p></div>
       <div><p class="small muted">Série</p><p class="count">${streak()} 🔥</p></div></div></div>
+    <div class="card"><h2>Mes 10 derniers jours</h2>${daysChart()}</div>
     <div class="card"><h2>Matières maîtrisées en ${S.level}</h2>${rows}<p class="small muted">Part des questions réussies la dernière fois.</p></div>
     <div class="card"><h2>Derniers quiz</h2>${last || '<p class="muted">Pas encore de quiz.</p>'}</div>
     ${Compte.user ? `<div class="card"><p class="small muted">Connecté avec ${esc(Compte.user.email || Compte.user.displayName || "Google")}</p><button class="btn alt" id="logout">Se déconnecter</button></div>` : ""}`;
@@ -458,7 +538,7 @@ function applyProfile(p) {
   S.trialStart = p.created.toISOString().slice(0, 10);
   S.premium = p.premium;
   const d = p.data || {};
-  if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [] });
+  if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [], daily: d.daily || {}, challenges: d.challenges || {}, done: d.done || {} });
   if (!S.level && d.level) S.level = d.level;
   try { localStorage.setItem("rev", JSON.stringify(S)); } catch {}
 }
@@ -471,7 +551,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, duo: () => viewDuo(arg), fiches: viewFiches, fiche: () => viewFiche(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);

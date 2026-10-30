@@ -77,7 +77,8 @@ const Compte = (() => {
     if (!user || !db) return;
     clearTimeout(timer);
     timer = setTimeout(() => {
-      const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120) };
+      const last = (o, n) => Object.fromEntries(Object.entries(o || {}).sort().slice(-n));
+      const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14) };
       db.collection("users").doc(user.uid).update({ data }).catch(() => {});
     }, 3000);
   }
