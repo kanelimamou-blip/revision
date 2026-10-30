@@ -139,7 +139,7 @@ NOTIONS = {
                ("Calcule b.", ["−3", "3", "1", "−1"], 0, "b = f(2) − 2 × 2 = 1 − 4 = −3. Donc f(x) = 2x − 3.", 1),
                ("Quel est le sens de variation de f ?", ["Croissante", "Décroissante", "Constante", "On ne peut pas savoir"], 0, "a = 2 > 0, donc f est croissante.", 1),
                ("Pour quelle valeur de x a-t-on f(x) = 0 ?", ["1,5", "−1,5", "3", "0"], 0, "2x − 3 = 0 donne x = 3/2 = 1,5.", 1)]}},
-    {"id": "3e-systemes", "title": "Systèmes de deux équations", "svg": None,
+    {"id": "3e-systemes", "title": "Systèmes de deux équations", "svg": None, "programme": "Équations, inéquations et systèmes",
      "cours": ["Un système de deux équations à deux inconnues se résout par substitution (on exprime une inconnue en fonction de l'autre) ou par combinaison (on additionne ou soustrait les équations pour éliminer une inconnue).",
                "Dans un problème, on commence toujours par choisir les inconnues, puis on traduit l'énoncé en équations, on résout, et on vérifie."],
      "enonce": ["Substitution : de l'équation la plus simple, on tire x = … et on remplace dans l'autre.",
@@ -561,7 +561,7 @@ NOTIONS = {
 
   # ---------------------------------------------------------------- Terminale : philosophie
   "tle-philo": [
-    {"id": "tle-dissertation", "title": "La méthode de la dissertation", "svg": None,
+    {"id": "tle-dissertation", "title": "La méthode de la dissertation", "svg": None, "programme": "La méthode philosophique et les grands auteurs",
      "cours": ["La dissertation philosophique répond à une question par une réflexion argumentée et progressive. Ce n'est pas une récitation de cours.",
                "Le travail préparatoire (analyse des termes, problématique, plan) compte autant que la rédaction."],
      "enonce": ["Introduction : amorce, énoncé du sujet, problématique (le paradoxe ou la tension du sujet), annonce du plan.",
@@ -590,7 +590,7 @@ NOTIONS = {
                ("« Le moi n'est pas maître dans sa propre maison » :", ["Freud", "Descartes", "Kant", "Rousseau"], 0, "Freud décrit la troisième blessure narcissique de l'humanité.", 1),
                ("Le lapsus est, selon Freud :", ["une manifestation de l'inconscient", "une simple erreur sans sens", "une preuve de la liberté", "une maladie"], 0, "Il révèle un désir refoulé.", 1),
                ("Sartre appelle « mauvaise foi » :", ["le fait de se mentir pour fuir sa liberté", "le fait de ne pas croire en Dieu", "un rêve", "l'inconscient"], 0, "L'homme se cache derrière des excuses pour ne pas assumer ses choix.", 1)]}},
-    {"id": "tle-liberte", "title": "La liberté", "svg": None,
+    {"id": "tle-liberte", "title": "La liberté", "svg": None, "programme": "La morale et la liberté",
      "cours": ["Être libre, c'est d'abord pouvoir faire ce que l'on veut. Mais les philosophes distinguent la liberté d'agir, le libre arbitre (pouvoir choisir) et l'autonomie (se donner sa propre loi).",
                "La question est de savoir si nos choix sont vraiment libres ou déterminés par des causes que nous ignorons."],
      "enonce": ["Spinoza : les hommes se croient libres parce qu'ils sont conscients de leurs désirs mais ignorent les causes qui les déterminent.",

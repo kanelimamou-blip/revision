@@ -8,6 +8,8 @@ import argparse
 import hashlib
 import json
 import random
+import re
+import unicodedata
 import secrets
 from pathlib import Path
 
@@ -22,6 +24,7 @@ from catalogue import LIBRARY, LIB_HOST
 from exercices import EXERCISES
 from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
+from programmes import PROGRAMMES
 NOTIONS = {**NOTIONS, **NOTIONS_AUTRES}
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
 
@@ -121,6 +124,21 @@ def new_codes(n, dest):
     print(f"{n} codes ajoutés dans {dest}")
 
 
+def _norm(s):
+    s = unicodedata.normalize("NFD", s.lower())
+    return "".join(c for c in s if unicodedata.category(c) != "Mn")
+
+
+def chapter_of(sid, text):
+    """Indice du chapitre du programme dont les mots-clés apparaissent le plus dans le texte (−1 si aucun)."""
+    t, best, top = _norm(text), -1, 0
+    for i, (_, kws) in enumerate(PROGRAMMES.get(sid, [])):
+        n = sum(len(re.findall(r"(?<![a-z])" + re.escape(_norm(k)), t)) for k in kws)
+        if n > top:
+            best, top = i, n
+    return best
+
+
 def build():
     questions, subjects = [], []
     for sid, levels, name, items in SUBJECTS:
@@ -134,7 +152,7 @@ def build():
             # ordre des choix mélangé (fixe pour chaque question) pour que la bonne réponse ne soit pas toujours à la même place
             order = list(range(4))
             random.Random(qid).shuffle(order)
-            questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, **({"src": src[0]} if src else {})})
+            questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, "ch": chapter_of(sid, f"{q} {choices[a]} {ex}"), **({"alt": "tle-maths", "ach": chapter_of("tle-maths", f"{q} {choices[a]} {ex}")} if sid.startswith("tle-annales-maths") else {}), **({"src": src[0]} if src else {})})
     # sujets guidés et exercices corrigés : choix mélangés de la même façon, étape par étape
     def guided(key, parts):
         out = []
@@ -161,17 +179,18 @@ def build():
         assert sid in subj, sid
         notions[sid] = []
         for i, ch in enumerate(chapters):
-            notions[sid].append({k: v for k, v in ch.items() if k != "exo"} | {"free": i == 0})
+            notions[sid].append({k: v for k, v in ch.items() if k not in ("exo", "programme")} | {"free": i == 0, "pch": [t for t, _ in PROGRAMMES[sid]].index(ch["programme"]) if "programme" in ch else chapter_of(sid, ch["title"] + " " + " ".join(ch["cours"] + ch["enonce"]))})
             exo = ch["exo"]
             exercises.append({"id": "ch-" + ch["id"], "levels": subj[sid][1], "subject": subj[sid][2], "free": i == 0, "chapter": ch["id"],
                               "title": ch["title"], "src": "Exercice d'application du cours",
                               "guided": guided("ch-" + ch["id"], [{"title": ch["title"], "context": exo["context"], "steps": exo["steps"]}])})
+    assert set(PROGRAMMES) <= {s[0] for s in SUBJECTS}
     assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
     for e in LIBRARY:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": ANNALES, "annalesHost": HOST, "library": LIBRARY, "libraryHost": LIB_HOST, "fiches": FICHES, "exercises": exercises, "notions": notions, "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

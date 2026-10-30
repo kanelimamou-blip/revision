@@ -80,6 +80,7 @@ function rubriques() {
   const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
     nAnn ? tile("#annales", "📚", `Sujets du ${exam}`, `${nAnn} vrais sujets et corrigés`) : "",
+    tile("#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"),
     tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
     tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas` : "Bientôt pour ta classe"),
     nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
@@ -295,6 +296,52 @@ function viewNotion(id) {
     ${next ? `<a class="btn alt" href="#notion/${next.id}">Chapitre suivant : ${esc(next.title)}${isPremium() || next.free ? "" : " 🔒"}</a>` : ""}
     <a class="btn alt" href="#notions">Tous les chapitres</a>`;
   window.scrollTo(0, 0);
+}
+// ---------- Préparer un devoir : l'élève choisit la matière puis les chapitres du programme sur lesquels il sera interrogé
+function viewDevoir(arg) {
+  const progs = DATA.programmes || {};
+  const subs = subjectsOf(S.level).filter((s) => progs[s.id] && !/annales/.test(s.id));
+  const s = subs.find((x) => x.id === arg);
+  if (!s) {
+    $view.innerHTML = `<h1>Préparer un devoir</h1><p class="muted">Tu as un devoir ou un contrôle bientôt ? Choisis la matière, puis coche les chapitres au programme : l'appli te prépare un entraînement corrigé sur ces chapitres seulement.</p>
+      <div class="grid">${subs.map((x) => `<a class="subj" href="#devoir/${x.id}" style="text-decoration:none;color:inherit"><b>${esc(x.name)}</b><span class="small muted">${progs[x.id].length} chapitres</span></a>`).join("")}</div>`;
+    return;
+  }
+  // les questions tirées des annales du BAC comptent aussi dans les chapitres de la matière
+  const lv = subjectsOf(S.level).map((x) => x.id), extra = DATA.questions.filter((q) => q.alt === s.id && lv.includes(q.s)).map((q) => ({ ...q, ch: q.ach }));
+  const chs = progs[s.id], all = [...qsOf(s.id), ...extra], nots = ((DATA.notions || {})[s.id] || []);
+  const count = (i) => all.filter((q) => q.ch === i).length;
+  const saved = (S.devoir || {})[s.id] || [];
+  $view.innerHTML = `<p class="tag-src">Préparer un devoir · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
+    <p class="muted">Coche les chapitres de ton devoir. Tu peux en choisir un seul ou plusieurs.</p>
+    <div class="card"><label class="row small"><span><input type="checkbox" id="all"> <b>Tout le programme</b></span></label>
+      ${chs.map((t, i) => `<label class="row chk"><span><input type="checkbox" class="ch" value="${i}"${saved.includes(i) ? " checked" : ""}> ${i + 1}. ${esc(t)}</span><span class="small muted">${count(i)} q.</span></label>`).join("")}</div>
+    <div class="card"><h2>Nombre de questions</h2><div class="row">${[10, 20, 30].map((n) => `<button class="btn alt small nb${n === 20 ? " on" : ""}" data-n="${n}" style="flex:1">${n}</button>`).join("")}</div></div>
+    <div id="revoir"></div>
+    <p id="dmsg" class="small msg-ko"></p>
+    <button class="btn hi-btn" id="go">Commencer l'entraînement</button>`;
+  let n = 20;
+  const boxes = [...$view.querySelectorAll(".ch")], picked = () => boxes.filter((b) => b.checked).map((b) => +b.value);
+  function refresh() {
+    const sel = picked();
+    document.getElementById("all").checked = sel.length === chs.length;
+    S.devoir = { ...(S.devoir || {}), [s.id]: sel }; store.save();
+    const rel = nots.filter((c) => sel.includes(c.pch));
+    document.getElementById("revoir").innerHTML = rel.length ? `<div class="card"><h2>📖 À revoir avant</h2>${rel.map((c) => `<a class="row lib" href="#notion/${c.id}"><span>${esc(c.title)}</span><span class="small muted">cours + exercice${isPremium() || c.free ? "" : " 🔒"}</span></a>`).join("")}</div>` : "";
+  }
+  boxes.forEach((b) => b.onchange = refresh);
+  document.getElementById("all").onchange = (e) => { boxes.forEach((b) => b.checked = e.target.checked); refresh(); };
+  $view.querySelectorAll(".nb").forEach((b) => b.onclick = () => { n = +b.dataset.n; $view.querySelectorAll(".nb").forEach((x) => x.classList.toggle("on", x === b)); });
+  refresh();
+  document.getElementById("go").onclick = () => {
+    const sel = picked(), pool = all.filter((q) => sel.includes(q.ch) && open(q));
+    const m = document.getElementById("dmsg");
+    if (!sel.length) { m.textContent = "Coche au moins un chapitre."; return; }
+    if (!pool.length) { m.textContent = isPremium() ? "Pas encore de questions sur ces chapitres. Choisis-en d'autres." : "Ces chapitres sont dans le pack premium."; return; }
+    const qs = pool.slice(); for (let i = qs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [qs[i], qs[j]] = [qs[j], qs[i]]; }
+    const title = `Devoir de ${s.name}`, sub = `${Math.min(n, qs.length)} questions sur : ${sel.map((i) => chs[i]).join(", ")}.`;
+    chooseMode(title, sub, (solo) => { markDone("qcm"); runQuiz(title, qs.slice(0, n), `#devoir/${s.id}`, { solo }); });
+  };
 }
 function viewAnnales() {
   const list = annalesOf(S.level);
@@ -602,7 +649,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe") { S.level = null; return viewLevel(); }
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ classe: viewLevel, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
