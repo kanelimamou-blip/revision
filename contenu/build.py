@@ -33,7 +33,8 @@ from q_tle_plus2 import QCM_TLE2
 from q_tle_plus3 import QCM_TLE3
 from q_tle_plus4 import QCM_TLE4
 from q_tle_s import QCM_TLE_S
-for _sid, _chs in [*QCM_SVT.items(), *QCM_TLE.items(), *QCM_TLE2.items(), *QCM_TLE3.items(), *QCM_TLE4.items(), *QCM_TLE_S.items()]:
+from q_tle_s2 import QCM_TLE_S2
+for _sid, _chs in [*QCM_SVT.items(), *QCM_TLE.items(), *QCM_TLE2.items(), *QCM_TLE3.items(), *QCM_TLE4.items(), *QCM_TLE_S.items(), *QCM_TLE_S2.items()]:
     for _t, _qs in _chs.items():
         QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
 from fiches import FICHES
