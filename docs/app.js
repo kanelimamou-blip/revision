@@ -11,7 +11,8 @@ const store = {
 };
 const S = Object.assign({ level: null, premium: false, stats: {}, sessions: [], days: [] }, store.load());
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// la flèche de vecteur combinante (F⃗) manque dans beaucoup de polices de téléphone : on la dessine en CSS
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])).replace(/([A-Za-zℓ]{1,2}?)\u20d7/g, '<span class="vec">$1</span>');
 const today = () => new Date().toISOString().slice(0, 10);
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const fcfa = (n) => n.toLocaleString("fr-FR") + " FCFA";
@@ -320,7 +321,7 @@ function viewFiche(arg) {
     <div class="card notion-key"><h2>📌 L'essentiel</h2><ul class="steps">${c.cles.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
     ${(c.methodes || []).map(([t, st]) => `<div class="card"><h2>🛠️ Méthode : ${esc(t)}</h2><ol class="steps">${st.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`).join("")}
     ${c.pieges ? `<div class="card"><h2>⚠️ Pièges à éviter</h2><ul class="steps">${c.pieges.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}
-    ${c.exemple ? `<div class="card"><h2>💡 Exemple corrigé</h2><p><b>${esc(c.exemple[0])}</b></p><ol class="steps">${c.exemple[1].map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>` : ""}
+    ${[...(c.exemple ? [c.exemple] : []), ...(c.exemples || [])].map(([q, lines], j, all) => `<div class="card"><h2>💡 Exercice corrigé${all.length > 1 ? " " + (j + 1) : ""}</h2><p><b>${esc(q)}</b></p><details><summary class="small">Voir le corrigé</summary><ol class="steps">${lines.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></details></div>`).join("")}
     ${c.exam ? `<div class="card"><h2>🎯 À l'examen</h2><p>${esc(c.exam)}</p></div>` : ""}
     ${prog && c.p !== undefined ? `<button class="btn hi-btn" id="train">✏️ M'entraîner sur ce chapitre</button>` : `<a class="btn hi-btn" href="#quiz/${s.id}">✏️ M'entraîner sur ${esc(s.name)}</a>`}
     ${nots.map((n) => `<a class="btn alt" href="#notion/${n.id}">📖 Cours détaillé : ${esc(n.title)}${isPremium() || n.free ? "" : " 🔒"}</a>`).join("")}

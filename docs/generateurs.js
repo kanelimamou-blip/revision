@@ -139,13 +139,13 @@ const GEN = (() => {
         return { q: `Énergie cinétique d'un corps de ${nf(mm)} kg à ${v} m/s :`, ok: `${nf(mm * v * v / 2)} J`, faux: [`${nf(mm * v)} J`, `${nf(mm * v * v)} J`, `${nf(mm * v / 2)} J`], e: `Ec = ½ m v² = 0,5 × ${nf(mm)} × ${v * v} = ${nf(mm * v * v / 2)} J.` }; }],
     ],
     "tle-pc": [
-      ["Cinématique et lois de Newton", (r) => { const mm = pick(r, [0.5, 1, 2, 4, 5]), F = pick(r, [2, 4, 6, 10, 20]);
+      ["P2. Bases de la dynamique et énergie", (r) => { const mm = pick(r, [0.5, 1, 2, 4, 5]), F = pick(r, [2, 4, 6, 10, 20]);
         return { q: `Une force résultante de ${F} N agit sur un solide de ${nf(mm)} kg. Accélération :`, ok: `${nf(F / mm)} m/s²`, faux: [`${nf(F * mm)} m/s²`, `${nf(mm / F)} m/s²`, `${nf(F / mm + 10)} m/s²`], e: `Deuxième loi de Newton : a = F / m = ${F} / ${nf(mm)} = ${nf(F / mm)} m/s².` }; }],
-      ["Dipôles RC, RL et circuits LC, RLC", (r) => { const R = pick(r, [100, 470, 1000, 2000, 10000]), C = pick(r, [1, 2, 10, 47, 100]);
+      ["P8. Dipôle RC", (r) => { const R = pick(r, [100, 470, 1000, 2000, 10000]), C = pick(r, [1, 2, 10, 47, 100]);
         return { q: `Constante de temps d'un circuit RC avec R = ${R} Ω et C = ${C} µF :`, ok: `${nf(R * C / 1000, 3)} ms`, faux: [`${nf(R / C, 1)} ms`, `${nf(R * C, 0)} ms`, `${nf(R * C / 1e6, 4)} ms`], e: `τ = R C = ${R} × ${C} × 10⁻⁶ = ${nf(R * C / 1e6, 5)} s = ${nf(R * C / 1000, 3)} ms.` }; }],
-      ["Acides, bases et dosages", (r) => { const k = ri(r, 1, 4);
+      ["C6. Acides forts et bases fortes", (r) => { const k = ri(r, 1, 4);
         return { q: `pH d'une solution d'acide chlorhydrique (acide fort) de concentration 10⁻${"⁰¹²³⁴⁵⁶⁷⁸⁹"[k]} mol/L :`, ok: String(k), faux: [String(14 - k), String(-k).replace("-", "−"), String(k + 1)], e: `Acide fort : [H₃O⁺] = C = 10⁻${"⁰¹²³⁴⁵⁶⁷⁸⁹"[k]} mol/L, donc pH = −log C = ${k}.` }; }],
-      ["Physique nucléaire", (r) => { const n = ri(r, 1, 4), t = pick(r, [5, 8, 30, 1600]);
+      ["P15. Réactions nucléaires", (r) => { const n = ri(r, 1, 4), t = pick(r, [5, 8, 30, 1600]);
         return { q: `Un radio-isotope a une demi-vie de ${t} ans. Fraction des noyaux restants après ${n * t} ans :`, ok: `1/${2 ** n}`, faux: [`1/${2 * n}`, `1/${2 ** (n + 1)}`, `${n}/${2 ** n}`], e: `${n * t} ans = ${n} demi-vie${n > 1 ? "s" : ""} ; il reste (1/2)^${n} = 1/${2 ** n} des noyaux.` }; }],
     ],
     "g-compta": [

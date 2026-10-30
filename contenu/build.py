@@ -18,6 +18,7 @@ from q_plus import EXTRA
 from q_plus_college import EXTRA_COLLEGE
 from q_plus_lycee import EXTRA_LYCEE
 from q_chapitres import CHAPITRE_FORCE, EXTRA_CHAPITRES
+from q_programme import QCM_CH
 from fiches import FICHES
 from fiches_autres import FICHES_AUTRES
 from syntheses import SYNTH
@@ -149,6 +150,9 @@ def build():
     questions, subjects = [], []
     for sid, levels, name, items in SUBJECTS:
         items = items + EXTRA.get(sid, []) + EXTRA_COLLEGE.get(sid, []) + EXTRA_LYCEE.get(sid, []) + EXTRA_CHAPITRES.get(sid, [])
+        # QCM rangés par chapitre : le chapitre est imposé
+        force = {q: t for t, qs in QCM_CH.get(sid, {}).items() for q, *_ in qs}
+        items = items + [x for qs in QCM_CH.get(sid, {}).values() for x in qs]
         fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
         assert set(levels) <= set(LEVELS) | fams, (sid, levels)
         subjects.append({"id": sid, "levels": levels, "name": name, "count": len(items), "free": min(FREE, len(items)), "fiche": sid in FICHES, "notions": len(NOTIONS.get(sid, []))})
@@ -158,7 +162,7 @@ def build():
             # ordre des choix mélangé (fixe pour chaque question) pour que la bonne réponse ne soit pas toujours à la même place
             order = list(range(4))
             random.Random(qid).shuffle(order)
-            questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, "ch": [t for t, _ in PROGRAMMES[sid]].index(CHAPITRE_FORCE[q]) if q in CHAPITRE_FORCE else chapter_of(sid, f"{q} {choices[a]} {ex}"), **({"alt": "tle-maths", "ach": chapter_of("tle-maths", f"{q} {choices[a]} {ex}")} if sid.startswith("tle-annales-maths") else {}), **({"src": src[0]} if src else {})})
+            questions.append({"id": qid, "s": sid, "q": q, "c": [choices[j] for j in order], "a": order.index(a), "e": ex, "free": i < FREE, "ch": [t for t, _ in PROGRAMMES[sid]].index(force.get(q) or CHAPITRE_FORCE[q]) if q in force or q in CHAPITRE_FORCE else chapter_of(sid, f"{q} {choices[a]} {ex}"), **({"alt": "tle-maths", "ach": chapter_of("tle-maths", f"{q} {choices[a]} {ex}")} if sid.startswith("tle-annales-maths") else {}), **({"src": src[0]} if src else {})})
     # sujets guidés et exercices corrigés : choix mélangés de la même façon, étape par étape
     def guided(key, parts):
         out = []
@@ -191,7 +195,7 @@ def build():
                               "title": ch["title"], "src": "Exercice d'application du cours",
                               "guided": guided("ch-" + ch["id"], [{"title": ch["title"], "context": exo["context"], "steps": exo["steps"]}])})
     assert set(PROGRAMMES) <= {s[0] for s in SUBJECTS}
-    assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) | set(EXTRA_CHAPITRES) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
+    assert set(EXTRA) | set(EXTRA_COLLEGE) | set(EXTRA_LYCEE) | set(EXTRA_CHAPITRES) | set(QCM_CH) <= {s[0] for s in SUBJECTS} and set(FICHES) <= {s[0] for s in SUBJECTS}
     for sid, chs in SYNTH.items():
         assert all("p" not in c or 0 <= c["p"] < len(PROGRAMMES[sid]) for c in chs), sid
     for e in LIBRARY + DEVOIRS:

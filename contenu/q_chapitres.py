@@ -136,7 +136,7 @@ CHAPITRE_FORCE = {
   "Solutions de y' = −3y :": "Équations différentielles",
   "La solution de y' = 2y telle que y(0) = 4 est :": "Équations différentielles",
   "La solution constante de y' = y − 5 est :": "Équations différentielles",
-  "Une bille lâchée sans vitesse de 20 m de haut (g = 10 m/s², sans frottement) arrive au sol à :": "Énergie mécanique",
-  "Avec des frottements, la variation d'énergie mécanique est égale :": "Énergie mécanique",
+  "Une bille lâchée sans vitesse de 20 m de haut (g = 10 m/s², sans frottement) arrive au sol à :": "P2. Bases de la dynamique et énergie",
+  "Avec des frottements, la variation d'énergie mécanique est égale :": "P2. Bases de la dynamique et énergie",
   "La valeur nette comptable (VNC) d'une immobilisation est :": "Les amortissements",
 }
