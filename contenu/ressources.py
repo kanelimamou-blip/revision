@@ -1,3 +1,4 @@
+# Liste de RÉFÉRENCES (non publiée dans l'appli, à la demande d'Est) : sources publiques dont s'inspire le contenu maison.
 # Cours, exercices corrigés, devoirs et QCM gratuits en ligne, publiés par des plateformes sénégalaises :
 # - le ministère de l'Éducation nationale (bibliothèque numérique scolaire lancée le 20 avril 2026 : Promet et Senkala),
 # - l'Office du BAC (grilles officielles de correction),
