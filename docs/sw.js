@@ -1,4 +1,4 @@
-const CACHE = "revision-v59";
+const CACHE = "revision-v60";
 const SHELL = ["./", "index.html", "app.css", "app.js", "compte.js", "generateurs.js", "generateurs_plus.js", "generateurs_lettres.js", "exos_gen.js", "assistant.js", "agenda.js", "edt-import.js", "trajectoire.js", "notes.js", "aide.js", "vie.js", "apprendre.js", "admin.js", "rappels.js", "actu.js", "manifest.webmanifest", "data/questions.json", "data/config.json", "icons/icon-192.png", "icons/qr.svg", "icons/qr.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("revision-") && k !== CACHE).map((k) => caches.delete(k))))); self.clients.claim(); });
@@ -12,7 +12,7 @@ const eco = () => caches.open("rprefs").then((c) => c.match("eco")).then((r) => 
 // Rappels envoyés par Firebase Cloud Messaging (pause de midi, après l'école) : affichés même appli fermée
 self.addEventListener("push", (e) => {
   let m = {}; try { const j = e.data ? e.data.json() : {}; m = { ...(j.notification || {}), ...(j.data || {}) }; } catch (err) {}
-  e.waitUntil(self.registration.showNotification(m.title || "Révision", { body: m.body || "5 minutes pour réviser ?", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "rappel", data: { link: m.link || "./#accueil" } }));
+  e.waitUntil(self.registration.showNotification(m.title || "Révision", { body: m.body || "5 minutes pour réviser ?", icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: m.tag || "rappel", data: { link: m.link || "./#accueil" } }));
 });
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();

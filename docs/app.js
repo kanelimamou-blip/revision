@@ -783,6 +783,8 @@ function reduireCapture(file) {
   });
 }
 // Encadré « J'ai payé » : envoi de la capture, puis état du paiement suivi en direct
+// notification possible ici et pas encore activée pour ce téléphone
+const peutNotifier = () => !!(CFG && CFG.vapid) && "Notification" in window && "serviceWorker" in navigator && Notification.permission !== "denied" && !(Notification.permission === "granted" && S.pushOn);
 async function payBox(via) {
   const box = document.getElementById("paybox");
   if (!box) return;
@@ -792,8 +794,18 @@ async function payBox(via) {
   if (p && p.statut === "attente") {
     box.innerHTML = `<div class="card" style="border:2px solid var(--hi,#f5a623)"><p>⏳ <b>Capture reçue</b> ${esc(quand(p.at))}. Ton paiement est en cours de vérification.</p>
       <p class="small muted">Tu n'as rien d'autre à faire. Garde l'appli ouverte ou reviens plus tard : elle se débloque toute seule dès la validation.</p>
+      ${peutNotifier() ? `<button class="btn small" id="paynotif">🔔 Me prévenir par notification dès la validation</button><p class="small" id="paynmsg"></p>` : ""}
       <button class="btn alt small" id="payredo">Renvoyer une autre capture</button></div>`;
     document.getElementById("payredo").onclick = () => formulaire(true);
+    const bn = document.getElementById("paynotif");
+    if (bn) bn.onclick = async () => {
+      const m = document.getElementById("paynmsg");
+      try {
+        if ((await Notification.requestPermission()) !== "granted") { m.className = "small msg-ko"; m.textContent = "Notifications refusées : l'appli se débloquera quand même à ta prochaine visite."; return; }
+        await Compte.enablePush(CFG.vapid);
+        S.pushOn = true; store.save(); bn.remove(); m.className = "small msg-ok"; m.textContent = "C'est noté : tu recevras une notification dès que ton paiement est validé. 👍";
+      } catch (err) { m.className = "small msg-ko"; m.textContent = "Notifications impossibles sur ce téléphone : l'appli se débloquera quand même à ta prochaine visite."; }
+    };
     return;
   }
   formulaire(false, p && p.statut === "refuse" ? p.motif || "La capture n'a pas permis de retrouver le paiement." : "");

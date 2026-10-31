@@ -1,0 +1,28 @@
+name: Avis de paiement premium
+
+# Toutes les 10 minutes : notifie l'élève dont le paiement vient d'être validé ou refusé.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: premium
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Envoi
+        working-directory: rappels
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+        run: npm install --no-audit --no-fund && node premium.mjs
