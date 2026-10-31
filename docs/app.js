@@ -123,6 +123,8 @@ function rubriqueList() {
 function homePrefs() {
   const h = S.home || (S.home = {});
   for (const [k, v] of Object.entries({ order: [], hidden: [], pins: [], hiddenRub: [], allRub: false })) if (!(k in h)) h[k] = Array.isArray(v) ? [] : v;
+  // les rubriques passent en haut de l'accueil, une fois, même pour un ordre déjà personnalisé
+  if (!h.rubTop) { h.rubTop = true; if (h.order.length) h.order = ["rubriques", ...h.order.filter((k) => k !== "rubriques")]; h.hidden = h.hidden.filter((k) => k !== "rubriques"); }
   return h;
 }
 function rubriques() {
@@ -171,7 +173,7 @@ function viewBienvenue() {
 }
 
 // ---------- Organiser l'accueil : l'élève range les blocs, masque ce qui ne lui sert pas et épingle ses rubriques
-const HOME_BLOCKS = [["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["trajectoire", "📈 Ma trajectoire"], ["notes", "📒 Mes notes"], ["programme", "✅ Missions du jour"], ["rubriques", "🗂️ Rubriques"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
+const HOME_BLOCKS = [["rubriques", "🗂️ Rubriques"], ["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["trajectoire", "📈 Ma trajectoire"], ["notes", "📒 Mes notes"], ["programme", "✅ Missions du jour"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
 function homeOrder() { const h = homePrefs(), keys = HOME_BLOCKS.map((b) => b[0]); return [...h.order.filter((k) => keys.includes(k)), ...keys.filter((k) => !h.order.includes(k))]; }
 function viewOrganiser() {
   const h = homePrefs(), order = homeOrder(), rub = rubriqueList();
