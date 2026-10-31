@@ -113,6 +113,7 @@ function rubriqueList() {
     ["challenge", "#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"],
     ["duo", "#duo", "👥", "Session de groupe", "De 2 à 10 élèves, classement en direct"],
     ["examen", "#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`],
+    ["actu", "#actu", "📰", "Flash actu", "L'actualité du Sénégal en direct, et un fil selon tes goûts"],
     ["vie", "#vie", "🌍", "Les cours dans la vie", "Marché, factures Senelec et eau, solaire, route"],
   ].filter(Boolean);
 }
@@ -168,7 +169,7 @@ function viewBienvenue() {
 }
 
 // ---------- Organiser l'accueil : l'élève range les blocs, masque ce qui ne lui sert pas et épingle ses rubriques
-const HOME_BLOCKS = [["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["programme", "✅ Missions du jour"], ["rubriques", "🗂️ Rubriques"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
+const HOME_BLOCKS = [["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["programme", "✅ Missions du jour"], ["actu", "📰 Flash actu"], ["rubriques", "🗂️ Rubriques"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
 function homeOrder() { const h = homePrefs(), keys = HOME_BLOCKS.map((b) => b[0]); return [...h.order.filter((k) => keys.includes(k)), ...keys.filter((k) => !h.order.includes(k))]; }
 function viewOrganiser() {
   const h = homePrefs(), order = homeOrder(), rub = rubriqueList();
@@ -233,6 +234,7 @@ function viewHome() {
     </div>`,
     parcours: parcoursCard,
     programme: () => tutoCard() + programme(),
+    actu: () => (typeof actuCard === "function" ? actuCard() : ""),
     rubriques: () => `<h2>Rubriques</h2><div class="grid rub">${rubriques()}</div>`,
     matieres: () => `<h2 id="qcm">QCM corrigés : choisis une matière</h2><div class="grid">${subs}</div>`,
     agenda: () => agendaCard(),
@@ -889,7 +891,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
-  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
+  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes", "actu"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
   if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }

@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-10-31c", "📰 Flash actu", ["L'actualité du Sénégal en direct sur l'accueil, mise à jour toutes les 30 minutes.", "« Pour toi » : choisis tes centres d'intérêt (sport, sciences, culture…) et vois le lien avec tes cours."]],
     ["2026-10-31b", "🧭 Bien démarrer, accueil à ton goût, micro", ["Après le choix de ta classe, un parcours en 7 étapes te dit par où commencer.", "« ⭐ Organiser mon accueil » : range les blocs, masque ce qui ne te sert pas, épingle tes rubriques préférées.", "Dans « Pose ta question », tu peux parler au micro et écouter la réponse.", "Sur chaque notion, le bouton « 🤔 Je ne comprends pas » t'explique le chapitre autrement."]],
     ["2026-10-31a", "📱 Connexion par numéro", ["Tu te connectes avec ton numéro de téléphone et un code de 6 chiffres, sur iPhone comme sur Android.", "Pour le premium, paie avec le numéro de ton compte : c'est ta preuve de paiement."]],
     ["2026-10-30", "📚 Terminale : 5 fois plus de contenu", ["39 sujets du BAC corrigés pas à pas, pour toutes les séries.", "Des dizaines de nouvelles notions de cours avec exercice corrigé.", "Des centaines de nouveaux QCM, à faire aussi par thème pour préparer un devoir."]],
