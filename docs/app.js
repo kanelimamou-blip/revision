@@ -131,11 +131,11 @@ function homePrefs() {
   }
   return h;
 }
-const RUB_COURT = { annales: null, aide: "Je bloque", devoir: "Préparer un devoir", qcm: "QCM", exercices: "Exercices", notions: "Cours", fiches: "Synthèses", notes: "Mes notes", trajectoire: "Ma trajectoire",
-  agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Tous mes outils", challenge: "Challenge", duo: "En groupe", examen: null, vie: "Dans la vie" };
+const RUB_COURT = { examen: "Examen blanc", annales: null, aide: "Je bloque", devoir: "Préparer un devoir", qcm: "QCM", exercices: "Exercices", notions: "Cours", fiches: "Synthèses", notes: "Mes notes", trajectoire: "Ma trajectoire",
+  agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Tous mes outils", challenge: "Challenge", duo: "En groupe", vie: "Dans la vie" };
 // rubriques rangées par besoin (demande d'Est) : bloqué → outils → s'entraîner → cours → suivi
 // sujets, exercices, QCM, cours et synthèses sont déjà dans les chiffres de la carte Bonjour, le challenge près de la cloche
-const RUB_EN_HAUT = ["annales", "exercices", "qcm", "notions", "fiches", "challenge"];
+const RUB_EN_HAUT = ["annales", "exercices", "qcm", "notions", "fiches", "challenge", "devoir", "examen", "duo", "apprendre"];
 const RUB_GROUPES = [
   ["📝", "S'entraîner", ["annales", "devoir", "exercices", "qcm", "examen", "challenge", "duo"]],
   ["📖", "Apprendre le cours", ["notions", "fiches", "assistant", "apprendre", "vie"]],
@@ -257,6 +257,12 @@ function dispo() {
   const c = (n, ico, t, href) => n ? `<a href="${href}" class="dispo-i"><b>${ico} ${n.toLocaleString("fr-FR")}</b><span>${t}</span></a>` : "";
   return `<p class="small" style="margin:10px 0 6px"><b>Tout est corrigé pas à pas :</b></p><div class="dispo">${c(ann, "📚", examOf() ? `sujets du ${examOf()[0]}` : "devoirs types", "#annales")}${c(ex, "✏️", "exercices", "#exercices")}${c(qcm, "✅", "QCM", "#qcm-list")}${c(cours, "📖", "cours", "#notions")}${c(fi, "📝", "synthèses", "#fiches")}</div>`;
 }
+// moitié droite de la carte Bonjour : réviser et préparer ses devoirs (demande d'Est)
+const RUB_REVISER = ["devoir", "examen", "duo", "apprendre"];
+function reviser() {
+  const h = homePrefs(), list = rubriqueList().filter((r) => RUB_REVISER.includes(r[0]) && !h.hiddenRub.includes(r[0]));
+  return list.length ? `<div class="reviser"><p class="small" style="margin:10px 0 6px"><b>Réviser :</b></p>${list.map(([k, href, ico, t]) => `<a class="rev-i" href="${href}"><span>${ico}</span><b>${esc(RUB_COURT[k] || t)}</b></a>`).join("")}</div>` : "";
+}
 function suite() {
   if (!programme.missions) programme();
   const m = (programme.missions || []).find(([t]) => !doneToday(t));
@@ -279,7 +285,7 @@ function viewHome() {
       const nom = myName(), next = suite();
       return `<div class="card hello"><h2>${nom ? `Bonjour ${esc(nom)} 👋` : "Bonjour 👋"}</h2>
         <p class="small muted">${ex ? `<b>J−${days}</b> avant le ${ex[0]}` : `<b>${answered}</b> réponses données`} · Série : <b>${streak()} 🔥</b></p>
-        ${dispo()}</div>`;
+        <div class="hello2"><div>${dispo()}</div>${reviser()}</div></div>`;
     },
     parcours: parcoursCard,
     trajectoire: () => (typeof trajCard === "function" ? trajCard() : ""),
