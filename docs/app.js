@@ -829,7 +829,10 @@ function suivrePremium() {
       if (!n) { if (b) b.remove(); return; }
       if (!b) { b = document.createElement("a"); b.id = "paybadge"; b.href = "#admin"; b.style.cssText = "position:fixed;right:12px;bottom:80px;z-index:98;background:#f5a623;color:#000;padding:10px 14px;border-radius:24px;font-weight:bold;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none"; document.body.appendChild(b); }
       b.textContent = `💰 ${n} paiement${n > 1 ? "s" : ""} à valider`;
+      b.hidden = location.hash.startsWith("#admin");
     });
+    // sur l'espace admin, l'onglet Paiements suffit : la pastille ne doit pas cacher les boutons
+    window.addEventListener("hashchange", () => { const b = document.getElementById("paybadge"); if (b) b.hidden = location.hash.startsWith("#admin"); });
     return;
   }
   if (stopWatch || !Compte.enabled || !Compte.user || S.premium) return;
