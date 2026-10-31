@@ -101,11 +101,13 @@ function rubriqueList() {
   const exam = examOf() ? examOf()[0] : "BAC", nNot = notionsOf(S.level).length;
   return [
     nAnn || nGs ? ["annales", "#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs types", `${nAnn ? `${nAnn} sujet${nAnn > 1 ? "s" : ""} rédigé${nAnn > 1 ? "s" : ""}` : ""}${nAnn && nGs ? " + " : ""}${nGs ? "un sujet neuf à chaque essai" : ""}, corrigés pas à pas`] : null,
+    ["aide", "#aide", "🆘", "Je bloque sur un exercice", "Écris, dicte ou photographie l'énoncé : indice, méthode, exercice corrigé"],
     ["devoir", "#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"],
     ["qcm", "#qcm-list", "✅", "QCM corrigés", "Par matière ou par thème, chaque choix expliqué"],
     ["exercices", "#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas${nGx ? ", nombres nouveaux à chaque essai" : ""}` : "Bientôt pour ta classe"],
     nNot ? ["notions", "#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`] : null,
     ["fiches", "#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"],
+    ["notes", "#notes", "📒", "Mes notes", "Moyenne, prévision, coefficients officiels, orientation"],
     ["trajectoire", "#trajectoire", "🧭", "Ma trajectoire", "Ton suivi jusqu'à l'examen et ta semaine séance par séance"],
     ["agenda", "#agenda", "🗓️", "Mon agenda", "Emploi du temps (photo ou saisie guidée), devoirs, rappels du soir"],
     ["assistant", "#assistant", "💬", "Pose ta question", "Une notion pas claire ? Je réponds avec le cours"],
@@ -170,7 +172,7 @@ function viewBienvenue() {
 }
 
 // ---------- Organiser l'accueil : l'élève range les blocs, masque ce qui ne lui sert pas et épingle ses rubriques
-const HOME_BLOCKS = [["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["trajectoire", "📈 Ma trajectoire"], ["programme", "✅ Missions du jour"], ["actu", "📰 Flash actu"], ["rubriques", "🗂️ Rubriques"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
+const HOME_BLOCKS = [["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["trajectoire", "📈 Ma trajectoire"], ["notes", "📒 Mes notes"], ["programme", "✅ Missions du jour"], ["actu", "📰 Flash actu"], ["rubriques", "🗂️ Rubriques"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
 function homeOrder() { const h = homePrefs(), keys = HOME_BLOCKS.map((b) => b[0]); return [...h.order.filter((k) => keys.includes(k)), ...keys.filter((k) => !h.order.includes(k))]; }
 function viewOrganiser() {
   const h = homePrefs(), order = homeOrder(), rub = rubriqueList();
@@ -235,6 +237,7 @@ function viewHome() {
     </div>`,
     parcours: parcoursCard,
     trajectoire: () => (typeof trajCard === "function" ? trajCard() : ""),
+    notes: () => (typeof notesCard === "function" ? notesCard() : ""),
     programme: () => tutoCard() + programme(),
     actu: () => (typeof actuCard === "function" ? actuCard() : ""),
     rubriques: () => `<h2>Rubriques</h2><div class="grid rub">${rubriques()}</div>`,

@@ -55,7 +55,9 @@
     for (const s of subsT()) for (let i = 0; i <= chEnCours(s.id); i++) { const m = maitrise(s.id, i); if (m === null || m < 60) retard.push({ sid: s.id, i, m }); }
     // on alterne les matières, et dans chacune on commence par le plus faible puis le plus ancien
     const par = {}; for (const r of retard.sort((a, b) => (a.m ?? -1) - (b.m ?? -1) || a.i - b.i)) (par[r.sid] = par[r.sid] || []).push(r);
-    retard.length = 0; for (let k = 0, ls = Object.values(par); ls.some((l) => l.length); k++) { const l = ls[k % ls.length]; if (l.length) retard.push(l.shift()); }
+    // les matières où les notes sont loin de l'objectif passent devant (réajustement à chaque note saisie)
+    const prio = typeof notesPriorite === "function" ? notesPriorite() : {};
+    retard.length = 0; for (let k = 0, ls = Object.entries(par).sort((a, b) => (prio[b[0]] || 0) - (prio[a[0]] || 0)).map((e) => e[1]); ls.some((l) => l.length); k++) { const l = ls[k % ls.length]; if (l.length) retard.push(l.shift()); }
     // ensuite : prendre de l'avance sur le chapitre suivant de chaque matière, puis consolider les chapitres déjà réussis
     const avance = [], conso = [];
     for (let k = 1; k <= 3; k++) for (const s of subsT()) { const i = chEnCours(s.id) + k; if (i < DATA.programmes[s.id].length) avance.push({ sid: s.id, i }); }
