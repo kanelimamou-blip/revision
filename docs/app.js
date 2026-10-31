@@ -137,9 +137,8 @@ function rubriques() {
   const h = homePrefs(), tile = ([k, href, icon, title], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${esc(RUB_COURT[k] || title)}</b></a>`;
   const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0]));
   const pinned = h.pins.map((k) => list.find((r) => r[0] === k)).filter(Boolean), rest = list.filter((r) => !h.pins.includes(r[0]));
-  // 2 lignes : 7 rubriques (les épinglées en tête) et « Tout voir » pour le reste
-  const shown = [...pinned, ...rest], first = h.allRub || shown.length <= 8 ? shown : shown.slice(0, Math.max(7, pinned.length));
-  return first.map((r) => tile(r, h.pins.includes(r[0]))).join("") + (shown.length > first.length ? `<button class="subj tile" id="allrub"><span class="ico">➕</span><b>Tout voir (${shown.length - first.length})</b></button>` : h.allRub ? `<button class="subj tile" id="allrub"><span class="ico">➖</span><b>Moins</b></button>` : "");
+  // toutes les rubriques visibles d'un coup (choix d'Est), les épinglées en tête
+  return [...pinned, ...rest].map((r) => tile(r, h.pins.includes(r[0]))).join("");
 }
 
 // ---------- Parcours de départ : les premières étapes conseillées selon la classe, cochées automatiquement
@@ -274,8 +273,6 @@ function viewHome() {
     ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]() + (k === "rubriques" ? (typeof pauseCard === "function" ? pauseCard() : "") : "")).join("")}
     ${typeof pushCard === "function" ? pushCard() : ""}
     <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>`;
-  const ar = $view.querySelector("#allrub");
-  if (ar) ar.onclick = () => { h.allRub = !h.allRub; store.save(); viewHome(); };
   if (daily && $view.querySelector("#daily"))   bindQuestion($view.querySelector("#daily"), daily, () => {});
   const tx = $view.querySelector("#tuto-x");
   if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };
