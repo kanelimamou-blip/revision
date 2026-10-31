@@ -57,7 +57,14 @@
     box.innerHTML = `<div class="card"><h2>Inscriptions par jour (14 jours)</h2>${barres(ins, "Du plus ancien (à gauche) à aujourd'hui (à droite).")}</div>
       <div class="card"><h2>Dernière connexion par jour (14 jours)</h2>${barres(vus, "Chaque compte compte une fois, le jour de sa dernière ouverture de l'appli.")}</div>
       <div class="card"><h2>🆕 Nouveaux comptes</h2>${nouveaux.map((u) => ligne(u, "created", "inscrit")).join("") || '<p class="muted">Aucun compte pour l\'instant.</p>'}</div>
-      <div class="card"><h2>🟢 Dernières connexions</h2>${connexions.map((u) => ligne(u, "lastSeen", "vu")).join("") || '<p class="muted">Aucune connexion enregistrée.</p>'}</div>`;
+      <div class="card"><h2>🟢 Dernières connexions</h2>${connexions.map((u) => ligne(u, "lastSeen", "vu")).join("") || '<p class="muted">Aucune connexion enregistrée.</p>'}</div>
+      <div class="card"><h2>💬 Réponses des élèves</h2><p class="small muted">Questions posées à la pause de midi et après l'école.</p>${(() => {
+        const all = users.flatMap((u) => (u.avis || []).map((a) => ({ ...a, u })));
+        if (!all.length) return '<p class="muted">Pas encore de réponse.</p>';
+        const parQ = {}; all.forEach((a) => { (parQ[a.q] = parQ[a.q] || {})[a.r] = (parQ[a.q][a.r] || 0) + 1; });
+        return Object.entries(parQ).map(([q, rs]) => `<p><b>${esc(q)}</b></p><ul class="steps">${Object.entries(rs).sort((x, y) => y[1] - x[1]).map(([r, n]) => `<li>${esc(r)} : <b>${n}</b></li>`).join("")}</ul>`).join("")
+          + `<p class="small muted">Dernières réponses : ${all.sort((x, y) => (y.d || "").localeCompare(x.d || "")).slice(0, 15).map((a) => `${esc(a.u.name || a.u.phone || "élève")} (${esc(a.r)})`).join(" · ")}</p>`;
+      })()}</div>`;
   }
 
   function comptes(box) {

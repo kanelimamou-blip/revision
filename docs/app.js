@@ -249,6 +249,7 @@ function viewHome() {
     ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
+    ${typeof pauseCard === "function" ? pauseCard() : ""}
     ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]()).join("")}
     <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>`;
   const ar = $view.querySelector("#allrub");
@@ -437,6 +438,7 @@ function viewNotion(id) {
     <div class="card notion-key"><h2>📌 À retenir</h2><ul class="steps">${c.enonce.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
     ${c.exemples.map(([t, lines]) => `<div class="card"><h2>💡 Exemple : ${esc(t)}</h2><ol class="steps">${lines.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`).join("")}
     <a class="btn hi-btn" href="#sujet/ch-${c.id}">✏️ Exercice corrigé sur ce chapitre</a>
+    <a class="btn alt" href="#assistant/${encodeURIComponent(c.title)}">🤔 Je ne comprends pas : explique-moi autrement</a>
     ${next ? `<a class="btn alt" href="#notion/${next.id}">Chapitre suivant : ${esc(next.title)}${isPremium() || next.free ? "" : " 🔒"}</a>` : ""}
     <a class="btn alt" href="#notions">Tous les chapitres</a>`;
   window.scrollTo(0, 0);
@@ -886,11 +888,11 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
-  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
+  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
   if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }
-  ({ bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: () => viewAssistant(arg), agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);

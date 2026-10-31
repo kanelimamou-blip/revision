@@ -127,6 +127,9 @@ const Compte = (() => {
     await batch.commit();
   }
 
+  // Réponses aux petites questions de l'appli (pause de midi, après l'école) : gardées dans le compte, lues par l'admin
+  const avis = (rec) => (user && db ? db.collection("users").doc(user.uid).update({ avis: firebase.firestore.FieldValue.arrayUnion(rec) }) : Promise.resolve());
+
   // Sauvegarde des progrès : au plus une écriture par minute, et tout de suite quand l'élève quitte l'appli.
   // Cela garde 10 000 élèves dans le quota gratuit de Firestore (20 000 écritures par jour).
   let pending = null;
@@ -174,7 +177,7 @@ const Compte = (() => {
   const ts = (v) => (v && v.toDate ? v.toDate() : null);
   async function adminUsers() {
     const snap = await db.collection("users").limit(5000).get();
-    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
+    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), avis: x.avis || [], suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
   }
   async function adminErrors() {
     const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();
@@ -189,5 +192,5 @@ const Compte = (() => {
   const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

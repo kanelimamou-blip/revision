@@ -83,7 +83,7 @@ function renderAnswer(r) {
     ${r.others.length ? `<p class="small muted">Voir aussi : ${r.others.map((d) => `<a href="${d.kind === "fiche" ? `#fiche/${d.sid}~${d.i}` : `#notion/${d.id}`}">${esc(d.title)}</a>`).join(" · ")}</p>` : ""}`;
 }
 
-function viewAssistant() {
+function viewAssistant(arg) {
   $view.innerHTML = `<h1>💬 Pose ta question</h1>
     <p class="muted">Demande une définition, une formule, une méthode ou un exemple. Je cherche dans tous les cours de ${esc(S.level)} et je te réponds avec l'extrait du cours, la méthode, et un QCM pour vérifier que tu as compris.</p>
     <div id="chat"></div>
@@ -99,11 +99,14 @@ function viewAssistant() {
   const ask = (text) => {
     text = text.trim(); if (!text) return;
     const r = answer(text);
-    ASSIST.chat.push({ me: true, text }, { html: renderAnswer(r) + (r.qcm && r.qcm.length ? `<p><b>Teste-toi :</b></p>` : ""), q: r.qcm && r.qcm[0] ? remix(r.qcm[0]) : null });
+    ASSIST.chat.push({ me: true, text }, { html: renderAnswer(r) + (typeof sayBtn === "function" && !r.empty && !r.none ? sayBtn() : "") + (r.qcm && r.qcm.length ? `<p><b>Teste-toi :</b></p>` : ""), q: r.qcm && r.qcm[0] ? remix(r.qcm[0]) : null });
     ASSIST.chat = ASSIST.chat.slice(-20);
     markDone("assistant"); draw(); input.value = "";
   };
   document.getElementById("ask").onsubmit = (e) => { e.preventDefault(); ask(input.value); };
   $view.querySelectorAll(".idea").forEach((a) => a.onclick = (e) => { e.preventDefault(); ask(a.textContent); });
+  if (typeof assistVoice === "function") assistVoice(input, ask);
   draw();
+  // venu d'une notion (« Je ne comprends pas ») : la question est posée tout de suite
+  if (arg) { const t = decodeURIComponent(arg); history.replaceState(null, "", "#assistant"); ask(t); }
 }
