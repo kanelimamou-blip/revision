@@ -86,7 +86,7 @@ function viewLevel() {
        <div class="grid">${DATA.classes.map((c) => DATA.series[c]
          ? `<a class="subj lvl" href="#classe/${encodeURIComponent(c)}" style="text-decoration:none;color:inherit"${String(S.level).startsWith(c + " ") ? ' aria-pressed="true"' : ""}><b>${esc(c)}</b><span class="small muted">${CFG.exams[c] ? "Année du " + CFG.exams[c][0] + " · " : ""}séries ${DATA.series[c].join(", ")}</span></a>`
          : pick(c, info(c))).join("")}</div>`;
-  $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { const first = !S.level && !S.parcoursVu; S.level = b.dataset.l; S.parcoursVu = true; store.save(); go(first ? "bienvenue" : "accueil"); });
+  $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { const first = !S.level && !S.parcoursVu; S.level = b.dataset.l; S.parcoursVu = true; store.save(); go(first ? "comment/debut" : "accueil"); });
 }
 
 // ---------- Accueil
@@ -317,7 +317,11 @@ function viewHome() {
   if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };
 }
 
-const srcLine = (q) => (q.src ? `<p class="src">📄 Source : ${esc(q.src)}</p>` : "");
+const srcLine = (q) => {
+  if (q.src) return `<p class="src">📄 Source : ${esc(q.src)}${/^(BAC|BFEM)\b/.test(q.src) ? " (sujet officiel)" : ""}</p>`;
+  const ch = ((DATA.programmes || {})[q.s] || [])[q.ch];
+  return `<p class="src">✍️ Question de l'équipe Révision, d'après le programme officiel${ch ? ` · chapitre « ${esc(ch)} »` : ""} · <a href="#sources/${q.s}">sources</a></p>`;
+};
 function questionBlock(q) {
   return `${q.src ? `<p class="tag-src">${esc(q.src)}</p>` : ""}<p class="q">${esc(q.q)}</p><div class="choices">${q.c.map((c, i) =>
     `<button class="choice" data-i="${i}"><span class="l">${LETTERS[i]}</span><span>${esc(c)}</span></button>`).join("")}</div>
@@ -512,6 +516,7 @@ function viewNotion(id) {
     ${c.svg ? `<div class="card notion-fig">${c.svg}</div>` : ""}
     <div class="card notion-key"><h2>📌 À retenir</h2><ul class="steps">${c.enonce.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
     ${c.exemples.map(([t, lines]) => `<div class="card"><h2>💡 Exemple : ${esc(t)}</h2><ol class="steps">${lines.map((l) => `<li>${esc(l)}</li>`).join("")}</ol></div>`).join("")}
+    <p class="src">🔎 Cours rédigé par l'équipe Révision d'après le programme officiel${((DATA.programmes || {})[c.sid] || [])[c.pch] ? ` · chapitre « ${esc(DATA.programmes[c.sid][c.pch])} »` : ""} · <a href="#sources/${c.sid}">voir les sources</a></p>
     <a class="btn hi-btn" href="#sujet/ch-${c.id}">✏️ Exercice corrigé sur ce chapitre</a>
     <a class="btn alt" href="#assistant/${encodeURIComponent(c.title)}">🤔 Je ne comprends pas : explique-moi autrement</a>
     ${next ? `<a class="btn alt" href="#notion/${next.id}">Chapitre suivant : ${esc(next.title)}${isPremium() || next.free ? "" : " 🔒"}</a>` : ""}
@@ -791,7 +796,7 @@ function viewPremium(reason = "", pay = "wave") {
     ${!S.premium ? `<div class="card"><p>${trialLeft() > 0 ? `🎁 Ton essai gratuit de ${TRIAL_DAYS} jours est en cours : encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b> avec tout débloqué.` : `Ton essai gratuit de ${TRIAL_DAYS} jours est terminé.`}</p></div>` : ""}
     ${S.premium ? `<div class="card"><p class="msg-ok">Ton pack premium est actif. Toutes les questions et les examens blancs sont débloqués.</p><a class="btn" href="#accueil">Réviser</a></div>` : `
     <div class="card">
-      <p class="count">${fcfa(CFG.price_fcfa)}</p><p class="muted">Payé une seule fois, valable jusqu'à l'examen.</p>
+      <p class="count">${fcfa(CFG.price_fcfa)}</p><p class="muted">Payé une seule fois, valable jusqu'à l'examen. <a href="#comment">Comment ça marche ?</a></p>
       <ul class="steps"><li>Les <b>${total}</b> questions de la 6e à la Terminale, toutes corrigées</li><li>Les examens et devoirs blancs chronométrés, notés sur 20</li><li>Les nouvelles questions ajoutées pendant l'année</li></ul>
     </div>
     <div class="card"><h2>Comment payer</h2>
@@ -953,7 +958,7 @@ function viewPartager() {
   const url = location.href.split("#")[0].split("?")[0] + "?qr";
   $view.innerHTML = `<h1>Partager l'appli</h1>
     <div class="card" style="text-align:center"><img src="icons/qr.png" alt="QR code de l'appli" style="width:100%;max-width:320px;background:#fff;padding:10px;border-radius:12px">
-      <p class="small muted">En face : ton camarade vise ce code avec l'appareil photo de son téléphone. L'appli s'ouvre avec les étapes pour l'installer et créer son compte.</p></div>
+      <p class="small muted">En face : ton camarade vise ce code avec l'appareil photo de son téléphone. Le lien lui demande s'il a un Android ou un iPhone, puis lui montre les étapes une par une pour installer l'appli.</p><a class="small" href="#installer">Voir le tuto d'installation ›</a></div>
     <button class="btn" id="sqr">Envoyer le QR code et le lien (WhatsApp…)</button>
     <button class="btn alt" id="slink">Envoyer seulement le lien</button>
     <div class="card small"><p>Le lien de l'appli :</p><p><b style="word-break:break-all">${esc(url)}</b></p><button class="btn alt small" id="cp">Copier le lien</button></div>
@@ -1066,6 +1071,8 @@ function applyProfile(p) {
 
 function render() {
   clearInterval(timer);
+  document.body.classList.remove("ins-mode");
+  if (location.hash.startsWith("#installer") && globalThis.viewInstaller) return viewInstaller();
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
   if (Compte.enabled && Compte.user && !S.phone && !Compte.isAdmin()) return viewTel();
@@ -1075,11 +1082,11 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
-  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
+  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes", "comment", "sources"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
   if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }
-  ({ bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: () => viewAssistant(arg), agenda: () => viewAgenda(arg), notions: () => viewNotions(arg), notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ comment: () => viewComment(), sources: () => viewSources(arg), bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: () => viewAssistant(arg), agenda: () => viewAgenda(arg), notions: () => viewNotions(arg), notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);

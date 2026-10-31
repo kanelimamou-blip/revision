@@ -266,9 +266,23 @@ def build():
         assert all("p" not in c or 0 <= c["p"] < len(PROGRAMMES[sid]) for c in chs), sid
     for e in LIBRARY + DEVOIRS:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
+    # sources consultées, affichées en texte (sans lien) dans l'appli : #sources et sous chaque cours
+    def _origine(u):
+        for k, v in (("groupe-reussite", "Office du Baccalauréat (UCAD), PDF du sujet officiel"), ("officedubac", "Office du Baccalauréat (UCAD)"),
+                     ("education.sn", "Ministère de l'Éducation nationale"), ("epreuvesetcorriges", "Épreuves et Corrigés (archives des sujets)"),
+                     ("sunudaara", "Sunudaara (cours et exercices corrigés)")):
+            if k in u:
+                return v
+        return u.split("/")[2]
+    sources = [{"k": "Examen officiel", "lv": e["levels"], "m": e["subject"], "t": f"{e['exam']} {e['year']} · {e['subject']}" + (f" · séries {e['series']}" if e.get("series") else ""), "o": _origine(e["url"])} for e in LIBRARY]
+    sources += [{"k": "Sujet d'établissement", "lv": e["levels"], "m": e["subject"], "t": f"{e['title']} ({e['year']})", "o": _origine(e.get("url", ""))} for e in DEVOIRS]
+    sources += [{"k": k, "lv": lv, "m": m, "t": t, "o": _origine(u)} for lv, m, k, t, u in RESSOURCES]
+    for a in ANNALES:
+        if a.get("sujet"):
+            sources.append({"k": "Sujet détaillé dans l'appli", "lv": a["levels"], "m": a["subject"], "t": f"{a['exam']} {a['year']} · {a['subject']} · séries {a['series']}", "o": _origine(a["sujet"])})
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": [{k: v for k, v in a.items() if k not in ("sujet", "corrige")} for a in ANNALES], "fiches": FICHES, "exercises": exercises, "notions": notions,  "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}, "formules": formulaire(FICHES, notions, PROGRAMMES)}, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": [{k: v for k, v in a.items() if k not in ("sujet", "corrige")} for a in ANNALES], "fiches": FICHES, "exercises": exercises, "notions": notions,  "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}, "formules": formulaire(FICHES, notions, PROGRAMMES), "sources": sources}, ensure_ascii=False, separators=(",", ":")))
     (OUT / "config.json").write_text(json.dumps({**CONFIG, "salt": SALT, "codes": hashes}, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(questions)} questions, {len(subjects)} matières, {len(hashes)} codes")
 

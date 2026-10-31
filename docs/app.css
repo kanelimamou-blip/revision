@@ -161,3 +161,28 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; margi
 
 .sharebig{display:flex;gap:12px;align-items:center;background:#1f9d55;color:#fff;border-radius:18px;padding:12px 16px;margin:14px 0 4px;text-decoration:none;box-shadow:0 3px 0 #157a40}
 .sharebig .ico{font-size:1.9rem;line-height:1}.sharebig b{display:block;font-size:1.02rem}.sharebig small{display:block;opacity:.92;font-size:.8rem}.sharebig .go{margin-left:auto;font-size:1.6rem}
+
+/* tuto d'installation */
+.ins-intro{text-align:center}.ins-logo{width:72px;height:72px;border-radius:18px;margin:0 auto}
+.ins-choix{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.ins-os{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 10px;border-radius:18px;border:2px solid var(--line,#ddd);background:var(--card,#fff);color:inherit;font:inherit;cursor:pointer}
+.ins-os span{font-size:42px}.ins-os b{font-size:1.2rem}.ins-os small{opacity:.7;text-align:center}.ins-os em{font-style:normal;font-size:.8rem;color:#1b7f3b;font-weight:700}
+.ins-devine{border-color:#2446a8;box-shadow:0 0 0 3px rgba(36,70,168,.15)}
+.ins-points{display:flex;justify-content:center;gap:8px;margin:8px 0}.ins-points i{width:10px;height:10px;border-radius:50%;background:#ccc}.ins-points i.fait{background:#1b7f3b}.ins-points i.ici{background:#2446a8;transform:scale(1.3)}
+.ins-phone{position:relative;width:200px;height:300px;margin:12px auto;border:8px solid #222;border-radius:30px;background:#f4f4f6;color:#222;overflow:hidden;font-size:12px;display:flex;flex-direction:column}
+.ins-url{background:#e6e6ea;margin:8px;border-radius:10px;padding:6px 8px;display:flex;justify-content:space-between;align-items:center}
+.ins-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;text-align:center}
+.ins-bar{display:flex;justify-content:space-around;align-items:center;padding:8px 4px;background:#e6e6ea;font-size:16px;color:#2a6df4}
+.ins-sheet{margin-top:auto;background:#fff;border-radius:14px 14px 0 0;padding:6px 0}.ins-sheet-top{margin-top:0;margin-left:40px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.ins-row{padding:9px 12px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.ins-top{display:flex;justify-content:space-between;padding:12px 8px;background:#fff;color:#2a6df4}.ins-top b{color:#222}
+.ins-dialog{margin:auto 12px;background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.ins-dlg-btns{display:flex;gap:18px;color:#1a73e8;font-weight:700}
+.ins-home{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:22px 12px;background:linear-gradient(#5b7bd5,#2446a8);flex:1}
+.ins-app{display:flex;flex-direction:column;align-items:center;gap:3px;color:#fff}.ins-app img,.ins-app i{width:42px;height:42px;border-radius:11px;font-style:normal;font-size:24px;display:flex;align-items:center;justify-content:center;background:#fff2}
+.ins-dialog .ins-app,.ins-body .ins-app{color:#222}
+.ins-hl,.ins-hl-row,.ins-hl-txt,.ins-hl-app{animation:inspulse 1.2s infinite;border-radius:10px}
+.ins-hl-row{background:#e7efff;font-weight:700}.ins-hl-txt{font-weight:800;padding:2px 6px}
+@keyframes inspulse{0%,100%{box-shadow:0 0 0 0 rgba(255,140,0,.9)}50%{box-shadow:0 0 0 7px rgba(255,140,0,0)}}
+body.ins-mode .tabs,body.ins-mode .top-r{display:none}body.ins-mode main{padding-bottom:24px}
+.ins-phone{height:250px}
