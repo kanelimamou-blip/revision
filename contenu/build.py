@@ -9,6 +9,7 @@ import hashlib
 import json
 import random
 import re
+from pathlib import Path
 import unicodedata
 import secrets
 from pathlib import Path
@@ -35,6 +36,14 @@ from q_tle_plus4 import QCM_TLE4
 from q_tle_s import QCM_TLE_S
 from q_tle_s2 import QCM_TLE_S2
 from q_tle_s3 import QCM_TLE_S3
+# volume ×3 de 1re et Tle : chaque fichier q_*_x3*.py apporte un dictionnaire QCM_… {matière: {chapitre: questions}}
+import glob as _glob, importlib as _il
+_X3 = [v for _f in sorted(_glob.glob(str(Path(__file__).parent / "q_*_x3*.py"))) for _k, v in vars(_il.import_module(Path(_f).stem)).items() if _k.startswith("QCM_")]
+X3_CH = {}
+for _d in _X3:
+    for _sid, _chs in _d.items():
+        for _t, _qs in _chs.items():
+            X3_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
 for _sid, _chs in [*QCM_SVT.items(), *QCM_TLE.items(), *QCM_TLE2.items(), *QCM_TLE3.items(), *QCM_TLE4.items(), *QCM_TLE_S.items(), *QCM_TLE_S2.items(), *QCM_TLE_S3.items()]:
     for _t, _qs in _chs.items():
         QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
@@ -197,8 +206,9 @@ def build():
     for sid, levels, name, items in SUBJECTS:
         items = items + EXTRA.get(sid, []) + EXTRA_COLLEGE.get(sid, []) + EXTRA_LYCEE.get(sid, []) + EXTRA_CHAPITRES.get(sid, [])
         # QCM rangés par chapitre : le chapitre est imposé
-        force = {q: t for t, qs in QCM_CH.get(sid, {}).items() for q, *_ in qs}
-        items = items + [x for qs in QCM_CH.get(sid, {}).values() for x in qs]
+        force = {q: t for src in (QCM_CH, X3_CH) for t, qs in src.get(sid, {}).items() for q, *_ in qs}
+        # les QCM ×3 viennent en dernier : les identifiants des questions déjà en ligne (et les progrès des élèves) ne bougent pas
+        items = items + [x for qs in QCM_CH.get(sid, {}).values() for x in qs] + [x for qs in X3_CH.get(sid, {}).values() for x in qs]
         # pas deux fois la même question dans une matière
         _vus = set(); items = [x for x in items if not (x[0] in _vus or _vus.add(x[0]))]
         fams = {f"{c} {f}" for c in SERIES for f in set(FAMILIES.values())}
