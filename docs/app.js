@@ -312,7 +312,7 @@ function viewHome() {
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
     ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]() + (k === "rubriques" ? (typeof pauseCard === "function" ? pauseCard() : "") : "")).join("")}
     ${typeof pushCard === "function" ? pushCard() : ""}
-    <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>`;
+    <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>${globalThis.legalFooter ? legalFooter() : ""}`;
   if (daily && $view.querySelector("#daily"))   bindQuestion($view.querySelector("#daily"), daily, () => {});
   const tx = $view.querySelector("#tuto-x");
   if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };
@@ -816,7 +816,7 @@ function viewPremium(reason = "", pay = "wave") {
     </div>
     <div class="card"><h2>${enLigne ? "Tu as reçu un code ?" : "J'ai un code"}</h2>
       <input class="code" id="code" placeholder="XXXXX-XXXXXX" autocomplete="off" maxlength="12">
-      <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}`;
+      <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}${globalThis.legalFooter ? legalFooter() : ""}`;
   $view.querySelectorAll("[data-pay]").forEach((b) => b.onclick = () => viewPremium(reason, b.dataset.pay));
   if (enLigne && document.getElementById("paybox")) payBox(pay);
   const cp = document.getElementById("cpnum");
@@ -990,6 +990,7 @@ function viewLogin(err = "", ok = "") {
     <input class="field" id="tname" autocomplete="name" placeholder="Ton prénom et ton nom (nouveau compte)">
     <input class="field" id="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Ton numéro de téléphone (77 123 45 67)">
     <input class="field" id="tcode" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="Code à 6 chiffres">
+    <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="cgu" style="margin-top:3px"><span>J'accepte les <a href="#legal/cgu">conditions d'utilisation</a> et la <a href="#legal/confidentialite">politique de confidentialité</a>. Si j'ai moins de 18 ans, un parent ou un tuteur est d'accord.</span></label>
     <div class="row"><button class="btn" style="flex:1" id="tsignup">Créer mon compte</button><button class="btn alt" style="flex:1" id="tlogin">Me connecter</button></div>
     <p class="small muted" style="text-align:center">Première fois ? Choisis un code secret de <b>6 chiffres</b> pour l'appli. Ce n'est <b>pas</b> ton code Wave ou Orange Money : ne le donne jamais.</p>
     <details class="small"><summary>Ancien compte : Google ou e-mail</summary><div style="display:grid;gap:10px;margin-top:10px">
@@ -999,7 +1000,7 @@ function viewLogin(err = "", ok = "") {
     <div class="row"><button class="btn alt" style="flex:1" id="login">Se connecter</button><button class="btn alt" style="flex:1" id="signup">Créer un compte</button></div>
     <p class="small muted" style="text-align:center">Première fois ? Choisis un <b>nouveau</b> mot de passe pour l'appli (pas celui de ta boîte mail), puis touche « Créer un compte ».</p>
     <button class="linkbtn small" id="forgot">Mot de passe oublié ?</button></div></details>
-    <p id="lmsg" class="${err ? "msg-ko" : "msg-ok"} small">${esc(err || ok)}</p></div>`;
+    <p id="lmsg" class="${err ? "msg-ko" : "msg-ok"} small">${esc(err || ok)}</p></div>${globalThis.legalFooter ? legalFooter() : ""}`;
   const done = (p) => { applyProfile(p); render(); suivrePremium(); };
   const mail = () => document.getElementById("mail").value.trim(), pass = () => document.getElementById("pass").value;
   // message d'erreur affiché sans effacer ce que l'élève a déjà tapé
@@ -1020,13 +1021,17 @@ function viewLogin(err = "", ok = "") {
     if (!t) return fail({ msg: "Numéro invalide : écris les 9 chiffres, par exemple 77 123 45 67." });
     if (!/^\d{6}$/.test(c)) return fail({ msg: "Le code doit faire exactement 6 chiffres." });
     if (create && n.length < 2) return fail({ msg: "Écris ton prénom et ton nom pour créer ton compte." });
-    Compte.signInTel(n.slice(0, 40), t, c, create).then(done).catch(fail);
+    if (create && !accepte()) return;
+    Compte.signInTel(n.slice(0, 40), t, c, create).then((p) => { done(p); if (create) noteCgu(); }).catch(fail);
   };
+  // acceptation des conditions (obligatoire pour un nouveau compte), gardée dans le compte
+  const accepte = () => { if (document.getElementById("cgu").checked) return true; fail({ msg: "Coche la case pour accepter les conditions (et l'accord d'un parent si tu as moins de 18 ans)." }); return false; };
+  const noteCgu = () => { S.cgu = { v: globalThis.CGU_V || "", at: Date.now() }; store.save(); };
   document.getElementById("tsignup").onclick = () => tel(true);
   document.getElementById("tlogin").onclick = () => tel(false);
   document.getElementById("google").onclick = () => Compte.signIn().then(done).catch(fail);
   document.getElementById("login").onclick = () => Compte.signInEmail(mail(), pass(), false).then(done).catch(fail);
-  document.getElementById("signup").onclick = () => Compte.signInEmail(mail(), pass(), true).then(done).catch(fail);
+  document.getElementById("signup").onclick = () => accepte() && Compte.signInEmail(mail(), pass(), true).then((p) => { done(p); noteCgu(); }).catch(fail);
   document.getElementById("forgot").onclick = () => mail()
     ? Compte.resetPassword(mail()).then(() => viewLogin("", "Un e-mail pour changer ton mot de passe a été envoyé."), fail)
     : viewLogin("Écris d'abord ton adresse e-mail.");
@@ -1075,6 +1080,7 @@ function render() {
   document.body.classList.remove("ins-mode");
   if (location.hash.startsWith("#installer") && globalThis.viewInstaller) return viewInstaller();
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
+  if (location.hash.startsWith("#legal") && globalThis.viewLegal) return viewLegal(location.hash.split("/")[1]);
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
   if (Compte.enabled && Compte.user && !S.phone && !Compte.isAdmin()) return viewTel();
   const [tab, ...rest] = (location.hash.slice(1) || "accueil").split("/"), arg = rest.length ? rest.join("/") : undefined;
@@ -1083,7 +1089,7 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
-  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes", "comment", "sources"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
+  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes", "comment", "sources", "legal"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
   if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }

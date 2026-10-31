@@ -110,6 +110,8 @@ CONFIG = {
     "exams": {"3e": ["BFEM", "2027-07-06"], "Tle": ["BAC", "2027-07-01"]},
     # clé publique des notifications (Firebase > Paramètres du projet > Cloud Messaging > Certificats Web Push) ;
     # vide : le bouton « Recevoir les rappels » reste caché
+    # infos de la société pour les pages légales (#legal) : à compléter par Est (vide = « à compléter »)
+    "societe": {"nom": "", "forme": "", "rccm": "", "ninea": "", "adresse": "", "responsable": "", "cdp": ""},
     "vapid": "BKmmvPfiqpxCLAislhc0r7Kr6UmK1CQWqsIi1Yze2uhGQlm7dfxfeFJJzAdPCn0yVpiBEZ3bb7YsWDTD7eozxOY",
 }
 
