@@ -145,7 +145,7 @@ const OUTILS_ACCUEIL = [["formules", "📐", "Formulaire"], ["flash", "🃏", "F
 function rubriques() {
   const h = homePrefs(), tile = ([k, href, icon, title], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${esc(RUB_COURT[k] || title)}</b></a>`;
   const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0])), get = (k) => list.find((r) => r[0] === k);
-  const titre = (i, t) => `<h3 class="rubh">${i} ${t}</h3>`, grille = (rs) => rs.length ? `<div class="grid rub">${rs.map((r) => tile(r, false)).join("")}</div>` : "";
+  const titre = (i, t) => `<h3 class="rubh">${i} ${t}</h3>`, grille = (rs) => rs.length ? `<div class="grid rub${rs.length < 4 ? " r" + rs.length : ""}">${rs.map((r) => tile(r, false)).join("")}</div>` : "";
   let out = "";
   const pinned = h.pins.map(get).filter(Boolean);
   if (pinned.length) out += titre("⭐", "Mes favoris") + grille(pinned);

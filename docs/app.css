@@ -154,3 +154,7 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; margi
 .rev-i{display:flex;gap:8px;align-items:center;background:#eaf0ff;border-radius:12px;padding:8px;margin-bottom:6px;text-decoration:none;color:inherit}
 .rev-i span{font-size:1.3rem}.rev-i b{font-size:.8rem;line-height:1.15}
 @media (max-width:330px){.hello2{grid-template-columns:1fr}.reviser{border:0;padding:0}}
+
+/* rangées incomplètes : les tuiles s'étirent pour occuper toute la largeur */
+.grid.rub.r1{grid-template-columns:1fr}.grid.rub.r2{grid-template-columns:repeat(2,1fr)}.grid.rub.r3{grid-template-columns:repeat(3,1fr)}
+.grid.rub.r1 .tile,.grid.rub.r2 .tile{flex-direction:row;justify-content:center;gap:10px;padding:12px 8px}
