@@ -113,6 +113,8 @@ CONFIG = {
     # infos de la société pour les pages légales (#legal) : à compléter par Est (vide = « à compléter »)
     # accord du parent obligatoire avant de payer (activer seulement après avoir publié les règles Firestore « accords »)
     "accord_parent": False,
+    # mentions légales et coordonnées d'Est visibles dans les pages légales : False tant que le RCCM n'est pas régularisé
+    "mentions_publiques": False,
     "societe": {"nom": "", "forme": "", "rccm": "", "ninea": "", "adresse": "", "responsable": "", "cdp": ""},
     "vapid": "BKmmvPfiqpxCLAislhc0r7Kr6UmK1CQWqsIi1Yze2uhGQlm7dfxfeFJJzAdPCn0yVpiBEZ3bb7YsWDTD7eozxOY",
 }

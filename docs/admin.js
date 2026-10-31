@@ -23,11 +23,11 @@
     }
     if (onglet === "ventes") {
       try { if (!ventes) ventes = await Compte.adminVentes(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
-      if (!societe) societe = { ...(CFG.societe || {}), ...((await Compte.getSociete().catch(() => null)) || {}) };
+      if (!societe) societe = { ...(CFG.societe || {}), ...((await Compte.getSocietePrivee().catch(() => null)) || {}) };
       return registre(box);
     }
     if (onglet === "societe") {
-      if (!societe) societe = { ...(CFG.societe || {}), ...((await Compte.getSociete().catch(() => null)) || {}) };
+      if (!societe) societe = { ...(CFG.societe || {}), ...((await Compte.getSocietePrivee().catch(() => null)) || {}) };
       return fiche(box);
     }
     if (onglet === "accords") {
@@ -177,16 +177,16 @@
   function fiche(box) {
     const s = societe || {};
     const manque = CHAMPS.filter(([k]) => !s[k]).map(([, t]) => t);
-    box.innerHTML = `<div class="card"><h2>🏢 Ma société</h2><p class="small muted">Ces informations s'affichent dans les mentions légales, la confidentialité et les reçus.</p>
+    box.innerHTML = `<div class="card"><h2>🏢 Ma société</h2><p class="small muted">🔒 Ces informations restent privées : seul toi les vois, sur tes reçus. Elles ne seront affichées dans l'appli (mentions légales) que le jour où tu le décideras.</p>
       ${manque.length ? `<p class="small msg-ko">À compléter : ${esc(manque.join(", "))}.</p>` : `<p class="small msg-ok">Tout est rempli. 👍</p>`}
       <div style="display:grid;gap:8px">${CHAMPS.map(([k, t]) => `<label class="small">${t}<input class="field" data-f="${k}" maxlength="120" value="${esc(s[k] || "")}"></label>`).join("")}</div>
       <button class="btn" id="s-save" style="margin-top:8px">Enregistrer</button><p class="small" id="s-msg"></p>
-      <p class="small"><a href="#legal/mentions">Voir les mentions légales</a></p></div>
+      </div>
       <div class="card small"><h2>À faire pour être en règle</h2><ol class="steps"><li>Vérifier le RCCM à l'APIX (actif, activité « édition d'applications éducatives »).</li><li>Déclarer le début d'activité au centre des impôts avec RCCM et NINEA.</li><li>Déclarer l'appli à la CDP et demander l'autorisation de transfert (Firebase en Europe).</li><li>Garder le registre des ventes (onglet 🧾 Ventes) et donner un reçu sur demande.</li></ol></div>`;
     document.getElementById("s-save").onclick = async () => {
       const rec = {}; box.querySelectorAll("[data-f]").forEach((i) => { rec[i.dataset.f] = i.value.trim().slice(0, 120); });
       const m = document.getElementById("s-msg");
-      try { await Compte.setSociete(rec); societe = rec; globalThis.SOCIETE = rec; m.className = "small msg-ok"; m.textContent = "Enregistré. Les mentions légales sont à jour."; setTimeout(() => { if (document.body.contains(box)) fiche(box); }, 1200); }
+      try { await Compte.setSociete(rec); societe = rec; m.className = "small msg-ok"; m.textContent = "Enregistré (privé)."; setTimeout(() => { if (document.body.contains(box)) fiche(box); }, 1200); }
       catch (e) { m.className = "small msg-ko"; m.textContent = "Enregistrement refusé (" + (e.code || e.message) + "). Publie les nouvelles règles Firestore."; }
     };
   }

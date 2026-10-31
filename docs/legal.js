@@ -5,6 +5,7 @@
   const ROUTES = (globalThis.ROUTES = globalThis.ROUTES || {});
   const CGU_V = (globalThis.CGU_V = "2026-10-31");
   const so = () => ({ ...((typeof CFG !== "undefined" && CFG && CFG.societe) || {}), ...(globalThis.SOCIETE || {}) });
+  const PUB = () => !!(typeof CFG !== "undefined" && CFG && CFG.mentions_publiques);
   const val = (k) => esc(so()[k] || "à compléter");
   const contact = () => esc((typeof CFG !== "undefined" && CFG && (CFG.wave_number || CFG.whatsapp)) || "");
   const prix = () => (typeof CFG !== "undefined" && CFG ? fcfa(CFG.price_fcfa) : "1 000 F");
@@ -37,9 +38,9 @@
         <li>Pas de géolocalisation, pas d'accès à tes contacts ni à tes photos (sauf la photo que tu choisis d'envoyer).</li></ul>
       <h2>Où sont tes données</h2><p>Sur ton téléphone, et dans un service sécurisé de Google (Firebase), en Europe (Belgique). L'appli est servie par GitHub Pages.</p>
       <h2>Combien de temps</h2><p>Tant que ton compte existe. Si tu demandes la suppression, ton compte et tes données sont effacés dans les 30 jours.</p>
-      <h2>Tes droits</h2><p>Tu peux demander à voir, corriger ou supprimer tes données, ou t'opposer à leur usage. Écris-nous${contact() ? ` sur WhatsApp au <b>${contact()}</b>` : ""}, depuis le numéro de ton compte. Tu peux aussi saisir la Commission de protection des données personnelles (CDP) du Sénégal.</p>
+      <h2>Tes droits</h2><p>Tu peux demander à voir, corriger ou supprimer tes données, ou t'opposer à leur usage. Écris-nous${PUB() && contact() ? ` sur WhatsApp au <b>${contact()}</b>` : " sur WhatsApp, au numéro indiqué dans la page Premium"}, depuis le numéro de ton compte. Tu peux aussi saisir la Commission de protection des données personnelles (CDP) du Sénégal.</p>
       <h2>Mineurs</h2><p>L'appli est faite pour des élèves, souvent mineurs. Nous ne demandons que le strict nécessaire. Un parent peut, à tout moment, demander l'accès aux données de son enfant ou leur suppression.</p>
-      <p><b>Responsable du traitement :</b> ${val("nom")}. Déclaration CDP : ${val("cdp")}.</p>`],
+      ${PUB() ? `<p><b>Responsable du traitement :</b> ${val("nom")}. Déclaration CDP : ${val("cdp")}.</p>` : ""}`],
     mentions: ["Mentions légales", () => `
       <ul><li><b>Éditeur :</b> ${val("nom")}</li>
       <li><b>Forme :</b> ${val("forme")}</li>
@@ -58,15 +59,15 @@
         <li>Ensuite, le pack coûte ${prix()}, une seule fois, jusqu'à l'examen. Aucun prélèvement automatique.</li>
         <li>Pas de publicité, pas de discussion avec des inconnus dans l'appli.</li>
         <li>Seules les données utiles au compte et aux progrès sont gardées, et jamais revendues.</li>
-        <li>Vous pouvez demander à tout moment de voir ou de supprimer les données de votre enfant${contact() ? ` (WhatsApp ${contact()})` : ""}.</li></ul>`],
+        <li>Vous pouvez demander à tout moment de voir ou de supprimer les données de votre enfant${PUB() && contact() ? ` (WhatsApp ${contact()})` : ""}.</li></ul>`],
   };
 
   let charge = false;
   function viewLegal(arg) {
     // fiche société remplie par l'admin (une lecture, puis on réaffiche)
-    if (!charge && globalThis.Compte && Compte.getSociete) { charge = true; Compte.getSociete().then((s) => { if (s) { globalThis.SOCIETE = s; if (location.hash.startsWith("#legal")) viewLegal(location.hash.split("/")[1]); } }).catch(() => {}); }
-    const k = PAGES[arg] ? arg : null;
-    const nav = `<div class="row" style="flex-wrap:wrap;gap:6px">${Object.entries(PAGES).map(([id, [t]]) => `<a class="btn ${id === k ? "" : "alt "}small" href="#legal/${id}">${t}</a>`).join("")}</div>`;
+    if (!charge && PUB() && globalThis.Compte && Compte.getSociete) { charge = true; Compte.getSociete().then((s) => { if (s) { globalThis.SOCIETE = s; if (location.hash.startsWith("#legal")) viewLegal(location.hash.split("/")[1]); } }).catch(() => {}); }
+    const k = PAGES[arg] && (arg !== "mentions" || PUB()) ? arg : null;
+    const nav = `<div class="row" style="flex-wrap:wrap;gap:6px">${Object.entries(PAGES).filter(([id]) => id !== "mentions" || PUB()).map(([id, [t]]) => `<a class="btn ${id === k ? "" : "alt "}small" href="#legal/${id}">${t}</a>`).join("")}</div>`;
     const retour = `<a class="btn alt" href="#accueil">Retour à l'appli</a>`;
     $view.innerHTML = k
       ? `<div class="card"><h1>${PAGES[k][0]}</h1>${PAGES[k][1]()}</div><div class="card small">${nav}</div>${retour}`
@@ -76,5 +77,5 @@
   globalThis.viewLegal = viewLegal;
   ROUTES.legal = viewLegal;
   // lien en bas de chaque page
-  globalThis.legalFooter = () => `<p class="small muted" style="text-align:center;margin-top:12px"><a href="#legal/cgu">Conditions</a> · <a href="#legal/confidentialite">Confidentialité</a> · <a href="#legal/mentions">Mentions légales</a> · <a href="#legal/parents">Parents</a></p>`;
+  globalThis.legalFooter = () => `<p class="small muted" style="text-align:center;margin-top:12px"><a href="#legal/cgu">Conditions</a> · <a href="#legal/confidentialite">Confidentialité</a>${PUB() ? ' · <a href="#legal/mentions">Mentions légales</a>' : ""} · <a href="#legal/parents">Parents</a></p>`;
 })();
