@@ -166,12 +166,18 @@ function genQuestions(sid, n, chapters = null) {
   const list = (GEN[sid] || []).filter(([ch]) => !chapters || chapters.includes(ch));
   if (!list.length) return [];
   const out = [], seen = new Set();
-  for (let tries = 0; out.length < n && tries < n * 6; tries++) {
-    const [ch, f] = list[Math.floor(Math.random() * list.length)];
+  // poids de chaque modèle : celui de son chapitre pour l'élève (parcours.js), réparti entre les modèles du chapitre
+  const nb = {}; list.forEach(([c]) => (nb[c] = (nb[c] || 0) + 1));
+  const w = list.map(([c]) => (typeof poidsChapitre === "function" ? poidsChapitre(sid, c) : 1) / nb[c]), W = w.reduce((a, b) => a + b, 0);
+  const tire = () => { let x = Math.random() * W; for (let i = 0; i < list.length; i++) { x -= w[i]; if (x <= 0) return list[i]; } return list[list.length - 1]; };
+  for (let tries = 0; out.length < n && tries < n * 10; tries++) {
+    const [ch, f] = tire();
     let g; try { g = f(Math.random); } catch (e) { continue; }
     if (!g) continue;
     const choices = [g.ok, ...g.faux.filter((x) => x !== g.ok)];
     if (choices.length < 4 || new Set(choices).size < 4 || seen.has(g.q)) continue;
+    // déjà vue par l'élève : on cherche du neuf (on l'accepte seulement en fin d'essais)
+    if (typeof dejaVu === "function" && dejaVu(g.q) && tries < n * 7) continue;
     seen.add(g.q);
     const order = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
     out.push({ id: `gen-${sid}-${out.length}-${Date.now()}`, s: sid, q: g.q, c: order.map((i) => choices[i]), a: order.indexOf(0), e: g.e, gen: true, chTitle: ch, free: false });

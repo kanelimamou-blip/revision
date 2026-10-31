@@ -45,7 +45,8 @@ function remix(q) {
 }
 // Questions de la base + questions générées (nombres nouveaux à chaque fois) pour les abonnés et pendant l'essai
 function mixQuestions(sid, pool, n, chapters = null) {
-  const g = isPremium() && typeof genQuestions === "function" ? genQuestions(sid, Math.round(n * 0.4), chapters) : [];
+  const part = typeof partGeneree === "function" ? partGeneree() : 0.4;
+  const g = isPremium() && typeof genQuestions === "function" ? genQuestions(sid, Math.round(n * part), chapters) : [];
   return shuffle([...pickFresh(pool, n - g.length), ...g]);
 }
 const subjName = (sid) => (DATA.subjects.find((s) => s.id === sid) || {}).name || "";
@@ -56,7 +57,7 @@ function mastery(sid) {
 }
 function record(q, ok) {
   const st = S.stats[q.id] || { ok: 0, ko: 0 };
-  if (q.gen) { const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d; store.save(); return; }
+  if (q.gen) { if (typeof noterGen === "function") noterGen(q, ok); if (!S.days.includes(today())) S.days.push(today()); const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d; store.save(); return; }
   st[ok ? "ok" : "ko"]++; st.last = ok; st.t = Date.now(); S.stats[q.id] = st;
   if (!S.days.includes(today())) S.days.push(today());
   const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d;

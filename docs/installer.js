@@ -127,7 +127,7 @@ function viewComment() {
       <div class="dispo-i"><b>${nb(nn)}</b><span>chapitres de cours</span></div>
       <div class="dispo-i"><b>${nb(ns)}</b><span>sujets et exercices notés</span></div>
       <div class="dispo-i"><b>${nb(nf)}</b><span>formules</span></div></div>
-      <p class="small muted">Tout le programme officiel, matière par matière, chapitre par chapitre.</p></div>
+      <p class="small muted">Tout le programme officiel, matière par matière, chapitre par chapitre. En plus, des questions et des sujets à nombres nouveaux à chaque essai : tu ne retombes pas sur les mêmes, et ton parcours suit ton emploi du temps et tes points faibles.</p></div>
     <div class="card"><h2>🧭 Comment réviser</h2><ul class="steps">
       <li><b>Cours</b> du chapitre, en court.</li><li><b>QCM</b> : chaque réponse est expliquée.</li>
       <li><b>Exercice</b> puis <b>sujet noté sur 20</b>, corrigé étape par étape.</li>

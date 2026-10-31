@@ -22,9 +22,11 @@
     return Math.min(n - 1, Math.floor(calendrier().frac(new Date()) * n));
   }
   globalThis.chEnCours = chEnCours;
+  globalThis.maitriseCh = (sid, i) => maitrise(sid, i);
   function maitrise(sid, i) {
-    const qs = qsOf(sid).filter((q) => q.ch === i && S.stats[q.id]);
-    if (qs.length) return Math.round((100 * qs.filter((q) => S.stats[q.id].last).length) / qs.length);
+    const qs = qsOf(sid).filter((q) => q.ch === i && S.stats[q.id]), g = typeof maitriseGen === "function" ? maitriseGen(sid, i) : null;
+    // questions de la base et questions générées (10 dernières réponses) comptent ensemble
+    if (qs.length || g) { const ok = qs.filter((q) => S.stats[q.id].last).length + (g ? (g.m * g.n) / 100 : 0), n = qs.length + (g ? g.n : 0); return Math.round((100 * ok) / n); }
     const d = S.diag && S.diag.ch && S.diag.ch[`${sid}~${i}`];
     return d === undefined ? null : d ? 100 : 0;
   }
@@ -109,6 +111,8 @@
       <p class="muted">${esc(S.level)} · objectif ${S.objectif || 12}/20 · ${S.tempsJour || 30} min par jour · ${c.nom === "fin d'année" ? "fin d'année" : `${esc(c.nom)} dans ${jx} jours`} <a href="#trajectoire/profil">modifier</a></p>
       <div class="card"><div class="row"><div><p class="small muted">Programme maîtrisé</p><p class="count">${p} %</p></div><div style="text-align:right"><p class="small muted">Base de parcours aujourd'hui</p><p class="count">${base(new Date())} %</p></div></div>
         <p class="${cls}">${ico} ${msg}</p>${ico === "🏁" ? `<a class="btn hi-btn" href="#diagnostic">Faire mon diagnostic</a>` : ""}${courbe()}</div>
+      <div class="card small"><p><b>🎲 Un parcours fait pour toi</b></p><p>Les questions et les exercices sont tirés pour toi seul : d'abord le chapitre que ta classe voit en ce moment, le cours de demain dans ton emploi du temps, tes devoirs à venir, puis tes chapitres faibles et les matières où tes notes sont loin de ton objectif.</p>
+        <p class="muted">${(S.vu || []).length + Object.keys(S.stats || {}).length} questions et exercices différents déjà faits. L'appli ne te les repropose pas tant qu'il en reste de nouveaux.</p></div>
       <h2>📅 Ma semaine, séance par séance</h2><p class="small muted">Séances de ${DUREE} minutes, calées sur ton emploi du temps${Object.values(S.edt || {}).some((l) => l.length) ? "" : ` (<a href="#agenda/guide">remplis-le</a> pour préparer chaque cours la veille)`} et sur ce que ta classe a déjà vu.</p>
       ${sem.map((j, k) => `<div class="card"${k ? "" : ' style="border:2px solid var(--accent)"'}><h2>${k === 0 ? "Aujourd'hui" : k === 1 ? "Demain" : JR[j.d.getDay()] + " " + j.d.getDate()}</h2>
         ${j.seances.map((s) => `<a class="mission" href="${s.href}"><span>${s.ico}</span><span><b>${esc(s.txt)}</b><br><span class="small muted">${esc(s.raison)}</span></span></a>`).join("")}</div>`).join("")}
