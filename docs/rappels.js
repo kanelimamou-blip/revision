@@ -20,7 +20,7 @@
   }
   function viewNouveautes() {
     const n = unread();
-    $view.innerHTML = `<h1>🔔 Nouveautés</h1><p class="muted">Ce qui a changé dans l'appli, du plus récent au plus ancien.</p>
+    $view.innerHTML = `<h1>🔔 Nouveautés</h1>${pushCard()}<p class="muted">Ce qui a changé dans l'appli, du plus récent au plus ancien.</p>
       ${NEWS.map(([id, t, l], i) => `<div class="card"${i < n ? ' style="border:2px solid var(--accent)"' : ""}><p class="small muted">${i < n ? "🔴 Nouveau · " : ""}${new Date(id.slice(0, 10)).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}</p><h2>${esc(t)}</h2><ul class="steps">${l.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}
       <a class="btn" href="#accueil">Retour à l'accueil</a>`;
     S.newsSeen = NEWS[0][0]; store.save(); badge();
