@@ -466,12 +466,29 @@ function viewFiche(arg) {
   window.scrollTo(0, 0);
 }
 // ---------- Notions de cours : chapitre détaillé (cours, énoncé, exemples, illustration) + exercice corrigé
-function viewNotions() {
+// icône d'une matière d'après son identifiant (pour les tuiles par matière)
+const matIco = (sid) => [[/maths/, "📐"], [/pc|physique/, "⚗️"], [/svt/, "🌿"], [/philo/, "🤔"], [/hg|histoire|geo/, "🌍"], [/fr/, "📚"], [/an|en$/, "🇬🇧"], [/es/, "🇪🇸"], [/eco|ses/, "💹"], [/compta/, "🧾"], [/ar/, "🕌"], [/ec|civi/, "⚖️"]].find(([r]) => r.test(sid.replace(/^[^-]+-/, "")))?.[1] || "📘";
+// Cours : d'abord une tuile par matière, puis les chapitres de la matière, rangés par chapitre du programme (demande d'Est)
+function viewNotions(sid) {
   const all = notionsOf(S.level), subs = [...new Set(all.map((c) => c.sid))];
-  $view.innerHTML = `<h1>Notions de cours</h1><p class="muted">Chaque chapitre : le cours expliqué, ce qu'il faut retenir, des exemples résolus, puis un exercice corrigé pas à pas.</p>
-    ${subs.map((sid) => { const ch = all.filter((c) => c.sid === sid);
-      return `<h2>${esc(ch[0].sname)}</h2>${ch.map((c, i) => `<a class="card lib-card" href="#notion/${c.id}"><b>${i + 1}. ${esc(c.title)}</b><span class="small muted">Cours · ${c.exemples.length} exemple${c.exemples.length > 1 ? "s" : ""} · exercice corrigé${c.free ? " · gratuit" : isPremium() ? "" : " 🔒"}</span></a>`).join("")}`; }).join("")}
-    ${all.length ? "" : `<div class="card"><p>Les chapitres détaillés de ta classe arrivent. En attendant, lis les synthèses.</p><a class="btn" href="#fiches">Synthèses de cours</a></div>`}`;
+  const cur = subs.includes(sid) ? sid : subs.length === 1 ? subs[0] : null;
+  if (!all.length) { $view.innerHTML = `<h1>Cours</h1><div class="card"><p>Les chapitres détaillés de ta classe arrivent. En attendant, lis les synthèses.</p><a class="btn" href="#fiches">Synthèses de cours</a></div>`; return; }
+  if (!cur) {
+    $view.innerHTML = `<h1>📖 Cours</h1><p class="muted">Choisis ta matière. Chaque chapitre : le cours expliqué, l'essentiel à retenir, des exemples, puis un exercice corrigé.</p>
+      <div class="grid rub">${subs.map((s) => { const ch = all.filter((c) => c.sid === s);
+        return `<a class="subj tile" href="#notions/${s}"><span class="ico">${matIco(s)}</span><b>${esc(ch[0].sname)}</b><span class="small muted">${ch.length} chapitres</span></a>`; }).join("")}</div>`;
+    return;
+  }
+  const ch = all.filter((c) => c.sid === cur), prog = (DATA.programmes || {})[cur] || [];
+  const carte = (c) => `<a class="card lib-card" href="#notion/${c.id}"><b>${esc(c.title)}${isPremium() || c.free ? "" : " 🔒"}</b><span class="small muted">Cours · ${c.exemples.length} exemple${c.exemples.length > 1 ? "s" : ""} · exercice corrigé</span></a>`;
+  // regroupement par chapitre du programme quand il est connu
+  const groupes = [];
+  ch.forEach((c) => { const t = prog[c.pch] || "Autres chapitres"; let g = groupes.find((x) => x.t === t); if (!g) groupes.push(g = { t, p: c.pch ?? 99, l: [] }); g.l.push(c); });
+  groupes.sort((x, y) => x.p - y.p);
+  const onglets = subs.length > 1 ? `<div class="row onglets">${subs.map((s) => `<a class="btn alt small${s === cur ? " on" : ""}" href="#notions/${s}">${matIco(s)} ${esc(all.find((c) => c.sid === s).sname)}</a>`).join("")}</div>` : "";
+  $view.innerHTML = `<h1>${matIco(cur)} ${esc(ch[0].sname)}</h1>${onglets}<p class="muted">${ch.length} chapitres de cours, rangés comme le programme.</p>
+    ${groupes.map((g, i) => `<details class="card"${i === 0 ? " open" : ""}><summary><b>${groupes.length > 1 && !/^[A-Z]{1,3}\d/.test(g.t) ? `${i + 1}. ` : ""}${esc(g.t)}</b> <span class="small muted">· ${g.l.length}</span></summary>${g.l.map(carte).join("")}</details>`).join("")}
+    ${subs.length > 1 ? `<a class="btn alt" href="#notions">Toutes les matières</a>` : ""}`;
 }
 function viewNotion(id) {
   const all = Object.entries(DATA.notions || {}).flatMap(([sid, ch]) => ch.map((c, i) => ({ ...c, sid, i, n: ch.length })));
@@ -488,7 +505,7 @@ function viewNotion(id) {
     <a class="btn hi-btn" href="#sujet/ch-${c.id}">✏️ Exercice corrigé sur ce chapitre</a>
     <a class="btn alt" href="#assistant/${encodeURIComponent(c.title)}">🤔 Je ne comprends pas : explique-moi autrement</a>
     ${next ? `<a class="btn alt" href="#notion/${next.id}">Chapitre suivant : ${esc(next.title)}${isPremium() || next.free ? "" : " 🔒"}</a>` : ""}
-    <a class="btn alt" href="#notions">Tous les chapitres</a>`;
+    <a class="btn alt" href="#notions/${c.sid}">Tous les chapitres de ${esc(s ? s.name : "la matière")}</a>`;
   window.scrollTo(0, 0);
 }
 // ---------- Préparer un devoir : l'élève choisit la matière puis les chapitres du programme sur lesquels il sera interrogé
@@ -1052,7 +1069,7 @@ function render() {
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
   if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }
-  ({ bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: () => viewAssistant(arg), agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  ({ bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: () => viewAssistant(arg), agenda: () => viewAgenda(arg), notions: () => viewNotions(arg), notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
