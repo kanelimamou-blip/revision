@@ -158,3 +158,6 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; margi
 /* rangées incomplètes : les tuiles s'étirent pour occuper toute la largeur */
 .grid.rub.r1{grid-template-columns:1fr}.grid.rub.r2{grid-template-columns:repeat(2,1fr)}.grid.rub.r3{grid-template-columns:repeat(3,1fr)}
 .grid.rub.r1 .tile,.grid.rub.r2 .tile{flex-direction:row;justify-content:center;gap:10px;padding:12px 8px}
+
+.sharebig{display:flex;gap:12px;align-items:center;background:#1f9d55;color:#fff;border-radius:18px;padding:12px 16px;margin:14px 0 4px;text-decoration:none;box-shadow:0 3px 0 #157a40}
+.sharebig .ico{font-size:1.9rem;line-height:1}.sharebig b{display:block;font-size:1.02rem}.sharebig small{display:block;opacity:.92;font-size:.8rem}.sharebig .go{margin-left:auto;font-size:1.6rem}

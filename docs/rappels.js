@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-10-31k", "🎁 Partage l'appli à un ami", ["Touche 📤 en haut de l'écran ou le bouton vert « Partager l'appli à un ami » sur l'accueil.", "Envoie le lien ou le QR code par WhatsApp : ton ami installe l'appli en quelques secondes."]],
     ["2026-10-31j", "📚 Terminale et Première : tout le contenu ×3", ["Terminale : près de 490 chapitres de cours, chacun avec un exercice noté, et plus de 4 700 QCM corrigés.", "Première : 207 chapitres de cours (3 fois plus) avec exercice noté, et le triple de QCM dans toutes les matières.", "Tout est nouveau, sans doublon, rangé dans les chapitres du programme."]],
     ["2026-10-31i", "🗂️ Accueil rangé par besoin", ["La carte Bonjour en deux : à gauche tout ce qui est corrigé pour ta classe, à droite « Réviser » (préparer un devoir, examen blanc…).", "🏆 Le challenge du jour est à côté de la cloche : un point rouge tant que tu ne l'as pas fait.", "Un gros bouton rouge « 🆘 Je bloque sur un exercice ou un devoir ».", "Les rubriques sont rangées : Devoirs et entraînement, Apprendre le cours, Mon suivi.", "🧰 Mes outils, ton arme secrète, bien en vue : formulaire, fiches flash, ta fiche perso et ta moyenne en un clic.", "📖 Cours rangés par matière : choisis Maths, PC, SVT… puis les chapitres, regroupés comme le programme.", "Terminale : 36 nouvelles notions de philosophie avec exercice noté."]],
     ["2026-10-31h", "🏠 Nouvel accueil, plus simple", ["En haut : bonjour, le compte à rebours, ta série et un gros bouton vers ce qu'il faut faire maintenant.", "Juste en dessous, toutes les rubriques d'un coup d'œil, en petites icônes.", "Les autres blocs (notes, trajectoire, agenda…) restent dans les rubriques ; tu peux les remettre sur l'accueil avec « Organiser mon accueil »."]],
@@ -30,6 +31,8 @@
     const fait = typeof doneToday === "function" && doneToday("challenge");
     c.innerHTML = `🏆${fait ? "" : '<i class="dot pt"></i>'}`;
     c.title = fait ? "Challenge du jour fait ✔" : "Challenge du jour à faire";
+    // partager l'appli : icône toujours visible en haut
+    if (!document.getElementById("shr")) { const sh = document.createElement("a"); sh.id = "shr"; sh.href = "#partager"; sh.className = "news-btn"; sh.setAttribute("aria-label", "Partager l'appli à un ami"); sh.title = "Partager l'appli à un ami"; sh.textContent = "📤"; c.before(sh); }
   }
   function viewNouveautes() {
     const n = unread();

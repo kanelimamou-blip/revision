@@ -162,6 +162,8 @@ function rubriques() {
   }
   const reste = list.filter((r) => !vus.has(r[0]));
   if (reste.length) out += titre("➕", "Autres") + grille(reste);
+  // partage de l'appli, bien visible en bas des rubriques (demande d'Est)
+  out += `<a class="sharebig" href="#partager"><span class="ico">🎁</span><span><b>Partager l'appli à un ami</b><small>Par WhatsApp, lien ou QR code : révisez ensemble</small></span><span class="go">›</span></a>`;
   return out;
 }
 
