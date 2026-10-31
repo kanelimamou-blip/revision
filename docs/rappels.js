@@ -84,22 +84,59 @@
     } catch (err) { m.className = "small msg-ko"; m.textContent = "Activation impossible sur ce téléphone pour le moment."; if (Compte.logError) Compte.logError("Notifications : " + (err.code || err.message)); }
   });
 
-  // ---------- Assistant : parler au micro et écouter la réponse
+  // ---------- Assistant et « Je bloque » : dicter au micro
+  // Le texte s'affiche pendant qu'on parle et s'ajoute à ce qui est déjà écrit ; rien n'est envoyé tout seul :
+  // l'élève relit et corrige avant d'envoyer. Le bouton n'apparaît que si le navigateur sait vraiment dicter
+  // (Chrome Android / ordinateur, en ligne). Après un refus du micro ou 2 échecs de suite, il est masqué.
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  globalThis.assistVoice = (input, send) => {
+  const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const micOk = () => !!Rec && !iOS && window.isSecureContext !== false && !(S.micKo >= 2);
+  const MIC_ERR = {
+    "not-allowed": "Micro refusé. Autorise le micro pour ce site dans les réglages de Chrome, ou écris ton texte.",
+    "service-not-allowed": "La dictée n'est pas disponible sur ce téléphone : écris ton texte.",
+    "audio-capture": "Aucun micro trouvé : écris ton texte.",
+    "network": "La dictée a besoin d'internet : vérifie ta connexion ou écris ton texte.",
+    "no-speech": "Je n'ai rien entendu. Touche « 🎤 Dicter » et parle près du téléphone.",
+    "language-not-supported": "La dictée en français n'est pas disponible ici : écris ton texte.",
+  };
+  globalThis.assistVoice = (input, send, place) => {
     const form = document.getElementById("ask");
-    if (Rec && form) {
-      const mic = document.createElement("button"); mic.type = "button"; mic.className = "btn alt"; mic.style.width = "auto"; mic.textContent = "🎤"; mic.setAttribute("aria-label", "Parler au micro");
-      form.insertBefore(mic, form.lastElementChild);
-      mic.onclick = () => {
-        const r = new Rec(); r.lang = "fr-FR"; r.interimResults = false; r.maxAlternatives = 1;
-        mic.textContent = "🔴"; input.placeholder = "Je t'écoute…";
-        r.onresult = (ev) => { const t = ev.results[0][0].transcript; input.value = t; send(t); };
-        r.onerror = () => { input.placeholder = "Micro indisponible : écris ta question"; };
-        r.onend = () => { mic.textContent = "🎤"; };
-        try { r.start(); } catch (err) { mic.textContent = "🎤"; }
+    if (!form || !micOk()) return;
+    const mic = document.createElement("button"); mic.type = "button"; mic.className = "btn alt mic-btn"; mic.style.width = "auto";
+    const idle = () => { mic.textContent = "🎤 Dicter"; mic.setAttribute("aria-label", "Dicter au micro"); mic.classList.remove("on"); };
+    idle();
+    const note = document.createElement("p"); note.className = "small muted mic-note"; note.hidden = true;
+    const at = place || form; at.insertBefore(mic, at.lastElementChild);
+    form.insertAdjacentElement("afterend", note);
+    const tell = (t, ko) => { note.hidden = !t; note.textContent = t || ""; note.className = "small mic-note " + (ko ? "msg-ko" : "muted"); };
+    let r = null, base = "", heard = "";
+    const fail = (code) => {
+      S.micKo = ["service-not-allowed", "audio-capture", "language-not-supported"].includes(code) ? 2 : (S.micKo || 0) + 1;
+      store.save();
+      tell(MIC_ERR[code] || "La dictée n'a pas marché : écris ton texte.", true);
+      if (S.micKo >= 2) mic.remove();
+      if (typeof Compte !== "undefined" && Compte.logError && code !== "no-speech") Compte.logError("Dictée : " + code);
+    };
+    mic.onclick = () => {
+      if (r) { r.stop(); return; }
+      try { r = new Rec(); } catch (e) { r = null; fail("service-not-allowed"); return; }
+      r.lang = "fr-FR"; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+      base = input.value.trim(); heard = "";
+      const show = (t) => { input.value = (base ? base + " " : "") + t; };
+      r.onstart = () => { mic.textContent = "⏹️ Arrêter"; mic.setAttribute("aria-label", "Arrêter la dictée"); mic.classList.add("on"); tell("Je t'écoute… parle lentement et distinctement."); };
+      r.onresult = (ev) => {
+        let fin = "", tmp = "";
+        for (let i = 0; i < ev.results.length; i++) { const t = ev.results[i][0].transcript; if (ev.results[i].isFinal) fin += t; else tmp += t; }
+        heard = (fin + tmp).trim(); show(heard);
       };
-    }
+      r.onerror = (ev) => { const c = ev.error || "inconnue"; if (c !== "aborted") fail(c); };
+      r.onend = () => {
+        r = null; idle();
+        if (heard) { S.micKo = 0; store.save(); show(heard); tell("Relis le texte dicté et corrige les mots mal compris avant d'envoyer."); input.focus(); }
+        else if (note.textContent.startsWith("Je t'écoute")) tell(MIC_ERR["no-speech"], true);
+      };
+      try { r.start(); } catch (e) { r = null; idle(); fail("service-not-allowed"); }
+    };
   };
   globalThis.sayBtn = () => ("speechSynthesis" in window ? `<button class="btn alt small say-ans">🔊 Écouter la réponse</button>` : "");
   document.addEventListener("click", (e) => {

@@ -28,12 +28,12 @@
     $view.innerHTML = `<h1>🆘 Je bloque sur un exercice</h1>
       <p class="muted">Écris, colle, dicte ou prends en photo ton exercice. Je retrouve le chapitre et je t'aide en 3 niveaux : un indice, la méthode, puis un exercice semblable corrigé. Essaie toujours le niveau 1 avant le suivant !</p>
       <form id="ask" class="card"><textarea id="ain" rows="5" maxlength="1500" placeholder="Ex. : Soit f(x) = x³ − 3x + 1. Étudier les variations de f et donner l'équation de la tangente en 0."></textarea>
-        <div class="row" style="gap:8px"><label class="btn alt" style="flex:1;text-align:center">📸 Photo<input type="file" id="aph" accept="image/*" capture="environment" hidden></label><button class="btn" style="flex:2">M'aider</button></div>
+        <div class="row" style="gap:8px" id="abtns"><label class="btn alt" style="flex:1;text-align:center;white-space:nowrap">📸 Photo<input type="file" id="aph" accept="image/*" capture="environment" hidden></label><button class="btn" style="flex:2">M'aider</button></div>
         <p class="small" id="amsg"></p></form><div id="ares"></div>`;
     const input = document.getElementById("ain"), msg = document.getElementById("amsg");
     const go = (t) => { if (!t.trim()) { msg.textContent = "Écris ou photographie d'abord ton exercice."; return; } msg.textContent = ""; aider(t); };
     document.getElementById("ask").onsubmit = (e) => { e.preventDefault(); go(input.value); };
-    if (typeof assistVoice === "function") { assistVoice(input, (t) => go(t)); }
+    if (typeof assistVoice === "function") { assistVoice(input, (t) => go(t), document.getElementById("abtns")); }
     document.getElementById("aph").onchange = async (e) => {
       const f = e.target.files[0]; if (!f) return;
       try {

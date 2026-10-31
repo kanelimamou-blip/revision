@@ -129,3 +129,4 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; margi
 #jj-bar .btn-ghost{color:var(--bg);border-color:var(--bg)}#jj-bar.over{background:var(--ko);color:#fff}
 
 .gtab{border-collapse:collapse;width:100%;font-size:.78rem;table-layout:fixed}.gtab th{font-weight:600;padding:2px;color:var(--muted);font-size:.72rem}.gtab td{border:1px solid var(--line);height:20px;padding:0 2px;text-align:center;cursor:pointer;overflow:hidden;white-space:nowrap}.gtab tr.demi td{border-top:1px dashed var(--line)}.gtab td.g-on{background:var(--accent);color:#fff;font-weight:700}.gtab td.g-pris{background:var(--surface-2);color:var(--muted)}.gtab td.g-pause{background:var(--accent-soft)}
+.mic-btn{white-space:nowrap}.mic-btn.on{background:var(--ko,#c0392b);color:#fff}
