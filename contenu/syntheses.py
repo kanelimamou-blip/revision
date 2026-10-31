@@ -3475,7 +3475,7 @@ SYNTH["1ere-pc"] += [
   ("Montage inverseur avec R₁ = 10 kΩ, R₂ = 47 kΩ, uE = 0,5 V. uS ?", ["uS = −(47/10) × 0,5.", "uS = −2,35 V."]),
   "Montages classiques de l'électronique de 1ère S."),
   C("Piles, électrolyse et dosages d'oxydoréduction", 10, [
-    "Pile : deux demi-piles reliées par un pont salin ; le pôle − est l'électrode du métal le plus réducteur (Daniell : Zn⁻ | Zn²⁺ ‖ Cu²⁺ | Cu⁺).",
+    "Pile : deux demi-piles reliées par un pont salin ; le pôle − est l'électrode du métal le plus réducteur (Daniell : pôle − Zn | Zn²⁺ ‖ Cu²⁺ | Cu pôle +).",
     "La pile transforme l'énergie chimique en énergie électrique ; f.é.m. = différence des potentiels standards.",
     "Électrolyse : réaction forcée par un générateur ; oxydation à l'anode (+), réduction à la cathode (−).",
     "Quantité d'électricité : Q = I t = n(e⁻) × F (F = 96 500 C/mol).",

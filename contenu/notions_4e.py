@@ -292,7 +292,7 @@ N4 = {
     C("Les changements d'état", "4e-etats",
       ["La matière existe sous trois états : solide, liquide, gazeux.",
        "On passe d'un état à l'autre en chauffant ou en refroidissant."],
-      ["Fusion (solide → liquide) ; solidification (liquide → solide) ; vaporisation (liquide → gaz) ; liquéfaction ou condensation (gaz → liquide).",
+      ["Fusion (solide → liquide) ; solidification (liquide → solide) ; vaporisation (liquide → gaz) ; liquéfaction (gaz → liquide) ; condensation (gaz → solide).",
        "Pour un corps pur, la température reste constante pendant le changement d'état (palier).",
        "Lors d'un changement d'état, la masse se conserve, le volume change.",
        "L'eau augmente de volume en se solidifiant (la glace flotte).",

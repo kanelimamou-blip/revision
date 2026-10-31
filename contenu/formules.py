@@ -6,6 +6,19 @@ from formules_memo import MEMO
 MATIERES = re.compile(r"maths|-pc|eco|compta|svt")
 FORMULE = re.compile(r"[=≈≤≥×÷√²³ⁿ∑∫→⇌]|\b(ln|exp|cos|sin|tan)\b|\d\s*%")
 
+FRAGMENT = re.compile(r"(Elle|Il|Alors|Donc|Puis|Ensuite|Conclusion|Hérédité|Initialisation|Soustraire|Choisir|Après n|Une condition initiale|Pour F\(a\)|On revient|On en déduit)\b")
+
+def _tri(x):
+    x = re.sub(r"\s+", "", x.replace("′", "'").replace("⟺", "⇔").lower())
+    return {x[i:i + 3] for i in range(len(x) - 2)}
+
+def _norme(x):
+    """Forme comparable d'un morceau de formule : sans intitulé, espaces, ponctuation finale ni variantes d'écriture."""
+    x = x.split(" : ", 1)[-1] if re.match(r"^[^=:]{0,40} : ", x) else x
+    x = x.replace("′", "'").replace("⟺", "⇔").replace("″", "''").replace("lim(", "lim (").replace("𝒞", "C")
+    x = re.sub(r"\s*\([^()]*\)\.?$", "", x.strip())
+    return re.sub(r"[\s_.,]|annuel|mensuel|ₐ|ₘ", "", x)
+
 # formules ajoutées pour les chapitres sans formule dans le cours : {matière: {titre exact du chapitre: [formules]}}
 PLUS = {
   "6e-maths": {"Droites, angles et triangles": [
@@ -267,14 +280,27 @@ def formulaire(fiches, notions, programmes):
             lignes = [] if not MATIERES.search(sid) else [k for c in fiches.get(sid, []) if c.get("p") == i for k in c["cles"]]
             lignes += [k for n in notions.get(sid, []) if n["pch"] == i for k in n["enonce"]]
             lignes += PLUS.get(sid, {}).get(t, [])
-            vus, f = set(), []
+            vus, f, deja, tris = set(), [], "", set()
             for k in lignes:
+                # fragment d'un raisonnement pas à pas (sans contexte, ce n'est pas une formule à retenir)
+                if FRAGMENT.match(k):
+                    continue
+                # redite : chaque morceau de la ligne figure déjà dans les formules retenues du chapitre
+                morceaux = [m for m in (_norme(x) for x in re.split(r" ; |\. (?=[A-ZÀ-Ý])|, puis ", k)) if m]
+                if deja and morceaux and all(m in deja for m in morceaux):
+                    continue
+                # paraphrase : au moins 85 % des trigrammes de la ligne figurent déjà dans le chapitre
+                tri = _tri(k)
+                if tris and len(tri & tris) >= 0.85 * len(tri):
+                    continue
                 # même formule écrite deux fois (avec ou sans intitulé, espaces, précision entre parenthèses) : gardée une fois
                 corps = re.sub(r"\s*\([^()]*\)\.?$", "", k.split(" : ", 1)[-1])
                 cle = re.sub(r"[\s_.]|annuel|mensuel|ₐ|ₘ", "", corps)
                 if FORMULE.search(k) and cle not in vus:
                     vus.add(cle)
                     f.append(k)
+                    tris |= _tri(k)
+                    deja += "|" + "|".join(_norme(x) for x in re.split(r" ; |\. (?=[A-ZÀ-Ý])|, puis ", k))
             f += [k for k in MEMO.get(sid, {}).get(t, []) if k not in f]
             if f:
                 chs.append({"p": i, "t": t, "f": f})
