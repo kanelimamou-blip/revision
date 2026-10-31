@@ -628,7 +628,9 @@ async function sha256(s) {
 function viewPremium(reason = "", pay = "wave") {
   const total = DATA.questions.length, wa = CFG.whatsapp, wave = CFG.wave_number, om = CFG.om_number;
   if (!wave) pay = "om";
-  const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM${S.phone ? ` depuis le ${S.phone}` : ""}. Voici ma capture :`);
+  // numéro du compte, affiché « 77 123 45 67 » : c'est avec lui que l'élève doit payer
+  const tel = (S.phone || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4"), dest = pay === "om" ? om : wave;
+  const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM${S.phone ? ` depuis le ${tel}` : ""}. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
     ${!S.premium ? `<div class="card"><p>${trialLeft() > 0 ? `🎁 Ton essai gratuit de ${TRIAL_DAYS} jours est en cours : encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b> avec tout débloqué.` : `Ton essai gratuit de ${TRIAL_DAYS} jours est terminé.`}</p></div>` : ""}
@@ -640,8 +642,10 @@ function viewPremium(reason = "", pay = "wave") {
     <div class="card"><h2>Comment payer</h2>
       ${wave || om ? `<p class="small muted">Choisis ton moyen de paiement :</p>
         <div class="row">${wave ? `<button class="btn${pay === "wave" ? "" : " alt"}" style="flex:1" data-pay="wave">Wave</button>` : ""}${om ? `<button class="btn${pay === "om" ? "" : " alt"}" style="flex:1" data-pay="om">Orange Money</button>` : ""}</div>
+        ${tel ? `<div class="card" style="border:2px solid #f5a623;margin:8px 0"><p>⚠️ Paie <b>obligatoirement avec le numéro de ton compte : ${esc(tel)}</b>.</p><p class="small muted">C'est avec ce numéro qu'on retrouve ton paiement. Un paiement fait depuis un autre numéro ne pourra pas être reconnu.</p></div>` : ""}
         <ol class="steps">
-        <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}${S.phone ? ` Paie <b>depuis ton numéro ${esc(S.phone)}</b> : c'est ta preuve de paiement.` : ""}</li>
+        <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}${tel ? ` Depuis ton numéro <b>${esc(tel)}</b>.` : ""}
+        <div class="row" style="margin-top:8px">${pay === "om" ? `<a class="btn" style="flex:1" href="tel:%23144%23">📞 Ouvrir Orange Money (#144#)</a>` : ""}<button class="btn alt" style="flex:1" id="cpnum">📋 Copier le numéro ${esc(dest)}</button></div></li>
         <li>Envoie la capture du paiement sur WhatsApp.</li>
         <li>Tu reçois ton code. Entre-le ci-dessous.</li></ol>
         ${wa ? `<a class="btn hi-btn" href="https://wa.me/${esc(wa)}?text=${msg}" target="_blank" rel="noopener">Envoyer la capture sur WhatsApp</a>` : ""}`
@@ -651,6 +655,8 @@ function viewPremium(reason = "", pay = "wave") {
       <input class="code" id="code" placeholder="XXXXX-XXXXXX" autocomplete="off" maxlength="12">
       <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}`;
   $view.querySelectorAll("[data-pay]").forEach((b) => b.onclick = () => viewPremium(reason, b.dataset.pay));
+  const cp = document.getElementById("cpnum");
+  if (cp) cp.onclick = () => navigator.clipboard?.writeText(dest.replace(/\s/g, "")).then(() => { cp.textContent = "Numéro copié ✓ : colle-le dans " + (pay === "om" ? "Orange Money" : "Wave"); }).catch(() => {});
   const btn = document.getElementById("unlock");
   if (btn) btn.onclick = async () => {
     const raw = document.getElementById("code").value.trim().toUpperCase().replace(/\s/g, "");

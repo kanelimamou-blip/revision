@@ -61,8 +61,10 @@
   }
 
   function comptes(box) {
-    const liste = users.filter((u) => !filtre || `${u.name} ${u.email} ${u.phone}`.toLowerCase().includes(filtre)).sort((a, b) => (b.lastSeen || b.created || 0) - (a.lastSeen || a.created || 0));
-    box.innerHTML = `<input class="field" id="af" type="search" placeholder="Chercher un nom ou un e-mail" value="${esc(filtre)}" aria-label="Chercher un compte">
+    // un numéro se cherche avec ou sans espaces (77 123 45 67 ou 771234567)
+    const f2 = /^[\d\s+]+$/.test(filtre) ? filtre.replace(/\D/g, "").replace(/^(00)?221(?=\d{9}$)/, "") : filtre;
+    const liste = users.filter((u) => !filtre || `${u.name} ${u.email} ${u.phone}`.toLowerCase().includes(f2)).sort((a, b) => (b.lastSeen || b.created || 0) - (a.lastSeen || a.created || 0));
+    box.innerHTML = `<input class="field" id="af" type="search" placeholder="Chercher un nom, un numéro ou un e-mail" value="${esc(filtre)}" aria-label="Chercher un compte">
       <p class="small muted">${liste.length} compte${liste.length > 1 ? "s" : ""}</p>
       ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? ` · ⭐ premium${u.code ? " (code " + esc(u.code) + ")" : ""}` : ""}</p>
         <p class="small muted">${esc(u.phone ? "📱 " + u.phone : u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
