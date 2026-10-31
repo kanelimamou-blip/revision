@@ -135,7 +135,8 @@ function viewComment() {
     <div class="card"><h2>🔎 D'où vient le contenu</h2><ul class="steps">
       <li>Le <b>programme officiel</b> du Sénégal, chapitre par chapitre.</li>
       <li>Les <b>vrais sujets du BAC et du BFEM</b> : la source est écrite sous chaque question qui en vient.</li>
-      <li>Les autres questions et sujets types sont rédigés par l'équipe sur le modèle des examens, et indiqués comme tels.</li></ul>
+      <li>Les autres questions et sujets types sont rédigés par l'équipe sur le modèle des examens, et indiqués comme tels.</li>
+      <li>Uniquement des <b>documents officiels et publics</b> : aucun document privé ou réservé.</li></ul>
       <a class="small" href="#sources">Voir toutes les sources ›</a></div>
     <div class="btns"><a class="btn" href="${S.parcoursVu && location.hash === "#comment/debut" ? "#bienvenue" : "#accueil"}">C'est parti !</a></div>`;
 }

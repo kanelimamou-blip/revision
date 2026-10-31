@@ -177,7 +177,7 @@ function parcoursSteps() {
     ["📖", "Lis ta première notion de cours", "Cours, à retenir, exemple, puis un exercice corrigé", "#notions", everDone("fiche")],
     ["✅", "Fais un QCM sur un chapitre", "Par thème, comme pour préparer un devoir", "#qcm-list", everDone("qcm")],
     ["✏️", "Fais un exercice corrigé pas à pas", "Avec support ou tout seul, à toi de choisir", "#exercices", everDone("exo")],
-    ex && nAnn ? ["📚", `Essaie un sujet du ${ex[0]}`, "Un vrai sujet complet, corrigé étape par étape, noté sur 20", "#annales", everDone("sujet")]
+    ex && nAnn ? ["📚", `Essaie un sujet du ${ex[0]}`, "Un sujet complet sur le modèle de l'épreuve, corrigé étape par étape, noté sur 20", "#annales", everDone("sujet")]
       : ["🏆", "Fais le challenge du jour", "Toutes tes matières en 10 questions", "#challenge", everDone("challenge")],
     ["⭐", "Organise ton accueil", "Épingle tes rubriques préférées, range ou masque les blocs", "#accueil/organiser", !!S.homeSet],
   ];

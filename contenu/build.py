@@ -267,19 +267,16 @@ def build():
     for e in LIBRARY + DEVOIRS:
         assert set(e["levels"]) <= set(LEVELS) | fams, e
     # sources consultées, affichées en texte (sans lien) dans l'appli : #sources et sous chaque cours
-    def _origine(u):
-        for k, v in (("groupe-reussite", "Office du Baccalauréat (UCAD), PDF du sujet officiel"), ("officedubac", "Office du Baccalauréat (UCAD)"),
-                     ("education.sn", "Ministère de l'Éducation nationale"), ("epreuvesetcorriges", "Épreuves et Corrigés (archives des sujets)"),
-                     ("sunudaara", "Sunudaara (cours et exercices corrigés)")):
-            if k in u:
-                return v
-        return u.split("/")[2]
-    sources = [{"k": "Examen officiel", "lv": e["levels"], "m": e["subject"], "t": f"{e['exam']} {e['year']} · {e['subject']}" + (f" · séries {e['series']}" if e.get("series") else ""), "o": _origine(e["url"])} for e in LIBRARY]
-    sources += [{"k": "Sujet d'établissement", "lv": e["levels"], "m": e["subject"], "t": f"{e['title']} ({e['year']})", "o": _origine(e.get("url", ""))} for e in DEVOIRS]
-    sources += [{"k": k, "lv": lv, "m": m, "t": t, "o": _origine(u)} for lv, m, k, t, u in RESSOURCES]
+    # Ne sont affichés que des documents officiels et publics (examens d'État, ministère, Office du BAC).
+    # Les sites privés (archives, cours en ligne) et les devoirs d'établissement ne sont jamais montrés.
+    def _off(exam):
+        return "Office du Baccalauréat (UCAD) · sujet officiel public" if exam == "BAC" else "Ministère de l'Éducation nationale · sujet officiel public"
+    sources = [{"k": "Programme officiel", "lv": LEVELS, "m": "Toutes matières", "t": "Programmes officiels de l'enseignement moyen et secondaire du Sénégal, chapitre par chapitre", "o": "Ministère de l'Éducation nationale"}]
+    sources += [{"k": "Examen officiel", "lv": e["levels"], "m": e["subject"], "t": f"{e['exam']} {e['year']} · {e['subject']}" + (f" · séries {e['series']}" if e.get("series") else ""), "o": _off(e["exam"])} for e in LIBRARY if e["exam"] in ("BAC", "BFEM")]
+    sources += [{"k": "Document officiel", "lv": lv, "m": m, "t": t, "o": "Office du Baccalauréat (UCAD)" if "officedubac" in u else "Ministère de l'Éducation nationale"} for lv, m, k, t, u in RESSOURCES if "officedubac" in u or "education.sn" in u]
     for a in ANNALES:
-        if a.get("sujet"):
-            sources.append({"k": "Sujet détaillé dans l'appli", "lv": a["levels"], "m": a["subject"], "t": f"{a['exam']} {a['year']} · {a['subject']} · séries {a['series']}", "o": _origine(a["sujet"])})
+        if a.get("sujet") and a["exam"] in ("BAC", "BFEM"):
+            sources.append({"k": "Sujet officiel détaillé dans l'appli", "lv": a["levels"], "m": a["subject"], "t": f"{a['exam']} {a['year']} · {a['subject']} · séries {a['series']}", "o": _off(a["exam"])})
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": [{k: v for k, v in a.items() if k not in ("sujet", "corrige")} for a in ANNALES], "fiches": FICHES, "exercises": exercises, "notions": notions,  "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}, "formules": formulaire(FICHES, notions, PROGRAMMES), "sources": sources}, ensure_ascii=False, separators=(",", ":")))
