@@ -15,7 +15,7 @@
       <p class="small muted">Version du ${CGU_V}</p>
       <h2>1. L'appli</h2><p>Révision est une appli de révision scolaire pour les élèves du Sénégal, de la 6e à la Terminale. Elle suit les programmes officiels. Elle aide à réviser, mais ne remplace ni les cours ni les professeurs.</p>
       <h2>2. Le compte</h2><p>Le compte se crée avec un prénom, un nom, un numéro de téléphone et un code secret à 6 chiffres. Le code est personnel : ne le donne à personne. Un compte sert à un seul élève.</p>
-      <p><b>Élève de moins de 18 ans :</b> un parent ou un tuteur doit être d'accord pour la création du compte et pour le paiement. C'est lui qui paie le pack premium.</p>
+      <p><b>Élève de moins de 18 ans :</b> un parent ou un tuteur doit être d'accord pour la création du compte et pour le paiement. Avant de payer, l'élève envoie un lien à son parent, qui donne son accord depuis son propre téléphone ; l'accord est enregistré avec son nom, son numéro et la date. En 1re et en Terminale, un élève de 18 ans ou plus peut déclarer sa date de naissance à la place : une fausse déclaration est de sa seule responsabilité.</p>
       <h2>3. Essai et prix</h2><p>L'essai gratuit dure ${essai()} jours, avec tout débloqué. Ensuite, le pack premium coûte <b>${prix()}</b>, payé une seule fois par Wave ou Orange Money, et reste valable jusqu'à l'examen de l'année scolaire en cours. Le prix est affiché avant tout paiement.</p>
       <p>Une école ou une structure peut aussi acheter l'accès pour ses élèves, selon un contrat écrit avec elle.</p>
       <h2>4. Remboursement</h2><p>Si le premium ne s'active pas après ton paiement, et que nous ne pouvons pas régler le problème, ton argent est remboursé. Écris-nous dans les 7 jours qui suivent le paiement.</p>
@@ -30,6 +30,7 @@
         <li>Ta classe et tes progrès (réponses, notes, emploi du temps, agenda), pour que ton parcours te suive sur tous tes téléphones.</li>
         <li>Un identifiant au hasard du téléphone, pour l'essai gratuit (un seul essai par téléphone).</li>
         <li>La capture de ton paiement, si tu en envoies une, pour activer le premium.</li>
+        <li>L'accord de ton parent (son nom, son numéro, son lien avec toi, la date), ou ta date de naissance si tu déclares avoir 18 ans ou plus.</li>
         <li>Les erreurs techniques de l'appli, pour les corriger.</li></ul>
       <h2>Ce que nous ne faisons pas</h2><ul>
         <li>Pas de publicité, pas de revente, pas de partage de tes données.</li>
@@ -53,6 +54,7 @@
     parents: ["Mot aux parents", () => `
       <p>Votre enfant utilise Révision pour réviser ses cours. Voici ce qu'il faut savoir :</p><ul>
         <li>L'essai dure ${essai()} jours, gratuit et sans engagement.</li>
+        <li>Rien n'est payé sans votre accord : votre enfant vous envoie un lien, vous le lisez et vous touchez « J'autorise ».</li>
         <li>Ensuite, le pack coûte ${prix()}, une seule fois, jusqu'à l'examen. Aucun prélèvement automatique.</li>
         <li>Pas de publicité, pas de discussion avec des inconnus dans l'appli.</li>
         <li>Seules les données utiles au compte et aux progrès sont gardées, et jamais revendues.</li>

@@ -791,6 +791,7 @@ function viewPremium(reason = "", pay = "wave") {
   // numéro du compte, affiché « 77 123 45 67 » : c'est avec lui que l'élève doit payer
   const tel = (S.phone || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4"), dest = pay === "om" ? om : wave;
   const enLigne = Compte.enabled && !!Compte.user;
+  const ptel = ((S.accord && S.accord.ptel) || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4");
   const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM${S.phone ? ` depuis le ${tel}` : ""}. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
@@ -800,10 +801,10 @@ function viewPremium(reason = "", pay = "wave") {
       <p class="count">${fcfa(CFG.price_fcfa)}</p><p class="muted">Payé une seule fois, valable jusqu'à l'examen. <a href="#comment">Comment ça marche ?</a></p>
       <ul class="steps"><li>Les <b>${total}</b> questions de la 6e à la Terminale, toutes corrigées</li><li>Les examens et devoirs blancs chronométrés, notés sur 20</li><li>Les nouvelles questions ajoutées pendant l'année</li></ul>
     </div>
-    <div class="card"><h2>Comment payer</h2>
+    ${globalThis.accordRequis && accordRequis() ? `<div id="accordbox"></div>` : `<div class="card"><h2>Comment payer</h2>
       ${wave || om ? `<p class="small muted">Choisis ton moyen de paiement :</p>
         <div class="row">${wave ? `<button class="btn${pay === "wave" ? "" : " alt"}" style="flex:1" data-pay="wave">Wave</button>` : ""}${om ? `<button class="btn${pay === "om" ? "" : " alt"}" style="flex:1" data-pay="om">Orange Money</button>` : ""}</div>
-        ${tel ? `<div class="card" style="border:2px solid #f5a623;margin:8px 0"><p>⚠️ Paie <b>obligatoirement avec le numéro de ton compte : ${esc(tel)}</b>.</p><p class="small muted">C'est avec ce numéro qu'on retrouve ton paiement. Un paiement fait depuis un autre numéro ne pourra pas être reconnu.</p></div>` : ""}
+        ${tel ? `<div class="card" style="border:2px solid #f5a623;margin:8px 0"><p>⚠️ Paie <b>obligatoirement avec le numéro de ton compte : ${esc(tel)}</b>${ptel ? ` ou celui de ton parent : <b>${esc(ptel)}</b>` : ""}.</p><p class="small muted">C'est avec ce numéro qu'on retrouve ton paiement. Un paiement fait depuis un autre numéro ne pourra pas être reconnu.</p></div>` : ""}
         <ol class="steps">
         <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}${tel ? ` Depuis ton numéro <b>${esc(tel)}</b>.` : ""}
         <div class="row" style="margin-top:8px">${pay === "om" ? `<a class="btn" style="flex:1" href="tel:%23144%23">📞 Ouvrir Orange Money (#144#)</a>` : ""}<button class="btn alt" style="flex:1" id="cpnum">📋 Copier le numéro ${esc(dest)}</button></div></li>
@@ -816,9 +817,10 @@ function viewPremium(reason = "", pay = "wave") {
     </div>
     <div class="card"><h2>${enLigne ? "Tu as reçu un code ?" : "J'ai un code"}</h2>
       <input class="code" id="code" placeholder="XXXXX-XXXXXX" autocomplete="off" maxlength="12">
-      <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}${globalThis.legalFooter ? legalFooter() : ""}`;
+      <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}`}${globalThis.legalFooter ? legalFooter() : ""}`;
   $view.querySelectorAll("[data-pay]").forEach((b) => b.onclick = () => viewPremium(reason, b.dataset.pay));
   if (enLigne && document.getElementById("paybox")) payBox(pay);
+  if (document.getElementById("accordbox")) accordBox();
   const cp = document.getElementById("cpnum");
   if (cp) cp.onclick = () => navigator.clipboard?.writeText(dest.replace(/\s/g, "")).then(() => { cp.textContent = "Numéro copié ✓ : colle-le dans " + (pay === "om" ? "Orange Money" : "Wave"); }).catch(() => {});
   const btn = document.getElementById("unlock");
@@ -1081,6 +1083,7 @@ function render() {
   if (location.hash.startsWith("#installer") && globalThis.viewInstaller) return viewInstaller();
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (location.hash.startsWith("#legal") && globalThis.viewLegal) return viewLegal(location.hash.split("/")[1]);
+  if (location.hash.startsWith("#accord/") && globalThis.viewAccord) return viewAccord(location.hash.split("/")[1]);
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
   if (Compte.enabled && Compte.user && !S.phone && !Compte.isAdmin()) return viewTel();
   const [tab, ...rest] = (location.hash.slice(1) || "accueil").split("/"), arg = rest.length ? rest.join("/") : undefined;

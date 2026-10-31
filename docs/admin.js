@@ -4,16 +4,16 @@
 (() => {
   const fmt = (d) => (d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "—");
   const ago = (d, j) => d && Date.now() - d.getTime() < j * 864e5;
-  let users = null, errors = null, pays = null, partages = {}, filtre = "";
+  let users = null, errors = null, pays = null, partages = {}, filtre = "", accs = null;
 
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr"].includes(arg) ? arg : "paiements";
+    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords"].includes(arg) ? arg : "paiements";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["paiements", "💰 Paiements"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["paiements", "💰 Paiements"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
-    document.getElementById("reload").onclick = () => { users = errors = pays = null; partages = {}; viewAdmin(arg); };
+    document.getElementById("reload").onclick = () => { users = errors = pays = accs = null; partages = {}; viewAdmin(arg); };
     const box = document.getElementById("adm");
     if (onglet === "qr") {
       box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.png" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
@@ -21,7 +21,12 @@
       document.getElementById("reload").hidden = true;
       return;
     }
+    if (onglet === "accords") {
+      try { if (!accs) accs = await Compte.adminAccords(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
+      return accords(box);
+    }
     if (onglet === "paiements") {
+      if (!accs) accs = await Compte.adminAccords().catch(() => []);
       try { if (!pays) pays = await Compte.adminPays(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
       return paiements(box);
     }
@@ -95,11 +100,24 @@
     }));
   }
   // paiements déclarés dans l'appli : un toucher sur Valider passe l'élève en premium, son appli se débloque aussitôt
+  // trace de l'accord : le plus récent accepté (parent ou majeur) pour cet élève
+  const LI = () => globalThis.LIENS_PARENT || {};
+  const accordOk = (uid) => (accs || []).filter((a) => a.uid === uid && (a.statut === "ok" || a.statut === "majeur")).sort((a, b) => (b.okAt || b.at || 0) - (a.okAt || a.at || 0))[0];
+  const texteAccord = (a) => a.statut === "majeur" ? `🧑 Déclaré majeur (né le ${esc(a.naissance || "?")}) le ${fmt(a.at)}` : `👪 Accord de ${esc(a.parent || "?")} (${esc(LI()[a.lien] || a.lien || "")}, 📱 ${esc(a.ptel || "")}) le ${fmt(a.okAt)}`;
+  const accordDe = (uid) => { if (accs === null) return ""; const a = accordOk(uid); return `<p class="small">${a ? texteAccord(a) : `<span class="msg-ko">⚠️ Aucun accord parent enregistré</span>`}</p>`; };
+  function accords(box) {
+    const l = (accs || []).slice().sort((a, b) => (b.okAt || b.at || 0) - (a.okAt || a.at || 0));
+    const n = (s) => l.filter((a) => a.statut === s).length;
+    const csv = () => { const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`; const rows = [["eleve", "tel_eleve", "classe", "statut", "parent", "lien", "tel_parent", "naissance", "demande", "accord", "version_conditions", "uid"]].concat(l.map((a) => [a.eleve, a.tel, a.level, a.statut, a.parent, LI()[a.lien] || a.lien, a.ptel, a.naissance, fmt(a.at), fmt(a.okAt), a.v, a.uid])); return rows.map((r) => r.map(q).join(";")).join("\n"); };
+    box.innerHTML = `<div class="card"><p><b>${n("ok")}</b> accords de parent · <b>${n("majeur")}</b> élèves déclarés majeurs · <b>${n("attente")}</b> demandes en attente</p><button class="btn alt small" id="acc-csv">📥 Télécharger la liste (tableur)</button></div>
+      ${l.map((a) => `<div class="card small"><p><b>${esc(a.eleve || "Sans nom")}</b> · ${esc(a.level || "")} · 📱 ${esc(a.tel || "")}</p><p>${a.statut === "attente" ? `⏳ Demande envoyée le ${fmt(a.at)}, pas encore acceptée` : texteAccord(a)}</p><p class="muted">Conditions version ${esc(a.v || "?")}</p></div>`).join("") || `<div class="card"><p>Aucune demande d'accord pour l'instant.</p></div>`}`;
+    document.getElementById("acc-csv").onclick = () => { const b = new Blob(["\ufeff" + csv()], { type: "text/csv" }), u = URL.createObjectURL(b), x = document.createElement("a"); x.href = u; x.download = "accords-parents.csv"; x.click(); setTimeout(() => URL.revokeObjectURL(u), 2000); };
+  }
   function paiements(box) {
     const tel = (t) => (t || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4");
     box.innerHTML = pays.length ? `<p class="small muted">${pays.length} paiement${pays.length > 1 ? "s" : ""} à vérifier (le plus ancien d'abord). Compare le numéro, le montant (${fcfa(CFG.price_fcfa)}) et l'heure avec ton relevé ${"Wave"} ou Orange Money.</p>
       ${pays.map((p) => `<div class="card"><p><b>${esc(p.name || "Sans nom")}</b> · 📱 ${esc(tel(p.phone) || "numéro inconnu")} · ${p.via === "om" ? "Orange Money" : "Wave"}</p>
-        <p class="small muted">${esc(p.level || "")} · envoyé ${fmt(p.at)}</p>
+        <p class="small muted">${esc(p.level || "")} · envoyé ${fmt(p.at)}</p>${accordDe(p.uid)}
         <img src="${esc(p.img)}" alt="Capture du paiement" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:8px 0">
         <div class="row"><button class="btn" style="flex:1" data-ok="${esc(p.uid)}">✅ Valider : passer premium</button><button class="btn alt" style="flex:1" data-ko="${esc(p.uid)}">❌ Refuser</button></div>
         <div data-motif="${esc(p.uid)}" hidden><input class="field" placeholder="Motif (ex. capture illisible, montant incomplet)" maxlength="200"><button class="btn alt small" data-kosend="${esc(p.uid)}">Envoyer le refus</button></div>

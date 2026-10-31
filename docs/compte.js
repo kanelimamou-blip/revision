@@ -233,7 +233,14 @@ const Compte = (() => {
   // pour l'admin : nombre de paiements en attente, suivi en direct
   const watchPays = (cb) => db.collection("paiements").where("statut", "==", "attente").limit(200).onSnapshot((q) => cb(q.size), () => {});
   const adminRefuse = (uid, motif) => db.collection("paiements").doc(uid).update({ statut: "refuse", motif: String(motif || "").slice(0, 200), fin: firebase.firestore.FieldValue.serverTimestamp() });
+  // Accord du parent (#accord/<jeton>) : l'élève crée la demande, le parent l'accepte sans compte, l'admin garde la trace
+  const accords = () => db.collection("accords");
+  const SRV = () => firebase.firestore.FieldValue.serverTimestamp();
+  async function demanderAccord(token, rec) { await accords().doc(token).set({ ...rec, uid: user.uid, at: SRV() }); }
+  async function lireAccord(token) { if (!db || !token) return null; const d = await accords().doc(token).get(); return d.exists ? { ...d.data(), at: ts(d.data().at), okAt: ts(d.data().okAt) } : null; }
+  const donnerAccord = (token, rec) => accords().doc(token).update({ ...rec, statut: "ok", okAt: SRV() });
+  async function adminAccords() { const snap = await accords().limit(5000).get(); return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at), okAt: ts(d.data().okAt) })); }
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

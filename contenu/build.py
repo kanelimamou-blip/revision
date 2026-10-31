@@ -111,6 +111,8 @@ CONFIG = {
     # clé publique des notifications (Firebase > Paramètres du projet > Cloud Messaging > Certificats Web Push) ;
     # vide : le bouton « Recevoir les rappels » reste caché
     # infos de la société pour les pages légales (#legal) : à compléter par Est (vide = « à compléter »)
+    # accord du parent obligatoire avant de payer (activer seulement après avoir publié les règles Firestore « accords »)
+    "accord_parent": False,
     "societe": {"nom": "", "forme": "", "rccm": "", "ninea": "", "adresse": "", "responsable": "", "cdp": ""},
     "vapid": "BKmmvPfiqpxCLAislhc0r7Kr6UmK1CQWqsIi1Yze2uhGQlm7dfxfeFJJzAdPCn0yVpiBEZ3bb7YsWDTD7eozxOY",
 }
@@ -190,7 +192,9 @@ def new_codes(n, dest):
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("a") as f:
         f.writelines(c + "\n" for c in codes)
-    (PRIVATE / "firestore.rules").write_text(RULES.replace("SECRET", sec))
+    # les règles en ligne ont évolué depuis (paiements, admin, accords) : ne pas écraser le fichier à jour
+    if not (PRIVATE / "firestore.rules").exists():
+        (PRIVATE / "firestore.rules").write_text(RULES.replace("SECRET", sec))
     print(f"{n} codes ajoutés dans {dest}")
 
 
