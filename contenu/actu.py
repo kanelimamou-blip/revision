@@ -36,7 +36,7 @@ THEMES = {
     "economie": ("💰 Économie", r"économi|croissance|pétrole|gaz|budget|fcfa|inflation|prix|commerce|export|import|banque|emploi|entreprise|investiss|port de dakar|agricult|arachide|pêche", "En économie, HG et maths : croissance, prix, pourcentages."),
     "culture": ("🎭 Culture", r"culture|musique|cinéma|film|livre|littérature|festival|art|théâtre|patrimoine|dak.art|biennale|écrivain|poète|senghor", "En français : auteurs, œuvres et culture africaine."),
     "monde": ("🌐 Afrique et monde", r"cedeao|union africaine|onu|afrique|international|sommet|diplomat|ambassad|uemoa|aes\b|mali|mauritanie|gambie|guinée", "En histoire-géo : coopération, intégration régionale, relations internationales."),
-    "politique": ("🏛️ Vie publique", r"président|gouvernement|ministre|assemblée|député|conseil des ministres|loi|élection|maire|sonko|diomaye", "En HG et philo : l'État, la citoyenneté et la démocratie."),
+    "politique": ("🏛️ Vie publique", r"président|gouvernement|ministre|assemblée|parlement|député|conseil des ministres|loi|élection|maire|sonko|diomaye", "En HG et philo : l'État, la citoyenneté et la démocratie."),
 }
 # sujets écartés pour une appli d'élèves (faits divers violents, sujets adultes)
 BLOQUE = re.compile(r"meurtre|tué|tuée|assassin|viol|cadavre|corps sans vie|égorg|poignard|drogue|chanvre|prostitu|sexe|sexuel|décapit|suicide|braquage|agress|lynch|accident mortel|morts? sur|sang\b|homosex|pornogr|avortement|infanticide|charlatan", re.I)
@@ -74,7 +74,8 @@ def lire(nom, url, local):
         if not titre or BLOQUE.search(titre + " " + desc + " " + cats):
             continue
         tout = f"{titre} {desc} {cats}".lower()
-        themes = [k for k, (_, rx, _) in THEMES.items() if re.search(rx, tout)]
+        # chaque mot-clé doit commencer un mot (« art » ne doit pas trouver « partenariat »)
+        themes = [k for k, (_, rx, _) in THEMES.items() if re.search(r"(?<![\w])(?:" + rx + ")", tout)]
         out.append({"t": titre, "r": resume(desc), "s": nom, "d": d.strftime("%Y-%m-%dT%H:%M:%SZ"), "th": themes[:3], "loc": local or "sénégal" in tout or "dakar" in tout})
     return out
 
