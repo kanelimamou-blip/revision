@@ -123,17 +123,23 @@ function rubriqueList() {
 function homePrefs() {
   const h = S.home || (S.home = {});
   for (const [k, v] of Object.entries({ order: [], hidden: [], pins: [], hiddenRub: [], allRub: false })) if (!(k in h)) h[k] = Array.isArray(v) ? [] : v;
-  // les rubriques passent en haut de l'accueil, une fois, même pour un ordre déjà personnalisé
-  if (!h.rubTop) { h.rubTop = true; if (h.order.length) h.order = ["rubriques", ...h.order.filter((k) => k !== "rubriques")]; h.hidden = h.hidden.filter((k) => k !== "rubriques"); }
+  // accueil allégé (une fois pour tous) : bonjour et rubriques en haut, les blocs secondaires masqués
+  // (ils restent dans les rubriques et peuvent être réaffichés dans « Organiser mon accueil »)
+  if (!h.v2) {
+    h.v2 = true; h.order = []; h.allRub = false;
+    h.hidden = [...new Set([...h.hidden.filter((k) => k !== "rubriques" && k !== "compteur"), ...HOME_HIDDEN])];
+  }
   return h;
 }
+const RUB_COURT = { annales: null, aide: "Je bloque", devoir: "Préparer un devoir", qcm: "QCM", exercices: "Exercices", notions: "Cours", fiches: "Synthèses", notes: "Mes notes", trajectoire: "Ma trajectoire",
+  agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Outils", challenge: "Challenge", duo: "En groupe", examen: null, vie: "Dans la vie" };
 function rubriques() {
-  const h = homePrefs(), tile = ([, href, icon, title, sub], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${title}</b><span class="small muted">${sub}</span></a>`;
+  const h = homePrefs(), tile = ([k, href, icon, title], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${esc(RUB_COURT[k] || title)}</b></a>`;
   const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0]));
   const pinned = h.pins.map((k) => list.find((r) => r[0] === k)).filter(Boolean), rest = list.filter((r) => !h.pins.includes(r[0]));
-  // 6 rubriques visibles d'abord (les épinglées en tête), le reste derrière « Toutes les rubriques »
-  const shown = [...pinned, ...rest], first = h.allRub ? shown : shown.slice(0, Math.max(6, pinned.length));
-  return first.map((r) => tile(r, h.pins.includes(r[0]))).join("") + (shown.length > first.length ? `<button class="subj tile" id="allrub"><span class="ico">➕</span><b>Toutes les rubriques</b><span class="small muted">encore ${shown.length - first.length} : ${shown.slice(first.length).map((r) => r[3]).join(", ")}</span></button>` : "");
+  // 2 lignes : 7 rubriques (les épinglées en tête) et « Tout voir » pour le reste
+  const shown = [...pinned, ...rest], first = h.allRub || shown.length <= 8 ? shown : shown.slice(0, Math.max(7, pinned.length));
+  return first.map((r) => tile(r, h.pins.includes(r[0]))).join("") + (shown.length > first.length ? `<button class="subj tile" id="allrub"><span class="ico">➕</span><b>Tout voir (${shown.length - first.length})</b></button>` : h.allRub ? `<button class="subj tile" id="allrub"><span class="ico">➖</span><b>Moins</b></button>` : "");
 }
 
 // ---------- Parcours de départ : les premières étapes conseillées selon la classe, cochées automatiquement
@@ -173,7 +179,8 @@ function viewBienvenue() {
 }
 
 // ---------- Organiser l'accueil : l'élève range les blocs, masque ce qui ne lui sert pas et épingle ses rubriques
-const HOME_BLOCKS = [["rubriques", "🗂️ Rubriques"], ["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["trajectoire", "📈 Ma trajectoire"], ["notes", "📒 Mes notes"], ["programme", "✅ Missions du jour"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
+const HOME_BLOCKS = [["compteur", "👋 Bonjour, compte à rebours et série"], ["rubriques", "🗂️ Rubriques"], ["parcours", "🧭 Bien démarrer"], ["trajectoire", "📈 Ma trajectoire"], ["notes", "📒 Mes notes"], ["programme", "✅ Missions du jour"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
+const HOME_HIDDEN = ["trajectoire", "notes", "matieres", "agenda", "profil", "plan", "citation", "actions"];
 function homeOrder() { const h = homePrefs(), keys = HOME_BLOCKS.map((b) => b[0]); return [...h.order.filter((k) => keys.includes(k)), ...keys.filter((k) => !h.order.includes(k))]; }
 function viewOrganiser() {
   const h = homePrefs(), order = homeOrder(), rub = rubriqueList();
@@ -212,11 +219,18 @@ function programme() {
     return ch.length ? ["fiche", `#notion/${ch[Math.floor(n / 3) % ch.length].id}`, `Apprends un chapitre de ${weakest.name} : ${ch[Math.floor(n / 3) % ch.length].title}`] : ["fiche", weakest ? `#fiche/${weakest.id}` : "#fiches", "Lis une synthèse de cours"]; })() : ["duo", "#duo", "Fais une session de groupe avec tes camarades"];
   const missions = [["challenge", "#challenge", "Fais le challenge du jour (toutes matières)"],
     ["qcm", weakest ? `#quiz/${weakest.id}` : "#qcm-list", `QCM dans ta matière la plus faible${weakest ? " : " + weakest.name : ""}`], third];
+  programme.missions = missions;
   const done = missions.filter(([t]) => doneToday(t)).length;
   const trial = !S.premium && n <= TRIAL_DAYS;
   return `<div class="card prog"><div class="row"><h2>${trial ? `Mon programme : jour ${n} / ${TRIAL_DAYS}` : "Mes missions du jour"}</h2><b>${done}/3</b></div>
     ${missions.map(([t, href, label]) => `<a class="mission${doneToday(t) ? " done" : ""}" href="${href}"><span>${doneToday(t) ? "✅" : "⬜"}</span><span>${esc(label)}</span></a>`).join("")}
     ${done === 3 ? `<p class="msg-ok small">Bravo, journée réussie ! Reviens demain pour garder ta série 🔥</p>` : `<p class="small muted">3 missions par jour, environ 20 minutes.</p>`}</div>`;
+}
+// le bouton principal de l'accueil : la prochaine mission du jour pas encore faite
+function suite() {
+  if (!programme.missions) programme();
+  const m = (programme.missions || []).find(([t]) => !doneToday(t));
+  return m ? [m[1], m[2]] : ["#challenge", "Le challenge du jour"];
 }
 function viewHome() {
   const ex = examOf();
@@ -231,16 +245,17 @@ function viewHome() {
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   const blocks = {
-    compteur: () => `<div class="card">
-      <div class="row">${ex ? `<div><p class="small muted">${ex[0]} ${ex[1].slice(0, 4)}, date indicative</p><p class="count">J−${days}</p></div>`
-        : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
-      <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
-    </div>`,
+    compteur: () => {
+      const nom = myName(), next = suite();
+      return `<div class="card hello"><h2>${nom ? `Bonjour ${esc(nom)} 👋` : "Bonjour 👋"}</h2>
+        <p class="small muted">${ex ? `<b>J−${days}</b> avant le ${ex[0]}` : `<b>${answered}</b> réponses données`} · Série : <b>${streak()} 🔥</b></p>
+        <a class="btn" href="${next[0]}" style="display:block;text-align:center;margin-top:10px">▶️ ${esc(next[1])}</a></div>`;
+    },
     parcours: parcoursCard,
     trajectoire: () => (typeof trajCard === "function" ? trajCard() : ""),
     notes: () => (typeof notesCard === "function" ? notesCard() : ""),
     programme: () => tutoCard() + programme(),
-    rubriques: () => `<h2>Rubriques</h2><div class="grid rub">${rubriques()}</div>`,
+    rubriques: () => `<div class="grid rub">${rubriques()}</div>`,
     matieres: () => `<h2 id="qcm">QCM corrigés : choisis une matière</h2><div class="grid">${subs}</div>`,
     agenda: () => agendaCard(),
     profil: () => (typeof profilCard === "function" ? profilCard() : ""),
@@ -256,12 +271,11 @@ function viewHome() {
     ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
-    ${typeof pauseCard === "function" ? pauseCard() : ""}
+    ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]() + (k === "rubriques" ? (typeof pauseCard === "function" ? pauseCard() : "") : "")).join("")}
     ${typeof pushCard === "function" ? pushCard() : ""}
-    ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]()).join("")}
     <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>`;
   const ar = $view.querySelector("#allrub");
-  if (ar) ar.onclick = () => { h.allRub = true; store.save(); viewHome(); };
+  if (ar) ar.onclick = () => { h.allRub = !h.allRub; store.save(); viewHome(); };
   if (daily && $view.querySelector("#daily"))   bindQuestion($view.querySelector("#daily"), daily, () => {});
   const tx = $view.querySelector("#tuto-x");
   if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };

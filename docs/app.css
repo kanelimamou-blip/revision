@@ -86,6 +86,12 @@ input.code{font:inherit;font-size:1.2rem;letter-spacing:.12em;text-transform:upp
 .linkbtn{border:0;background:none;color:var(--accent);text-decoration:underline;padding:0}
 .lib{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line,#e7e1d3);text-decoration:none;color:inherit}.lib:last-child{border-bottom:0}
 .rub .tile{text-decoration:none;color:inherit;gap:4px}.tile .ico{font-size:1.5rem}
+.grid.rub{grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 14px}
+.grid.rub .tile{min-height:0;padding:10px 4px;align-items:center;text-align:center;justify-content:flex-start;border-radius:16px}
+.grid.rub .tile .ico{font-size:1.7rem;line-height:1}
+.grid.rub .tile b{font-family:var(--f-body,inherit);font-size:.78rem;font-weight:700;line-height:1.15}
+@media (max-width:340px){.grid.rub{grid-template-columns:repeat(3,1fr)}}
+.hello h2{margin:0 0 4px}
 .lib-card{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit}
 .btn .small{display:block;font-weight:400;opacity:.85}
 .prog{gap:8px}.mission{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}.mission.done span:last-child{text-decoration:line-through;color:var(--muted)}
