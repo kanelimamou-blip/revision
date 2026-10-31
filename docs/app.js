@@ -86,7 +86,7 @@ function viewLevel() {
        <div class="grid">${DATA.classes.map((c) => DATA.series[c]
          ? `<a class="subj lvl" href="#classe/${encodeURIComponent(c)}" style="text-decoration:none;color:inherit"${String(S.level).startsWith(c + " ") ? ' aria-pressed="true"' : ""}><b>${esc(c)}</b><span class="small muted">${CFG.exams[c] ? "Année du " + CFG.exams[c][0] + " · " : ""}séries ${DATA.series[c].join(", ")}</span></a>`
          : pick(c, info(c))).join("")}</div>`;
-  $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { S.level = b.dataset.l; store.save(); go("accueil"); });
+  $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { const first = !S.level && !S.parcoursVu; S.level = b.dataset.l; S.parcoursVu = true; store.save(); go(first ? "bienvenue" : "accueil"); });
 }
 
 // ---------- Accueil
@@ -95,26 +95,104 @@ const exercisesOf = (level) => (DATA.exercises || []).filter((e) => matches(e.le
 // Exercices et sujets types fabriqués à la demande (exos_gen.js) : nombres nouveaux à chaque essai
 const genExosOf = (level) => (typeof EXGEN === "undefined" ? [] : subjectsOf(level).flatMap((s) => (EXGEN[s.id] || []).map((t, k) => ({ id: `gx-${s.id}-${k}`, subject: s.name, title: t.t }))));
 const genSujetsOf = (level) => (typeof EXGEN === "undefined" ? [] : subjectsOf(level).filter((s) => (EXGEN[s.id] || []).length >= 3).map((s) => ({ id: `gs-${s.id}`, subject: s.name })));
-function rubriques() {
+// Rubriques de l'accueil : [clé, lien, icône, titre, sous-titre] ; l'élève peut en épingler et en masquer
+function rubriqueList() {
   const nAnn = annalesOf(S.level).length, nGs = genSujetsOf(S.level).length, nGx = genExosOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length + nGx;
   const exam = examOf() ? examOf()[0] : "BAC", nNot = notionsOf(S.level).length;
-  const tile = (href, icon, title, sub) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${title}</b><span class="small muted">${sub}</span></a>`;
   return [
-    nAnn || nGs ? tile("#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs types", `${nAnn ? `${nAnn} sujet${nAnn > 1 ? "s" : ""} rédigé${nAnn > 1 ? "s" : ""}` : ""}${nAnn && nGs ? " + " : ""}${nGs ? "un sujet neuf à chaque essai" : ""}, corrigés pas à pas`) : "",
-    tile("#agenda", "🗓️", "Mon agenda", "Emploi du temps, devoirs à rendre, rappels du soir"),
-    tile("#assistant", "💬", "Pose ta question", "Une notion pas claire ? Je réponds avec le cours"),
-    tile("#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"),
-    tile("#qcm-list", "✅", "QCM corrigés", "Chaque choix corrigé et expliqué"),
-    tile("#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas${nGx ? ", nombres nouveaux à chaque essai" : ""}` : "Bientôt pour ta classe"),
-    nNot ? tile("#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`) : "",
-    tile("#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"),
-    tile("#apprendre", "🚀", "Mieux apprendre", "Plan de révision, diagnostic, jour J, dictées, cartes mentales"),
-    tile("#vie", "🌍", "Les cours dans la vie", "Marché, factures Senelec et eau, solaire, route"),
-    tile("#outils", "🧰", "Mes outils", "Fiches flash, formulaire, moyenne, minuteur, journal"),
-    tile("#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"),
-    tile("#duo", "👥", "Session de groupe", "De 2 à 10 élèves, classement en direct"),
-    tile("#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`),
-  ].join("");
+    nAnn || nGs ? ["annales", "#annales", "📚", examOf() ? `Sujets du ${exam}` : "Devoirs types", `${nAnn ? `${nAnn} sujet${nAnn > 1 ? "s" : ""} rédigé${nAnn > 1 ? "s" : ""}` : ""}${nAnn && nGs ? " + " : ""}${nGs ? "un sujet neuf à chaque essai" : ""}, corrigés pas à pas`] : null,
+    ["devoir", "#devoir", "🎯", "Préparer un devoir", "Choisis la matière et les chapitres du programme"],
+    ["qcm", "#qcm-list", "✅", "QCM corrigés", "Par matière ou par thème, chaque choix expliqué"],
+    ["exercices", "#exercices", "✏️", "Exercices corrigés", nEx ? `${nEx} exercices pas à pas${nGx ? ", nombres nouveaux à chaque essai" : ""}` : "Bientôt pour ta classe"],
+    nNot ? ["notions", "#notions", "📖", "Notions de cours", `${nNot} chapitres : cours, exemples, exercice corrigé`] : null,
+    ["fiches", "#fiches", "📝", "Synthèses de cours", "L'essentiel à retenir"],
+    ["agenda", "#agenda", "🗓️", "Mon agenda", "Emploi du temps, devoirs à rendre, rappels du soir"],
+    ["assistant", "#assistant", "💬", "Pose ta question", "Une notion pas claire ? Je réponds avec le cours"],
+    ["apprendre", "#apprendre", "🚀", "Mieux apprendre", "Plan de révision, diagnostic, jour J, dictées, cartes mentales"],
+    ["outils", "#outils", "🧰", "Mes outils", "Fiches flash, formulaire, moyenne, minuteur, journal"],
+    ["challenge", "#challenge", "🏆", "Challenge du jour", "Toutes les matières, résultats en graphique"],
+    ["duo", "#duo", "👥", "Session de groupe", "De 2 à 10 élèves, classement en direct"],
+    ["examen", "#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`],
+    ["vie", "#vie", "🌍", "Les cours dans la vie", "Marché, factures Senelec et eau, solaire, route"],
+  ].filter(Boolean);
+}
+// préférences d'accueil, complétées sur place (même objet partout, pour que chaque clic soit bien enregistré)
+function homePrefs() {
+  const h = S.home || (S.home = {});
+  for (const [k, v] of Object.entries({ order: [], hidden: [], pins: [], hiddenRub: [], allRub: false })) if (!(k in h)) h[k] = Array.isArray(v) ? [] : v;
+  return h;
+}
+function rubriques() {
+  const h = homePrefs(), tile = ([, href, icon, title, sub], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${title}</b><span class="small muted">${sub}</span></a>`;
+  const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0]));
+  const pinned = h.pins.map((k) => list.find((r) => r[0] === k)).filter(Boolean), rest = list.filter((r) => !h.pins.includes(r[0]));
+  // 6 rubriques visibles d'abord (les épinglées en tête), le reste derrière « Toutes les rubriques »
+  const shown = [...pinned, ...rest], first = h.allRub ? shown : shown.slice(0, Math.max(6, pinned.length));
+  return first.map((r) => tile(r, h.pins.includes(r[0]))).join("") + (shown.length > first.length ? `<button class="subj tile" id="allrub"><span class="ico">➕</span><b>Toutes les rubriques</b><span class="small muted">encore ${shown.length - first.length} : ${shown.slice(first.length).map((r) => r[3]).join(", ")}</span></button>` : "");
+}
+
+// ---------- Parcours de départ : les premières étapes conseillées selon la classe, cochées automatiquement
+function everDone(tag) { return Object.values(S.done || {}).some((t) => t.includes(tag)); }
+function parcoursSteps() {
+  const ex = examOf(), nAnn = annalesOf(S.level).length + genSujetsOf(S.level).length;
+  return [
+    ["🩺", "Fais ton diagnostic", "15 min pour savoir par où commencer, matière par matière", "#diagnostic", !!S.diag],
+    ["🗓️", "Note ton emploi du temps", "L'appli te rappellera chaque soir quoi réviser pour le lendemain", "#agenda", Object.keys(S.edt || {}).length > 0],
+    ["📖", "Lis ta première notion de cours", "Cours, à retenir, exemple, puis un exercice corrigé", "#notions", everDone("fiche")],
+    ["✅", "Fais un QCM sur un chapitre", "Par thème, comme pour préparer un devoir", "#qcm-list", everDone("qcm")],
+    ["✏️", "Fais un exercice corrigé pas à pas", "Avec support ou tout seul, à toi de choisir", "#exercices", everDone("exo")],
+    ex && nAnn ? ["📚", `Essaie un sujet du ${ex[0]}`, "Un vrai sujet complet, corrigé étape par étape, noté sur 20", "#annales", everDone("sujet")]
+      : ["🏆", "Fais le challenge du jour", "Toutes tes matières en 10 questions", "#challenge", everDone("challenge")],
+    ["⭐", "Organise ton accueil", "Épingle tes rubriques préférées, range ou masque les blocs", "#accueil/organiser", !!S.homeSet],
+  ];
+}
+function parcoursCard() {
+  const st = parcoursSteps(), n = st.filter((x) => x[4]).length;
+  if (S.parcoursFini || n === st.length) return "";
+  const next = st.find((x) => !x[4]);
+  return `<div class="card prog"><div class="row"><h2>🧭 Bien démarrer en ${esc(S.level)}</h2><b>${n}/${st.length}</b></div>
+    <span class="bar"><i style="width:${Math.round((100 * n) / st.length)}%"></i></span>
+    <a class="mission" href="${next[3]}"><span>${next[0]}</span><span><b>Étape suivante : ${esc(next[1])}</b><br><span class="small muted">${esc(next[2])}</span></span></a>
+    <a class="small" href="#bienvenue">Voir tout le parcours ›</a></div>`;
+}
+function viewBienvenue() {
+  const st = parcoursSteps(), n = st.filter((x) => x[4]).length, ex = examOf();
+  $view.innerHTML = `<h1>🧭 Ton parcours en ${esc(S.level)}</h1>
+    <p class="muted">${ex ? `Objectif ${ex[0]} : voici l'ordre conseillé pour bien démarrer.` : "Voici l'ordre conseillé pour bien démarrer."} Chaque étape se coche toute seule quand tu l'as faite. Tu peux aussi les faire dans l'ordre que tu veux.</p>
+    <div class="card prog"><div class="row"><b>${n} étape${n > 1 ? "s" : ""} sur ${st.length}</b></div><span class="bar"><i style="width:${Math.round((100 * n) / st.length)}%"></i></span>
+    ${st.map(([ico, t, sub, href, ok], i) => `<a class="mission${ok ? " done" : ""}" href="${href}"><span>${ok ? "✅" : ico}</span><span><b>${i + 1}. ${esc(t)}</b><br><span class="small muted">${esc(sub)}</span></span></a>`).join("")}</div>
+    <div class="card"><h2>Ensuite, chaque jour</h2><ul class="steps"><li>Fais tes <b>3 missions du jour</b> sur l'accueil (environ 20 minutes).</li><li>Le soir, regarde ton <b>agenda</b> : il te dit quoi réviser pour le lendemain.</li><li>Avant un devoir, va dans <b>Préparer un devoir</b> et choisis les chapitres.</li><li>Une fois par semaine, refais tes <b>erreurs</b>.</li></ul></div>
+    <div class="btns"><a class="btn" href="#accueil">Aller à l'accueil</a>${n < st.length ? `<button class="btn alt" id="pfin">Masquer ce parcours</button>` : ""}</div>`;
+  const f = document.getElementById("pfin");
+  if (f) f.onclick = () => { S.parcoursFini = true; store.save(); go("accueil"); };
+}
+
+// ---------- Organiser l'accueil : l'élève range les blocs, masque ce qui ne lui sert pas et épingle ses rubriques
+const HOME_BLOCKS = [["compteur", "⏳ Compte à rebours et série"], ["parcours", "🧭 Bien démarrer"], ["programme", "✅ Missions du jour"], ["rubriques", "🗂️ Rubriques"], ["matieres", "📘 QCM par matière"], ["agenda", "🗓️ Mon agenda"], ["profil", "🦁 Mon niveau et mes XP"], ["plan", "📅 Mon plan de révision"], ["daily", "❓ Question du jour"], ["citation", "💬 Citation du jour"], ["actions", "⏱️ Examen blanc et partage"]];
+function homeOrder() { const h = homePrefs(), keys = HOME_BLOCKS.map((b) => b[0]); return [...h.order.filter((k) => keys.includes(k)), ...keys.filter((k) => !h.order.includes(k))]; }
+function viewOrganiser() {
+  const h = homePrefs(), order = homeOrder(), rub = rubriqueList();
+  const name = (k) => HOME_BLOCKS.find((b) => b[0] === k)[1];
+  $view.innerHTML = `<h1>⭐ Organiser mon accueil</h1>
+    <p class="muted">Range les blocs dans l'ordre qui te convient, masque ceux qui ne te servent pas, et épingle tes rubriques préférées en haut.</p>
+    <div class="card"><h2>Les blocs de l'accueil</h2>${order.map((k, i) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid var(--line);gap:6px">
+      <span style="flex:1${h.hidden.includes(k) ? ";opacity:.45" : ""}">${name(k)}</span>
+      <button class="btn alt small" data-up="${i}" aria-label="Monter"${i ? "" : " disabled"}>↑</button><button class="btn alt small" data-down="${i}" aria-label="Descendre"${i < order.length - 1 ? "" : " disabled"}>↓</button>
+      <button class="btn${h.hidden.includes(k) ? "" : " alt"} small" data-hide="${k}">${h.hidden.includes(k) ? "Afficher" : "Masquer"}</button></div>`).join("")}</div>
+    <div class="card"><h2>Les rubriques</h2><p class="small muted">⭐ = épinglée en haut de l'accueil.</p>${rub.map(([k, , ico, t]) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid var(--line);gap:6px">
+      <span style="flex:1${h.hiddenRub.includes(k) ? ";opacity:.45" : ""}">${ico} ${esc(t)}</span>
+      <button class="btn${h.pins.includes(k) ? "" : " alt"} small" data-pin="${k}">${h.pins.includes(k) ? "⭐ Épinglée" : "☆ Épingler"}</button>
+      <button class="btn${h.hiddenRub.includes(k) ? "" : " alt"} small" data-hrub="${k}">${h.hiddenRub.includes(k) ? "Afficher" : "Masquer"}</button></div>`).join("")}</div>
+    <div class="btns"><a class="btn" href="#accueil">Voir mon accueil</a><button class="btn alt" id="reset">Revenir à la disposition de départ</button></div>`;
+  const save = () => { S.homeSet = true; store.save(); viewOrganiser(); };
+  const toggle = (arr, k) => { const i = arr.indexOf(k); i < 0 ? arr.push(k) : arr.splice(i, 1); };
+  const move = (i, d) => { const o = homeOrder(); [o[i], o[i + d]] = [o[i + d], o[i]]; h.order = o; save(); };
+  $view.querySelectorAll("[data-up]").forEach((b) => b.onclick = () => move(+b.dataset.up, -1));
+  $view.querySelectorAll("[data-down]").forEach((b) => b.onclick = () => move(+b.dataset.down, 1));
+  $view.querySelectorAll("[data-hide]").forEach((b) => b.onclick = () => { toggle(h.hidden, b.dataset.hide); save(); });
+  $view.querySelectorAll("[data-pin]").forEach((b) => b.onclick = () => { toggle(h.pins, b.dataset.pin); h.hiddenRub = h.hiddenRub.filter((x) => x !== b.dataset.pin); save(); });
+  $view.querySelectorAll("[data-hrub]").forEach((b) => b.onclick = () => { toggle(h.hiddenRub, b.dataset.hrub); h.pins = h.pins.filter((x) => x !== b.dataset.hrub); save(); });
+  document.getElementById("reset").onclick = () => { S.home = null; save(); };
 }
 // Vidéo de présentation (45 s), proposée sur l'accueil pendant les premiers jours
 function tutoCard() {
@@ -147,36 +225,35 @@ function viewHome() {
       <span class="small muted">${s.count} questions${(GEN[s.id] || []).length ? " + ∞ à nombres nouveaux" : ""}${isPremium() ? "" : ` · <span class="lock">🔒</span>`}</span>
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
+  const blocks = {
+    compteur: () => `<div class="card">
+      <div class="row">${ex ? `<div><p class="small muted">${ex[0]} ${ex[1].slice(0, 4)}, date indicative</p><p class="count">J−${days}</p></div>`
+        : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
+      <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
+    </div>`,
+    parcours: parcoursCard,
+    programme: () => tutoCard() + programme(),
+    rubriques: () => `<h2>Rubriques</h2><div class="grid rub">${rubriques()}</div>`,
+    matieres: () => `<h2 id="qcm">QCM corrigés : choisis une matière</h2><div class="grid">${subs}</div>`,
+    agenda: () => agendaCard(),
+    profil: () => (typeof profilCard === "function" ? profilCard() : ""),
+    plan: () => (typeof planCard === "function" ? planCard() : ""),
+    daily: () => daily ? `<div class="card" id="daily"><h2><span class="hi">Question du jour</span></h2><p class="small muted">${esc(subjName(daily.s))}</p>${questionBlock(daily)}</div>` : "",
+    citation: () => (typeof citationCard === "function" ? citationCard() : ""),
+    actions: () => `<div class="btns"><a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}</a>
+      <a class="btn alt" href="#partager">Partager l'appli à un camarade (lien ou QR code)</a></div>`,
+  };
+  const h = homePrefs();
   $view.innerHTML = `
     ${Compte.isAdmin && Compte.isAdmin() ? `<a class="btn" href="#admin/activite">🛠️ Espace admin : inscrits, connexions, erreurs</a>` : ""}
     ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
-    <div class="card">
-      <div class="row">${ex ? `<div><p class="small muted">${ex[0]} ${ex[1].slice(0, 4)}, date indicative</p><p class="count">J−${days}</p></div>`
-        : `<div><p class="small muted">Réponses données</p><p class="count">${answered}</p></div>`}
-      <div style="text-align:right"><p class="small muted">Série en cours</p><p class="count">${streak()} 🔥</p></div></div>
-    </div>
-    ${typeof profilCard === "function" ? profilCard() : ""}
-    ${typeof planCard === "function" ? planCard() : ""}
-    ${agendaCard()}
-    ${typeof citationCard === "function" ? citationCard() : ""}
-    ${tutoCard()}
-    ${programme()}
-    <h2>Rubriques</h2>
-    <div class="grid rub">${rubriques()}</div>
-    <div class="card" id="daily">
-      <h2><span class="hi">Question du jour</span></h2>
-      <p class="small muted">${esc(subjName(daily.s))}</p>
-      ${questionBlock(daily)}
-    </div>
-    <h2 id="qcm">QCM corrigés : choisis une matière</h2>
-    <div class="grid">${subs}</div>
-    <div class="btns">
-      <a class="btn hi-btn" href="#examen">${blancName()} : ${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}</a>
-      <a class="btn alt" href="#partager">Partager l'appli à un camarade (lien ou QR code)</a>
-    </div>`;
-  bindQuestion($view.querySelector("#daily"), daily, () => {});
+    ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]()).join("")}
+    <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>`;
+  const ar = $view.querySelector("#allrub");
+  if (ar) ar.onclick = () => { h.allRub = true; store.save(); viewHome(); };
+  if (daily && $view.querySelector("#daily"))   bindQuestion($view.querySelector("#daily"), daily, () => {});
   const tx = $view.querySelector("#tuto-x");
   if (tx) tx.onclick = () => { S.tutoVu = true; store.save(); tx.closest(".tuto").remove(); };
 }
@@ -550,8 +627,8 @@ function viewGuided(id) {
       <p class="small muted">${steps.length} étapes, ${pts(max)} points.${an.gen ? " Les nombres changent à chaque essai : tu peux le refaire autant de fois que tu veux." : an.title ? "" : " Les tableaux et les tracés de courbes ne sont pas notés ici."}</p>
       <button class="btn" id="go">🧑‍🏫 Avec support<br><span class="small">Corrigé et points après chaque réponse</span></button>
       <button class="btn alt" id="solo">💪 Tout seul<br><span class="small">Tu fais tout l'exercice, corrigé ligne par ligne à la fin</span></button></div>`;
-    document.getElementById("go").onclick = () => { solo = false; k = 0; markDone("exo"); step(); };
-    document.getElementById("solo").onclick = () => { solo = true; k = 0; markDone("exo"); step(); };
+    document.getElementById("go").onclick = () => { solo = false; k = 0; markDone(an.title ? "exo" : "sujet"); step(); };
+    document.getElementById("solo").onclick = () => { solo = true; k = 0; markDone(an.title ? "exo" : "sujet"); step(); };
   }
   function step() {
     const st = steps[k], part = an.guided[st.pi];
@@ -809,10 +886,11 @@ function render() {
   document.getElementById("exam-tag").textContent = S.level || "";
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
-  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
+  if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
   document.querySelectorAll(".tabs a").forEach((a) => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   if ((globalThis.ROUTES || {})[tab]) { ROUTES[tab](arg); window.scrollTo(0, 0); return; }
-  ({ classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
+  if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }
+  ({ bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: viewAssistant, agenda: () => viewAgenda(arg), notions: viewNotions, notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", render);
