@@ -51,7 +51,7 @@
     const parJour = (k) => jours.map((d) => users.filter((u) => u[k] && u[k] >= d && u[k] - d < 864e5).length);
     const ins = parJour("created"), vus = parJour("lastSeen"), max = Math.max(1, ...ins, ...vus);
     const barres = (v, t) => `<div style="display:flex;align-items:flex-end;gap:3px;height:90px">${v.map((n, i) => `<div style="flex:1;text-align:center" title="${jours[i].toLocaleDateString("fr-FR")} : ${n}"><span class="small">${n || ""}</span><div style="height:${(70 * n) / max}px;min-height:2px;background:var(--accent,#7c5cff);border-radius:3px"></div></div>`).join("")}</div><p class="small muted">${t}</p>`;
-    const ligne = (u, k, t) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><span><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""}<br><span class="muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}${meme(u)}</span></span><span class="muted" style="text-align:right">${t}<br>${depuis(u[k])}</span></div>`;
+    const ligne = (u, k, t) => `<div class="row small" style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><span><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""}<br><span class="muted">${esc(u.phone ? "📱 " + u.phone : u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}${meme(u)}</span></span><span class="muted" style="text-align:right">${t}<br>${depuis(u[k])}</span></div>`;
     const nouveaux = users.filter((u) => u.created).sort((a, b) => b.created - a.created).slice(0, 30);
     const connexions = users.filter((u) => u.lastSeen).sort((a, b) => b.lastSeen - a.lastSeen).slice(0, 30);
     box.innerHTML = `<div class="card"><h2>Inscriptions par jour (14 jours)</h2>${barres(ins, "Du plus ancien (à gauche) à aujourd'hui (à droite).")}</div>
@@ -61,11 +61,11 @@
   }
 
   function comptes(box) {
-    const liste = users.filter((u) => !filtre || `${u.name} ${u.email}`.toLowerCase().includes(filtre)).sort((a, b) => (b.lastSeen || b.created || 0) - (a.lastSeen || a.created || 0));
+    const liste = users.filter((u) => !filtre || `${u.name} ${u.email} ${u.phone}`.toLowerCase().includes(filtre)).sort((a, b) => (b.lastSeen || b.created || 0) - (a.lastSeen || a.created || 0));
     box.innerHTML = `<input class="field" id="af" type="search" placeholder="Chercher un nom ou un e-mail" value="${esc(filtre)}" aria-label="Chercher un compte">
       <p class="small muted">${liste.length} compte${liste.length > 1 ? "s" : ""}</p>
       ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? ` · ⭐ premium${u.code ? " (code " + esc(u.code) + ")" : ""}` : ""}</p>
-        <p class="small muted">${esc(u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
+        <p class="small muted">${esc(u.phone ? "📱 " + u.phone : u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
         <button class="btn alt small" data-sus="${esc(u.uid)}" data-on="${u.suspended ? 0 : 1}">${u.suspended ? "Réactiver le compte" : "Suspendre le compte"}</button></div>`).join("")}`;
     const f = document.getElementById("af"); f.oninput = () => { filtre = f.value.trim().toLowerCase(); comptes(box); const g = document.getElementById("af"); g.focus(); g.setSelectionRange(g.value.length, g.value.length); };
     box.querySelectorAll("[data-sus]").forEach((b) => (b.onclick = async () => {

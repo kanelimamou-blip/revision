@@ -46,7 +46,9 @@ const Compte = (() => {
       ref.update({ lastSeen: firebase.firestore.FieldValue.serverTimestamp(), name: user.displayName || doc.name || "", email: user.email || "" }).catch((e) => logError("Mise à jour du profil refusée : " + (e.code || e.message)));
     // un seul essai gratuit par téléphone : un nouveau compte sur le même téléphone reprend la date du premier
     const created = doc.created ? doc.created.toDate() : new Date(), first = await device();
-    return { suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+    // numéro de téléphone : celui du compte (connexion par numéro) ou celui ajouté par un ancien compte
+    if (!doc.phone && telOf(user.email)) { doc.phone = telOf(user.email); ref.update({ phone: doc.phone }).catch(() => {}); }
+    return { phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
   }
 
   // Identifiant secret du téléphone, tiré au hasard au premier lancement (gardé aussi dans le cache de l'appli)
@@ -81,6 +83,30 @@ const Compte = (() => {
     }
     user = auth.currentUser;
     return profile();
+  }
+
+  // Connexion par numéro de téléphone et code à 6 chiffres : sous le capot, un compte e-mail/mot de passe
+  // dont l'adresse est fabriquée à partir du numéro (aucun e-mail n'est envoyé, rien à configurer).
+  const TEL = "@tel.revision-sn.app";
+  const telOf = (mail) => (mail || "").endsWith(TEL) ? mail.slice(0, -TEL.length) : "";
+  // numéro sénégalais à 9 chiffres, avec ou sans +221 ; null s'il est invalide
+  function normTel(t) {
+    let d = String(t || "").replace(/\D/g, "");
+    if (d.length > 9 && d.startsWith("00221")) d = d.slice(5); else if (d.length > 9 && d.startsWith("221")) d = d.slice(3);
+    return /^[37]\d{8}$/.test(d) ? d : null;
+  }
+  async function signInTel(name, tel, code, create) {
+    const r = create ? await auth.createUserWithEmailAndPassword(tel + TEL, code) : await auth.signInWithEmailAndPassword(tel + TEL, code);
+    user = r.user;
+    if (create && name) await user.updateProfile({ displayName: name }).catch(() => {});
+    return profile();
+  }
+  // Ancien compte (Google ou e-mail) : on lui ajoute le numéro et le code, il garde ses progrès et son premium
+  async function linkTel(tel, code) {
+    const hasPass = user.providerData.some((p) => p.providerId === "password");
+    if (!hasPass) await user.linkWithCredential(firebase.auth.EmailAuthProvider.credential(tel + TEL, code));
+    await db.collection("users").doc(user.uid).update({ phone: tel });
+    return hasPass ? "email" : "tel";
   }
 
   // Connexion par e-mail et mot de passe (utile sur iPhone si la fenêtre Google ne s'ouvre pas)
@@ -148,7 +174,7 @@ const Compte = (() => {
   const ts = (v) => (v && v.toDate ? v.toDate() : null);
   async function adminUsers() {
     const snap = await db.collection("users").limit(5000).get();
-    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
+    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
   }
   async function adminErrors() {
     const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();
@@ -163,5 +189,5 @@ const Compte = (() => {
   const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

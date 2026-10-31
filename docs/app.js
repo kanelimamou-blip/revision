@@ -628,7 +628,7 @@ async function sha256(s) {
 function viewPremium(reason = "", pay = "wave") {
   const total = DATA.questions.length, wa = CFG.whatsapp, wave = CFG.wave_number, om = CFG.om_number;
   if (!wave) pay = "om";
-  const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM. Voici ma capture :`);
+  const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM${S.phone ? ` depuis le ${S.phone}` : ""}. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
     ${!S.premium ? `<div class="card"><p>${trialLeft() > 0 ? `🎁 Ton essai gratuit de ${TRIAL_DAYS} jours est en cours : encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b> avec tout débloqué.` : `Ton essai gratuit de ${TRIAL_DAYS} jours est terminé.`}</p></div>` : ""}
@@ -641,7 +641,7 @@ function viewPremium(reason = "", pay = "wave") {
       ${wave || om ? `<p class="small muted">Choisis ton moyen de paiement :</p>
         <div class="row">${wave ? `<button class="btn${pay === "wave" ? "" : " alt"}" style="flex:1" data-pay="wave">Wave</button>` : ""}${om ? `<button class="btn${pay === "om" ? "" : " alt"}" style="flex:1" data-pay="om">Orange Money</button>` : ""}</div>
         <ol class="steps">
-        <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}</li>
+        <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}${S.phone ? ` Paie <b>depuis ton numéro ${esc(S.phone)}</b> : c'est ta preuve de paiement.` : ""}</li>
         <li>Envoie la capture du paiement sur WhatsApp.</li>
         <li>Tu reçois ton code. Entre-le ci-dessous.</li></ol>
         ${wa ? `<a class="btn hi-btn" href="https://wa.me/${esc(wa)}?text=${msg}" target="_blank" rel="noopener">Envoyer la capture sur WhatsApp</a>` : ""}`
@@ -711,27 +711,43 @@ function viewLogin(err = "", ok = "") {
   $view.innerHTML = `${installCard()}<div class="card" style="gap:14px">
     <h1 style="text-align:center">Bienvenue sur Révision</h1>
     <p class="muted" style="text-align:center">Connecte-toi pour garder tes progrès et profiter de ${TRIAL_DAYS} jours d'essai gratuit avec tout débloqué.</p>
-    <button class="btn" id="google">Se connecter avec Google</button>
-    <p class="small muted" style="text-align:center">ou avec ton adresse e-mail</p>
+    <input class="field" id="tname" autocomplete="name" placeholder="Ton prénom et ton nom (nouveau compte)">
+    <input class="field" id="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Ton numéro de téléphone (77 123 45 67)">
+    <input class="field" id="tcode" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="Code à 6 chiffres">
+    <div class="row"><button class="btn" style="flex:1" id="tsignup">Créer mon compte</button><button class="btn alt" style="flex:1" id="tlogin">Me connecter</button></div>
+    <p class="small muted" style="text-align:center">Première fois ? Choisis un code secret de <b>6 chiffres</b> pour l'appli. Ce n'est <b>pas</b> ton code Wave ou Orange Money : ne le donne jamais.</p>
+    <details class="small"><summary>Ancien compte : Google ou e-mail</summary><div style="display:grid;gap:10px;margin-top:10px">
+    <button class="btn alt" id="google">Se connecter avec Google</button>
     <input class="field" id="mail" type="email" autocomplete="email" placeholder="Adresse e-mail">
     <input class="field" id="pass" type="password" autocomplete="current-password" placeholder="Mot de passe (6 caractères minimum)">
     <div class="row"><button class="btn alt" style="flex:1" id="login">Se connecter</button><button class="btn alt" style="flex:1" id="signup">Créer un compte</button></div>
     <p class="small muted" style="text-align:center">Première fois ? Choisis un <b>nouveau</b> mot de passe pour l'appli (pas celui de ta boîte mail), puis touche « Créer un compte ».</p>
-    <button class="linkbtn small" id="forgot">Mot de passe oublié ?</button>
-    ${err ? `<p class="msg-ko small">${esc(err)}</p>` : ""}${ok ? `<p class="msg-ok small">${esc(ok)}</p>` : ""}</div>`;
+    <button class="linkbtn small" id="forgot">Mot de passe oublié ?</button></div></details>
+    <p id="lmsg" class="${err ? "msg-ko" : "msg-ok"} small">${esc(err || ok)}</p></div>`;
   const done = (p) => { applyProfile(p); render(); };
   const mail = () => document.getElementById("mail").value.trim(), pass = () => document.getElementById("pass").value;
-  const fail = (e) => viewLogin(({
+  // message d'erreur affiché sans effacer ce que l'élève a déjà tapé
+  const fail = (e) => { const el = document.getElementById("lmsg"); el.className = "msg-ko small"; el.textContent = e && e.msg || ({
     "auth/invalid-email": "Adresse e-mail invalide.",
     "auth/missing-password": "Entre ton mot de passe.",
     "auth/weak-password": "Le mot de passe doit faire au moins 6 caractères.",
-    "auth/email-already-in-use": "Ce compte existe déjà : appuie sur « Se connecter ».",
-    "auth/invalid-credential": "E-mail ou mot de passe incorrect.",
+    "auth/email-already-in-use": "Ce compte existe déjà : appuie sur « Me connecter ».",
+    "auth/invalid-credential": "Identifiants incorrects. Vérifie le numéro et le code (ou l'e-mail et le mot de passe).",
     "auth/wrong-password": "E-mail ou mot de passe incorrect.",
     "auth/user-not-found": "Aucun compte avec cet e-mail : appuie sur « Créer un compte ».",
     "auth/too-many-requests": "Trop d'essais. Attends quelques minutes.",
-  })[e && e.code] || "La connexion n'a pas abouti. Réessaie.");
+  })[e && e.code] || "La connexion n'a pas abouti. Réessaie."; };
   const i2 = document.getElementById("install2"); if (i2) i2.onclick = () => document.getElementById("install").click();
+  // connexion par numéro : nom demandé seulement pour créer le compte
+  const tel = (create) => {
+    const t = Compte.normTel(document.getElementById("tel").value), c = document.getElementById("tcode").value.trim(), n = document.getElementById("tname").value.trim();
+    if (!t) return fail({ msg: "Numéro invalide : écris les 9 chiffres, par exemple 77 123 45 67." });
+    if (!/^\d{6}$/.test(c)) return fail({ msg: "Le code doit faire exactement 6 chiffres." });
+    if (create && n.length < 2) return fail({ msg: "Écris ton prénom et ton nom pour créer ton compte." });
+    Compte.signInTel(n.slice(0, 40), t, c, create).then(done).catch(fail);
+  };
+  document.getElementById("tsignup").onclick = () => tel(true);
+  document.getElementById("tlogin").onclick = () => tel(false);
   document.getElementById("google").onclick = () => Compte.signIn().then(done).catch(fail);
   document.getElementById("login").onclick = () => Compte.signInEmail(mail(), pass(), false).then(done).catch(fail);
   document.getElementById("signup").onclick = () => Compte.signInEmail(mail(), pass(), true).then(done).catch(fail);
@@ -739,12 +755,34 @@ function viewLogin(err = "", ok = "") {
     ? Compte.resetPassword(mail()).then(() => viewLogin("", "Un e-mail pour changer ton mot de passe a été envoyé."), fail)
     : viewLogin("Écris d'abord ton adresse e-mail.");
 }
+// Ancien compte (Google ou e-mail) : on demande une fois le numéro et un code, sans rien perdre
+function viewTel(err = "") {
+  $view.innerHTML = `<div class="card" style="gap:14px">
+    <h1>📱 Nouveau : connexion par numéro</h1>
+    <p>Pour te connecter plus facilement, sur iPhone comme sur Android, ajoute ton numéro de téléphone et choisis un code de 6 chiffres. Tu gardes tous tes progrès${S.premium ? " et ton premium" : ""}.</p>
+    <input class="field" id="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Ton numéro (77 123 45 67)">
+    <input class="field" id="tcode" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="Code à 6 chiffres">
+    <p class="small muted">Ce code sert seulement à ouvrir l'appli. Ce n'est <b>pas</b> ton code Wave ou Orange Money.</p>
+    <button class="btn" id="tok">Enregistrer</button>
+    ${err ? `<p class="msg-ko small">${esc(err)}</p>` : ""}</div>`;
+  document.getElementById("tok").onclick = () => {
+    const t = Compte.normTel(document.getElementById("tel").value), c = document.getElementById("tcode").value.trim();
+    if (!t) return viewTel("Numéro invalide : écris les 9 chiffres, par exemple 77 123 45 67.");
+    if (!/^\d{6}$/.test(c)) return viewTel("Le code doit faire exactement 6 chiffres.");
+    Compte.linkTel(t, c).then((how) => {
+      S.phone = t; try { localStorage.setItem("rev", JSON.stringify(S)); } catch {}
+      if (how === "email") alert("Numéro enregistré. Continue à te connecter avec ton e-mail et ton mot de passe.");
+      render();
+    }).catch((e) => viewTel(({ "auth/email-already-in-use": "Ce numéro est déjà utilisé par un autre compte.", "auth/credential-already-in-use": "Ce numéro est déjà utilisé par un autre compte.", "auth/requires-recent-login": "Déconnecte-toi puis reconnecte-toi, et recommence." })[e && e.code] || "L'enregistrement n'a pas abouti. Réessaie."));
+  };
+}
 // le profil en ligne fait foi pour l'essai et le premium ; les progrès les plus complets sont gardés
 function applyProfile(p) {
   if (!p) return;
   S.trialStart = p.created.toISOString().slice(0, 10);
   S.premium = p.premium;
   S.suspended = p.suspended;
+  S.phone = p.phone || "";
   const d = p.data || {};
   if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [], daily: d.daily || {}, challenges: d.challenges || {}, done: d.done || {} });
   if (!S.level && d.level) S.level = d.level;
@@ -758,6 +796,7 @@ function render() {
   clearInterval(timer);
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
+  if (Compte.enabled && Compte.user && !S.phone && !Compte.isAdmin()) return viewTel();
   const [tab, ...rest] = (location.hash.slice(1) || "accueil").split("/"), arg = rest.length ? rest.join("/") : undefined;
   if (tab === "admin" && globalThis.viewAdmin) { viewAdmin(arg); window.scrollTo(0, 0); return; }
   if (S.suspended) { $view.innerHTML = `<div class="card"><h1>Compte suspendu</h1><p>Ton compte est suspendu pour le moment. Contacte-nous pour le réactiver.</p>${CFG.wave_number || CFG.whatsapp ? `<p class="small muted">WhatsApp : ${esc(CFG.wave_number || CFG.whatsapp)}</p>` : ""}</div>`; return; }
