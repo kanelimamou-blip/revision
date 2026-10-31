@@ -21,6 +21,12 @@ from sujets_tle2 import ANNALES_T2, GUIDED_T2
 from sujets_tle3 import ANNALES_T3, GUIDED_T3
 MODELE_ANNALES += ANNALES_LG + ANNALES_T2 + ANNALES_T3
 MODELE_GUIDED.update({**GUIDED_LG, **GUIDED_T2, **GUIDED_T3})
+# sujets types ×3 (Terminale et Première) : chaque fichier sujets_x3_*.py fournit ANNALES_X et GUIDED_X
+import glob as _g, importlib as _imp
+for _f in sorted(_g.glob(str(Path(__file__).parent / "sujets_x3_*.py"))):
+    _m = _imp.import_module(Path(_f).stem)
+    MODELE_ANNALES += _m.ANNALES_X
+    MODELE_GUIDED.update(_m.GUIDED_X)
 ANNALES = MODELE_ANNALES + ANNALES
 GUIDED = {**GUIDED, **MODELE_GUIDED}
 from q_plus import EXTRA
