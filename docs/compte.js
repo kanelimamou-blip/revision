@@ -48,7 +48,7 @@ const Compte = (() => {
     const created = doc.created ? doc.created.toDate() : new Date(), first = await device();
     // numéro de téléphone : celui du compte (connexion par numéro) ou celui ajouté par un ancien compte
     if (!doc.phone && telOf(user.email)) { doc.phone = telOf(user.email); ref.update({ phone: doc.phone }).catch(() => {}); }
-    return { phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+    return { phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, premiumAt: doc.premiumAt && doc.premiumAt.toDate ? doc.premiumAt.toDate().getTime() : 0, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
   }
 
   // Identifiant secret du téléphone, tiré au hasard au premier lancement (gardé aussi dans le cache de l'appli)
@@ -127,6 +127,23 @@ const Compte = (() => {
     await batch.commit();
   }
 
+  // Paiement déclaré dans l'appli : l'élève envoie la capture, l'admin valide, le premium s'active tout seul.
+  // La capture est réduite sur le téléphone et gardée dans Firestore (pas besoin de stockage payant).
+  async function declarePay(rec) {
+    await db.collection("paiements").doc(user.uid).set({ ...rec, uid: user.uid, statut: "attente", at: firebase.firestore.FieldValue.serverTimestamp() });
+  }
+  async function myPay() {
+    const s = await db.collection("paiements").doc(user.uid).get().catch(() => null);
+    return s && s.exists ? { ...s.data(), at: ts(s.data().at) } : null;
+  }
+  // suit le compte en direct : appelle cb(premium, paiement) dès que l'admin valide ou refuse
+  function watchPremium(cb) {
+    if (!user || !db) return () => {};
+    const a = db.collection("users").doc(user.uid).onSnapshot((d) => d.exists && cb(!!d.data().premium, null), () => {});
+    const b = db.collection("paiements").doc(user.uid).onSnapshot((d) => d.exists && cb(null, { ...d.data(), at: ts(d.data().at) }), () => {});
+    return () => { a(); b(); };
+  }
+
   // Réponses aux petites questions de l'appli (pause de midi, après l'école) : gardées dans le compte, lues par l'admin
   const avis = (rec) => (user && db ? db.collection("users").doc(user.uid).update({ avis: firebase.firestore.FieldValue.arrayUnion(rec) }) : Promise.resolve());
 
@@ -202,7 +219,21 @@ const Compte = (() => {
     return out;
   }
   const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
+  async function adminPays() {
+    const snap = await db.collection("paiements").where("statut", "==", "attente").limit(200).get();
+    return snap.docs.map((d) => ({ ...d.data(), uid: d.id, at: ts(d.data().at) })).sort((a, b) => (a.at || 0) - (b.at || 0));
+  }
+  function adminValidate(uid) {
+    const b = db.batch(), now = firebase.firestore.FieldValue.serverTimestamp();
+    b.update(db.collection("users").doc(uid), { premium: true, premiumAt: now });
+    b.update(db.collection("paiements").doc(uid), { statut: "valide", fin: now });
+    return b.commit();
+  }
+  const adminSetPremium = (uid) => db.collection("users").doc(uid).update({ premium: true, premiumAt: firebase.firestore.FieldValue.serverTimestamp() });
+  // pour l'admin : nombre de paiements en attente, suivi en direct
+  const watchPays = (cb) => db.collection("paiements").where("statut", "==", "attente").limit(200).onSnapshot((q) => cb(q.size), () => {});
+  const adminRefuse = (uid, motif) => db.collection("paiements").doc(uid).update({ statut: "refuse", motif: String(motif || "").slice(0, 200), fin: firebase.firestore.FieldValue.serverTimestamp() });
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

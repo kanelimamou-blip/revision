@@ -717,6 +717,7 @@ function viewPremium(reason = "", pay = "wave") {
   if (!wave) pay = "om";
   // numéro du compte, affiché « 77 123 45 67 » : c'est avec lui que l'élève doit payer
   const tel = (S.phone || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4"), dest = pay === "om" ? om : wave;
+  const enLigne = Compte.enabled && !!Compte.user;
   const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM${S.phone ? ` depuis le ${tel}` : ""}. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
@@ -733,15 +734,18 @@ function viewPremium(reason = "", pay = "wave") {
         <ol class="steps">
         <li>${pay === "om" ? `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Orange Money au <b>${esc(om)}</b> (code #144# ou appli Orange Money).` : `Envoie <b>${fcfa(CFG.price_fcfa)}</b> par Wave au <b>${esc(wave)}</b>.`}${tel ? ` Depuis ton numéro <b>${esc(tel)}</b>.` : ""}
         <div class="row" style="margin-top:8px">${pay === "om" ? `<a class="btn" style="flex:1" href="tel:%23144%23">📞 Ouvrir Orange Money (#144#)</a>` : ""}<button class="btn alt" style="flex:1" id="cpnum">📋 Copier le numéro ${esc(dest)}</button></div></li>
-        <li>Envoie la capture du paiement sur WhatsApp.</li>
+        ${enLigne ? `<li>Fais une <b>capture d'écran</b> du paiement réussi.</li>
+        <li>Envoie-la ici. Dès que le paiement est vérifié, ton appli se débloque toute seule, là où tu en étais.</li></ol>
+        <div id="paybox"></div>` : `<li>Envoie la capture du paiement sur WhatsApp.</li>
         <li>Tu reçois ton code. Entre-le ci-dessous.</li></ol>
-        ${wa ? `<a class="btn hi-btn" href="https://wa.me/${esc(wa)}?text=${msg}" target="_blank" rel="noopener">Envoyer la capture sur WhatsApp</a>` : ""}`
+        ${wa ? `<a class="btn hi-btn" href="https://wa.me/${esc(wa)}?text=${msg}" target="_blank" rel="noopener">Envoyer la capture sur WhatsApp</a>` : ""}`}`
       : `<p class="muted">Le paiement arrive très bientôt. Si tu as déjà un code, entre-le ci-dessous.</p>`}
     </div>
-    <div class="card"><h2>J'ai un code</h2>
+    <div class="card"><h2>${enLigne ? "Tu as reçu un code ?" : "J'ai un code"}</h2>
       <input class="code" id="code" placeholder="XXXXX-XXXXXX" autocomplete="off" maxlength="12">
       <button class="btn" id="unlock">Débloquer</button><p id="codemsg" class="small"></p></div>`}`;
   $view.querySelectorAll("[data-pay]").forEach((b) => b.onclick = () => viewPremium(reason, b.dataset.pay));
+  if (enLigne && document.getElementById("paybox")) payBox(pay);
   const cp = document.getElementById("cpnum");
   if (cp) cp.onclick = () => navigator.clipboard?.writeText(dest.replace(/\s/g, "")).then(() => { cp.textContent = "Numéro copié ✓ : colle-le dans " + (pay === "om" ? "Orange Money" : "Wave"); }).catch(() => {});
   const btn = document.getElementById("unlock");
@@ -755,6 +759,97 @@ function viewPremium(reason = "", pay = "wave") {
     if (ok) { S.premium = true; S.code = code; store.save(); m.className = "msg-ok"; m.textContent = "Code accepté !"; setTimeout(render, 700); }
     else { m.className = "msg-ko"; m.textContent = "Code inconnu ou déjà utilisé. Vérifie les lettres et les chiffres."; }
   };
+}
+
+// Capture du paiement : réduite sur le téléphone (JPEG, 1 000 px au plus) pour tenir dans Firestore gratuitement
+function reduireCapture(file) {
+  return new Promise((ok, ko) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let side = 1000, q = 0.7, out = "";
+      for (let k = 0; k < 6; k++) {
+        const r = Math.min(1, side / Math.max(img.width, img.height)), c = document.createElement("canvas");
+        c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        out = c.toDataURL("image/jpeg", q);
+        if (out.length <= 440000) return ok(out);
+        side *= 0.8; q = Math.max(0.4, q - 0.1);
+      }
+      ko(new Error("image trop lourde"));
+    };
+    img.onerror = () => ko(new Error("image illisible"));
+    img.src = url;
+  });
+}
+// Encadré « J'ai payé » : envoi de la capture, puis état du paiement suivi en direct
+async function payBox(via) {
+  const box = document.getElementById("paybox");
+  if (!box) return;
+  const p = await Compte.myPay();
+  if (!document.body.contains(box)) return;
+  const quand = (d) => d ? d.toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "à l'instant";
+  if (p && p.statut === "attente") {
+    box.innerHTML = `<div class="card" style="border:2px solid var(--hi,#f5a623)"><p>⏳ <b>Capture reçue</b> ${esc(quand(p.at))}. Ton paiement est en cours de vérification.</p>
+      <p class="small muted">Tu n'as rien d'autre à faire. Garde l'appli ouverte ou reviens plus tard : elle se débloque toute seule dès la validation.</p>
+      <button class="btn alt small" id="payredo">Renvoyer une autre capture</button></div>`;
+    document.getElementById("payredo").onclick = () => formulaire(true);
+    return;
+  }
+  formulaire(false, p && p.statut === "refuse" ? p.motif || "La capture n'a pas permis de retrouver le paiement." : "");
+  function formulaire(redo, refus) {
+    box.innerHTML = `${refus ? `<p class="msg-ko">❌ Paiement non validé : ${esc(refus)} Renvoie une capture lisible du paiement.</p>` : ""}
+      <label class="btn hi-btn" style="display:block;text-align:center">📷 ${redo ? "Choisir une nouvelle capture" : "J'ai payé : joindre la capture"}<input type="file" id="payimg" accept="image/*" hidden></label>
+      <div id="payprev"></div><p id="paymsg" class="small"></p>`;
+    document.getElementById("payimg").onchange = async (e) => {
+      const f = e.target.files[0], m = document.getElementById("paymsg");
+      if (!f) return;
+      m.className = "small muted"; m.textContent = "Préparation de la capture…";
+      let img;
+      try { img = await reduireCapture(f); } catch (err) { m.className = "msg-ko"; m.textContent = "Cette image ne peut pas être lue. Essaie une autre capture."; return; }
+      document.getElementById("payprev").innerHTML = `<img src="${img}" alt="Capture du paiement" style="max-width:100%;max-height:320px;border-radius:8px;margin:8px 0"><button class="btn" id="paysend" style="width:100%">Envoyer la capture</button>`;
+      m.textContent = "";
+      document.getElementById("paysend").onclick = async (ev) => {
+        ev.target.disabled = true; ev.target.textContent = "Envoi…";
+        try {
+          await Compte.declarePay({ name: (Compte.user.displayName || "").slice(0, 60), phone: (S.phone || "").slice(0, 20), level: (S.level || "").slice(0, 30), via: via === "om" ? "om" : "wave", img });
+          payBox(via);
+        } catch (err) { ev.target.disabled = false; ev.target.textContent = "Envoyer la capture"; m.className = "msg-ko"; m.textContent = "L'envoi n'a pas abouti. Vérifie ta connexion et réessaie."; }
+      };
+    };
+  }
+}
+// Dès que l'admin valide le paiement, l'appli se débloque là où l'élève se trouve, sans redémarrer
+let stopWatch = null;
+function suivrePremium() {
+  if (Compte.enabled && Compte.user && Compte.isAdmin() && !stopWatch) {
+    // l'admin voit en direct les paiements à vérifier, sur toutes les pages
+    stopWatch = Compte.watchPays((n) => {
+      let b = document.getElementById("paybadge");
+      if (!n) { if (b) b.remove(); return; }
+      if (!b) { b = document.createElement("a"); b.id = "paybadge"; b.href = "#admin"; b.style.cssText = "position:fixed;right:12px;bottom:80px;z-index:98;background:#f5a623;color:#000;padding:10px 14px;border-radius:24px;font-weight:bold;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none"; document.body.appendChild(b); }
+      b.textContent = `💰 ${n} paiement${n > 1 ? "s" : ""} à valider`;
+    });
+    return;
+  }
+  if (stopWatch || !Compte.enabled || !Compte.user || S.premium) return;
+  stopWatch = Compte.watchPremium((premium, pay) => {
+    if (premium && !S.premium) {
+      S.premium = true; S.premiumVu = true; store.save();
+      stopWatch(); stopWatch = null;
+      render();
+      bravoPremium();
+    } else if (pay && document.getElementById("paybox")) payBox(pay.via);
+  });
+}
+function bravoPremium() {
+  const d = document.createElement("div");
+  d.setAttribute("role", "status");
+  d.style.cssText = "position:fixed;left:12px;right:12px;bottom:80px;z-index:99;background:#1f9d55;color:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.3);font-size:1.05em;text-align:center";
+  d.innerHTML = "🎉 <b>Paiement validé : tu es premium !</b><br>Tout est débloqué. Continue là où tu étais.";
+  d.onclick = () => d.remove();
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 9000);
 }
 
 // Partage : sur Android, la vidéo de présentation part avec le lien (WhatsApp l'affiche directement) ;
@@ -817,7 +912,7 @@ function viewLogin(err = "", ok = "") {
     <p class="small muted" style="text-align:center">Première fois ? Choisis un <b>nouveau</b> mot de passe pour l'appli (pas celui de ta boîte mail), puis touche « Créer un compte ».</p>
     <button class="linkbtn small" id="forgot">Mot de passe oublié ?</button></div></details>
     <p id="lmsg" class="${err ? "msg-ko" : "msg-ok"} small">${esc(err || ok)}</p></div>`;
-  const done = (p) => { applyProfile(p); render(); };
+  const done = (p) => { applyProfile(p); render(); suivrePremium(); };
   const mail = () => document.getElementById("mail").value.trim(), pass = () => document.getElementById("pass").value;
   // message d'erreur affiché sans effacer ce que l'élève a déjà tapé
   const fail = (e) => { const el = document.getElementById("lmsg"); el.className = "msg-ko small"; el.textContent = e && e.msg || ({
@@ -873,6 +968,8 @@ function viewTel(err = "") {
 function applyProfile(p) {
   if (!p) return;
   S.trialStart = p.created.toISOString().slice(0, 10);
+  // validé par l'admin pendant que l'appli était fermée : on le dit une fois à l'ouverture
+  if (p.premium && !S.premium && !S.premiumVu && p.premiumAt && Date.now() - p.premiumAt < 30 * 864e5) { S.premiumVu = true; setTimeout(bravoPremium, 800); }
   S.premium = p.premium;
   S.suspended = p.suspended;
   S.phone = p.phone || "";
@@ -911,5 +1008,5 @@ document.getElementById("install").onclick = () => { if (deferred) { deferred.pr
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 Promise.all([fetch("data/questions.json", { cache: "no-cache" }).then((r) => r.json()), fetch("data/config.json", { cache: "no-cache" }).then((r) => r.json())])
-  .then(async ([d, c]) => { DATA = d; CFG = c; applyProfile(await Compte.start().catch(() => null)); render(); })
+  .then(async ([d, c]) => { DATA = d; CFG = c; applyProfile(await Compte.start().catch(() => null)); render(); suivrePremium(); })
   .catch(() => { $view.innerHTML = `<div class="card"><p>Impossible de charger les questions. Vérifie ta connexion puis recharge la page.</p></div>`; });

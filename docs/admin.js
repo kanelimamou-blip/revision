@@ -4,22 +4,26 @@
 (() => {
   const fmt = (d) => (d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "—");
   const ago = (d, j) => d && Date.now() - d.getTime() < j * 864e5;
-  let users = null, errors = null, partages = {}, filtre = "";
+  let users = null, errors = null, pays = null, partages = {}, filtre = "";
 
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = ["activite", "erreurs", "comptes", "qr"].includes(arg) ? arg : "chiffres";
+    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr"].includes(arg) ? arg : "paiements";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["paiements", "💰 Paiements"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
-    document.getElementById("reload").onclick = () => { users = errors = null; partages = {}; viewAdmin(arg); };
+    document.getElementById("reload").onclick = () => { users = errors = pays = null; partages = {}; viewAdmin(arg); };
     const box = document.getElementById("adm");
     if (onglet === "qr") {
       box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.png" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
         <p class="small muted">La personne ouvre l'appareil photo de son téléphone et vise le code : l'appli s'ouvre avec les étapes pour l'installer. Monte la luminosité de ton écran.</p><a class="btn alt" href="#partager">Envoyer ce QR code ou le lien</a></div>`;
       document.getElementById("reload").hidden = true;
       return;
+    }
+    if (onglet === "paiements") {
+      try { if (!pays) pays = await Compte.adminPays(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
+      return paiements(box);
     }
     try {
       if (!users) { users = await Compte.adminUsers(); partages = await Compte.adminDevices().catch(() => ({})); }
@@ -75,8 +79,14 @@
       <p class="small muted">${liste.length} compte${liste.length > 1 ? "s" : ""}</p>
       ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? ` · ⭐ premium${u.code ? " (code " + esc(u.code) + ")" : ""}` : ""}</p>
         <p class="small muted">${esc(u.phone ? "📱 " + u.phone : u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
-        <button class="btn alt small" data-sus="${esc(u.uid)}" data-on="${u.suspended ? 0 : 1}">${u.suspended ? "Réactiver le compte" : "Suspendre le compte"}</button></div>`).join("")}`;
+        ${u.premium ? "" : `<button class="btn small" data-prem="${esc(u.uid)}">⭐ Passer premium (payé hors appli)</button> `}<button class="btn alt small" data-sus="${esc(u.uid)}" data-on="${u.suspended ? 0 : 1}">${u.suspended ? "Réactiver le compte" : "Suspendre le compte"}</button></div>`).join("")}`;
     const f = document.getElementById("af"); f.oninput = () => { filtre = f.value.trim().toLowerCase(); comptes(box); const g = document.getElementById("af"); g.focus(); g.setSelectionRange(g.value.length, g.value.length); };
+    box.querySelectorAll("[data-prem]").forEach((b) => (b.onclick = async () => {
+      const u = users.find((x) => x.uid === b.dataset.prem);
+      if (!confirmer(b, `${u.name || u.phone} premium ?`)) return;
+      b.disabled = true;
+      try { await Compte.adminSetPremium(u.uid); u.premium = true; comptes(box); } catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
+    }));
     box.querySelectorAll("[data-sus]").forEach((b) => (b.onclick = async () => {
       const on = b.dataset.on === "1", u = users.find((x) => x.uid === b.dataset.sus);
       if (on && !confirmer(b, `Suspendre ${u.name || u.email} ?`)) return;
@@ -84,6 +94,31 @@
       try { await Compte.adminSuspend(u.uid, on); u.suspended = on; comptes(box); } catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
     }));
   }
+  // paiements déclarés dans l'appli : un toucher sur Valider passe l'élève en premium, son appli se débloque aussitôt
+  function paiements(box) {
+    const tel = (t) => (t || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4");
+    box.innerHTML = pays.length ? `<p class="small muted">${pays.length} paiement${pays.length > 1 ? "s" : ""} à vérifier (le plus ancien d'abord). Compare le numéro, le montant (${fcfa(CFG.price_fcfa)}) et l'heure avec ton relevé ${"Wave"} ou Orange Money.</p>
+      ${pays.map((p) => `<div class="card"><p><b>${esc(p.name || "Sans nom")}</b> · 📱 ${esc(tel(p.phone) || "numéro inconnu")} · ${p.via === "om" ? "Orange Money" : "Wave"}</p>
+        <p class="small muted">${esc(p.level || "")} · envoyé ${fmt(p.at)}</p>
+        <img src="${esc(p.img)}" alt="Capture du paiement" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:8px 0">
+        <div class="row"><button class="btn" style="flex:1" data-ok="${esc(p.uid)}">✅ Valider : passer premium</button><button class="btn alt" style="flex:1" data-ko="${esc(p.uid)}">❌ Refuser</button></div>
+        <div data-motif="${esc(p.uid)}" hidden><input class="field" placeholder="Motif (ex. capture illisible, montant incomplet)" maxlength="200"><button class="btn alt small" data-kosend="${esc(p.uid)}">Envoyer le refus</button></div>
+        <p class="small" data-res="${esc(p.uid)}"></p></div>`).join("")}`
+      : `<div class="card"><p>Aucun paiement en attente. 👍</p><p class="small muted">Quand un élève envoie la capture de son paiement dans l'appli, elle apparaît ici. Touche « Actualiser » pour vérifier.</p></div>`;
+    const fin = (uid, txt) => { pays = pays.filter((x) => x.uid !== uid); const r = box.querySelector(`[data-res="${uid}"]`); if (r) { r.className = "msg-ok"; r.textContent = txt; } setTimeout(() => paiements(box), 1500); };
+    box.querySelectorAll("[data-ok]").forEach((b) => (b.onclick = async () => {
+      b.disabled = true; b.textContent = "Validation…";
+      try { await Compte.adminValidate(b.dataset.ok); if (users) { const u = users.find((x) => x.uid === b.dataset.ok); if (u) u.premium = true; } fin(b.dataset.ok, "Validé : l'élève est premium, son appli se débloque."); }
+      catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
+    }));
+    box.querySelectorAll("[data-ko]").forEach((b) => (b.onclick = () => { box.querySelector(`[data-motif="${b.dataset.ko}"]`).hidden = false; }));
+    box.querySelectorAll("[data-kosend]").forEach((b) => (b.onclick = async () => {
+      const motif = b.previousElementSibling.value.trim() || "La capture n'a pas permis de retrouver le paiement.";
+      b.disabled = true;
+      try { await Compte.adminRefuse(b.dataset.kosend, motif); fin(b.dataset.kosend, "Refus envoyé à l'élève."); } catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
+    }));
+  }
+
   // confirmation en deux touches, sans fenêtre du navigateur
   function confirmer(b, txt) { if (b.dataset.sure) return true; b.dataset.sure = "1"; b.textContent = txt + " Touche encore pour confirmer"; setTimeout(() => { delete b.dataset.sure; }, 5000); return false; }
 
