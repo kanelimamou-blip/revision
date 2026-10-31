@@ -233,6 +233,14 @@ const Compte = (() => {
   // pour l'admin : nombre de paiements en attente, suivi en direct
   const watchPays = (cb) => db.collection("paiements").where("statut", "==", "attente").limit(200).onSnapshot((q) => cb(q.size), () => {});
   const adminRefuse = (uid, motif) => db.collection("paiements").doc(uid).update({ statut: "refuse", motif: String(motif || "").slice(0, 200), fin: firebase.firestore.FieldValue.serverTimestamp() });
+  // Registre des ventes (trace de chaque paiement reçu) et fiche société, gérés par l'admin
+  async function adminVentes() { const snap = await db.collection("ventes").limit(10000).get(); return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at) || (d.data().ms ? new Date(d.data().ms) : null) })); }
+  const adminAddVente = (id, rec) => db.collection("ventes").doc(id).set({ ...rec, enreg: SRV() }, { merge: true });
+  const adminDelVente = (id) => db.collection("ventes").doc(id).delete();
+  // une seule fois, pour reprendre les paiements validés avant le registre (télécharge aussi les captures)
+  async function adminPaysValides() { const snap = await db.collection("paiements").where("statut", "==", "valide").limit(2000).get(); return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", phone: x.phone || "", level: x.level || "", via: x.via || "", at: ts(x.fin) || ts(x.at) }; }); }
+  async function getSociete() { if (!db) return null; const d = await db.collection("config").doc("societe").get().catch(() => null); return d && d.exists ? d.data() : null; }
+  const setSociete = (rec) => db.collection("config").doc("societe").set(rec);
   // Accord du parent (#accord/<jeton>) : l'élève crée la demande, le parent l'accepte sans compte, l'admin garde la trace
   const accords = () => db.collection("accords");
   const SRV = () => firebase.firestore.FieldValue.serverTimestamp();
@@ -242,5 +250,5 @@ const Compte = (() => {
   async function adminAccords() { const snap = await accords().limit(5000).get(); return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at), okAt: ts(d.data().okAt) })); }
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, adminVentes, adminAddVente, adminDelVente, adminPaysValides, getSociete, setSociete, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

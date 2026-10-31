@@ -4,10 +4,10 @@
 (() => {
   const ROUTES = (globalThis.ROUTES = globalThis.ROUTES || {});
   const CGU_V = (globalThis.CGU_V = "2026-10-31");
-  const so = () => (globalThis.CFG && CFG.societe) || {};
+  const so = () => ({ ...((typeof CFG !== "undefined" && CFG && CFG.societe) || {}), ...(globalThis.SOCIETE || {}) });
   const val = (k) => esc(so()[k] || "à compléter");
-  const contact = () => esc((globalThis.CFG && (CFG.wave_number || CFG.whatsapp)) || "");
-  const prix = () => (globalThis.CFG ? fcfa(CFG.price_fcfa) : "1 000 F");
+  const contact = () => esc((typeof CFG !== "undefined" && CFG && (CFG.wave_number || CFG.whatsapp)) || "");
+  const prix = () => (typeof CFG !== "undefined" && CFG ? fcfa(CFG.price_fcfa) : "1 000 F");
   const essai = () => (typeof TRIAL_DAYS !== "undefined" ? TRIAL_DAYS : 10);
 
   const PAGES = {
@@ -61,7 +61,10 @@
         <li>Vous pouvez demander à tout moment de voir ou de supprimer les données de votre enfant${contact() ? ` (WhatsApp ${contact()})` : ""}.</li></ul>`],
   };
 
+  let charge = false;
   function viewLegal(arg) {
+    // fiche société remplie par l'admin (une lecture, puis on réaffiche)
+    if (!charge && globalThis.Compte && Compte.getSociete) { charge = true; Compte.getSociete().then((s) => { if (s) { globalThis.SOCIETE = s; if (location.hash.startsWith("#legal")) viewLegal(location.hash.split("/")[1]); } }).catch(() => {}); }
     const k = PAGES[arg] ? arg : null;
     const nav = `<div class="row" style="flex-wrap:wrap;gap:6px">${Object.entries(PAGES).map(([id, [t]]) => `<a class="btn ${id === k ? "" : "alt "}small" href="#legal/${id}">${t}</a>`).join("")}</div>`;
     const retour = `<a class="btn alt" href="#accueil">Retour à l'appli</a>`;

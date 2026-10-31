@@ -24,7 +24,7 @@ const inLevel = (q) => subjectsOf(S.level).some((s) => s.id === q.s);
 const examOf = () => CFG.exams[String(S.level).split(" ")[0]] || null;
 const blancName = () => (examOf() ? "Examen blanc" : "Devoir blanc");
 // Essai gratuit : tout est débloqué pendant TRIAL_DAYS jours à partir de la première ouverture
-const TRIAL_DAYS = 10;
+const TRIAL_DAYS = 15;
 if (!S.trialStart) { S.trialStart = today(); store.save(); }
 const trialLeft = () => Math.max(0, TRIAL_DAYS - Math.floor((new Date(today()) - new Date(S.trialStart)) / 864e5));
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -63,7 +63,7 @@ function record(q, ok) {
   const d = (S.daily = S.daily || {})[today()] || { n: 0, ok: 0 }; d.n++; d.ok += ok; S.daily[today()] = d;
   store.save();
 }
-// Missions du jour (programme des 10 jours d'essai, puis programme quotidien)
+// Missions du jour (programme des 15 jours d'essai, puis programme quotidien)
 const doneToday = (tag) => ((S.done || {})[today()] || []).includes(tag);
 function markDone(tag) { S.done = S.done || {}; const t = S.done[today()] || []; if (!t.includes(tag)) { t.push(tag); S.done[today()] = t; store.save(); } }
 function streak() {
@@ -946,7 +946,7 @@ function bravoPremium() {
 // sinon, le lien seul, dont l'aperçu montre l'image de présentation.
 async function share() {
   const url = location.href.split("#")[0].split("?")[0] + "?qr";
-  const text = `Je révise le BAC et le BFEM avec cette appli : 1 300 QCM corrigés, sujets officiels, cours et devoirs. 10 jours gratuits 👉 ${url}`;
+  const text = `Je révise le BAC et le BFEM avec cette appli : 1 300 QCM corrigés, sujets officiels, cours et devoirs. 15 jours gratuits 👉 ${url}`;
   try {
     const blob = await fetch("tuto.mp4").then((r) => r.blob());
     const files = [new File([blob], "revision-bac-bfem.mp4", { type: "video/mp4" })];
@@ -965,8 +965,8 @@ function viewPartager() {
     <button class="btn" id="sqr">Envoyer le QR code et le lien (WhatsApp…)</button>
     <button class="btn alt" id="slink">Envoyer seulement le lien</button>
     <div class="card small"><p>Le lien de l'appli :</p><p><b style="word-break:break-all">${esc(url)}</b></p><button class="btn alt small" id="cp">Copier le lien</button></div>
-    <p class="small muted">Chaque camarade a ses 10 jours d'essai gratuit avec son propre compte.</p>`;
-  const text = `Je révise le BAC et le BFEM avec cette appli : QCM corrigés, sujets du BAC, cours et devoirs. 10 jours gratuits. Ouvre le lien ou scanne le QR code 👉 ${url}`;
+    <p class="small muted">Chaque camarade a ses 15 jours d'essai gratuit avec son propre compte.</p>`;
+  const text = `Je révise le BAC et le BFEM avec cette appli : QCM corrigés, sujets du BAC, cours et devoirs. 15 jours gratuits. Ouvre le lien ou scanne le QR code 👉 ${url}`;
   document.getElementById("sqr").onclick = async () => {
     try {
       const blob = await fetch("icons/qr.png").then((r) => r.blob());

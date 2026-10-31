@@ -42,7 +42,7 @@ function instEtapes(os) {
     { t: "Touche le bouton Partager", ecran: "ios-share", p: "C'est le carré avec une flèche vers le haut, en bas de l'écran (en haut sur iPad)." },
     { t: "Choisis « Sur l'écran d'accueil »", ecran: "ios-menu", p: "Fais glisser la liste vers le haut si tu ne le vois pas tout de suite." },
     { t: "Touche « Ajouter »", ecran: "ios-add", p: "En haut à droite. Le nom « Révision » est déjà écrit." },
-    { t: "Ouvre l'appli depuis ton écran", ecran: "home", p: "L'icône <b>Révision</b> est sur ton écran d'accueil. Elle s'ouvre en plein écran, comme une vraie appli. Crée ton compte avec ton numéro : <b>10 jours gratuits</b>." },
+    { t: "Ouvre l'appli depuis ton écran", ecran: "home", p: "L'icône <b>Révision</b> est sur ton écran d'accueil. Elle s'ouvre en plein écran, comme une vraie appli. Crée ton compte avec ton numéro : <b>15 jours gratuits</b>." },
   ];
   return [
     { t: "Ouvre le lien dans Chrome", ecran: "and-chrome", p: br === "inapp"
@@ -51,7 +51,7 @@ function instEtapes(os) {
       : "Si la page est déjà ouverte dans Chrome, passe à l'étape suivante.", copier: true },
     { t: "Installe l'appli", ecran: "and-menu", p: "Touche le bouton « Installer maintenant » ci-dessous s'il apparaît. Sinon, touche les <b>3 points ⋮</b> en haut à droite, puis <b>« Installer l'application »</b> (ou « Ajouter à l'écran d'accueil »).", installer: true },
     { t: "Confirme avec « Installer »", ecran: "and-ok", p: "Une petite fenêtre s'ouvre : touche <b>Installer</b>. Quelques secondes suffisent." },
-    { t: "Ouvre l'appli depuis ton écran", ecran: "home", p: "L'icône <b>Révision</b> est sur ton écran d'accueil (ou dans la liste de tes applis). Elle s'ouvre en plein écran, comme une vraie appli. Crée ton compte avec ton numéro : <b>10 jours gratuits</b>." },
+    { t: "Ouvre l'appli depuis ton écran", ecran: "home", p: "L'icône <b>Révision</b> est sur ton écran d'accueil (ou dans la liste de tes applis). Elle s'ouvre en plein écran, comme une vraie appli. Crée ton compte avec ton numéro : <b>15 jours gratuits</b>." },
   ];
 }
 
