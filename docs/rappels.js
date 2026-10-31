@@ -58,6 +58,28 @@
     const card = document.getElementById("pause"); if (card) card.outerHTML = pauseCard();
   });
 
+  // ---------- Vraies notifications (même appli fermée) : l'élève les active d'un geste
+  globalThis.pushCard = () => {
+    if (!CFG.vapid || !("Notification" in window) || !("serviceWorker" in navigator) || S.pushOff || !Compte.user) return "";
+    if (Notification.permission === "granted" && S.pushOn) return "";
+    if (Notification.permission === "denied") return "";
+    const ios = /iPhone|iPad/.test(navigator.userAgent), alone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+    return `<div class="card" id="pushc"><h2>🔔 Recevoir les rappels</h2><p class="small">Un petit message à la pause de midi et après l'école pour réviser 5 minutes. Tu peux les arrêter quand tu veux dans les réglages du téléphone.</p>
+      ${ios && !alone ? `<p class="small muted">Sur iPhone, installe d'abord l'appli sur l'écran d'accueil (Partager puis « Sur l'écran d'accueil »), puis ouvre-la depuis son icône.</p>`
+        : `<div class="row"><button class="btn" id="pushon" style="flex:1">Activer les rappels</button><button class="btn alt" id="pushno" style="width:auto">Plus tard</button></div>`}<p class="small" id="pushmsg"></p></div>`;
+  };
+  document.addEventListener("click", async (e) => {
+    const t = e.target.closest && e.target.closest("#pushon, #pushno");
+    if (!t) return;
+    if (t.id === "pushno") { S.pushOff = true; store.save(); document.getElementById("pushc").remove(); return; }
+    const m = document.getElementById("pushmsg");
+    try {
+      if ((await Notification.requestPermission()) !== "granted") { m.textContent = "Notifications refusées. Tu peux les autoriser plus tard dans les réglages du navigateur."; return; }
+      await Compte.enablePush(CFG.vapid);
+      S.pushOn = true; store.save(); m.className = "small msg-ok"; m.textContent = "C'est activé ! Premier rappel à la prochaine pause. 👍";
+    } catch (err) { m.className = "small msg-ko"; m.textContent = "Activation impossible sur ce téléphone pour le moment."; if (Compte.logError) Compte.logError("Notifications : " + (err.code || err.message)); }
+  });
+
   // ---------- Assistant : parler au micro et écouter la réponse
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   globalThis.assistVoice = (input, send) => {

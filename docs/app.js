@@ -250,6 +250,7 @@ function viewHome() {
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
     ${typeof pauseCard === "function" ? pauseCard() : ""}
+    ${typeof pushCard === "function" ? pushCard() : ""}
     ${homeOrder().filter((k) => !h.hidden.includes(k)).map((k) => blocks[k]()).join("")}
     <a class="btn alt" href="#accueil/organiser">⭐ Organiser mon accueil</a>`;
   const ar = $view.querySelector("#allrub");

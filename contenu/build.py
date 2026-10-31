@@ -93,6 +93,9 @@ CONFIG = {
     "whatsapp": "221782721920",
     # classes d'examen : nom de l'examen et date indicative
     "exams": {"3e": ["BFEM", "2027-07-06"], "Tle": ["BAC", "2027-07-01"]},
+    # clé publique des notifications (Firebase > Paramètres du projet > Cloud Messaging > Certificats Web Push) ;
+    # vide : le bouton « Recevoir les rappels » reste caché
+    "vapid": "",
 }
 
 

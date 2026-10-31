@@ -130,6 +130,18 @@ const Compte = (() => {
   // Réponses aux petites questions de l'appli (pause de midi, après l'école) : gardées dans le compte, lues par l'admin
   const avis = (rec) => (user && db ? db.collection("users").doc(user.uid).update({ avis: firebase.firestore.FieldValue.arrayUnion(rec) }) : Promise.resolve());
 
+  // Notifications : jeton Firebase Cloud Messaging lié au service worker de l'appli, gardé dans le compte (champ push).
+  // Un robot GitHub (rappels.yml) envoie les rappels à 13 h 15 et 17 h 15.
+  async function enablePush(vapidKey) {
+    if (!user || !db) throw new Error("hors ligne");
+    if (!firebase.messaging) await load(SDK + "firebase-messaging-compat.js");
+    const reg = await navigator.serviceWorker.ready;
+    const token = await firebase.messaging().getToken({ vapidKey, serviceWorkerRegistration: reg });
+    if (!token) throw new Error("pas de jeton");
+    await db.collection("users").doc(user.uid).update({ push: { t: token, at: firebase.firestore.FieldValue.serverTimestamp() } });
+    return token;
+  }
+
   // Sauvegarde des progrès : au plus une écriture par minute, et tout de suite quand l'élève quitte l'appli.
   // Cela garde 10 000 élèves dans le quota gratuit de Firestore (20 000 écritures par jour).
   let pending = null;
@@ -192,5 +204,5 @@ const Compte = (() => {
   const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, logError, isAdmin, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();
