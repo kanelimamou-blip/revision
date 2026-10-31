@@ -44,9 +44,18 @@
     };
   }
 
-  function aider(texte) {
-    const r = answer(texte), box = document.getElementById("ares");
+  function aider(texte, force) {
+    const r = answer(texte, force), box = document.getElementById("ares");
     if (r.empty || r.none) { box.innerHTML = `<div class="card"><p>Je n'ai pas reconnu le chapitre. Ajoute les mots importants de l'énoncé (« dérivée », « pH », « dissertation », « présent perfect »…) ou le nom de la matière.</p></div>`; return; }
+    // un seul mot en commun avec le cours (« raison », « force »…) : on ne devine pas, l'élève choisit le chapitre
+    if (!force && r.nq >= 2 && r.hits < 2) {
+      box.innerHTML = `<div class="card"><p><b>Je ne suis pas sûr de reconnaître ton exercice.</b> Il parle de l'un de ces chapitres ?</p>
+        ${r.cands.map((d, i) => `<button class="btn alt" data-c="${i}" style="display:block;width:100%;text-align:left;margin:6px 0">${esc(d.sname)} · ${esc(d.title)}</button>`).join("")}
+        <p class="small muted">Sinon, recopie la consigne complète de l'exercice (avec la question posée et le nom de la matière), puis touche « M'aider ».</p></div>`;
+      box.querySelectorAll("[data-c]").forEach((b) => (b.onclick = () => aider(texte, r.cands[+b.dataset.c])));
+      box.scrollIntoView({ block: "start" });
+      return;
+    }
     const m = r.main, sid = m.sid, fiche = m.kind === "fiche" ? m : null, p = fiche ? m.p : m.pch;
     const meth = r.meth || (fiche && fiche.lines.find((l) => l[0] === "methode")), ex = proche(texte, sid);
     const q0 = r.qcm && r.qcm[0] ? remix(r.qcm[0]) : null, indice = r.keys[0], rappels = r.keys.slice(1, 3);

@@ -5,7 +5,7 @@
 const ASSIST = { index: null, level: null, chat: [] };
 const STOP = new Set(("a au aux avec ce ces cet cette dans de des du elle en est et eux il ils je la le les leur lui ma mais me mes moi mon ne nos notre nous on ou par pas pour qu que qui sa se ses son sur ta te tes toi ton tu un une vos votre vous y " +
   "c d j l m n s t qu est-ce quoi quel quelle quels quelles comment pourquoi quand combien explique expliquer explique-moi comprends comprendre comprend aide aider peux peut faut faire fait veux voudrais " +
-  "sais savoir sait cours lecon chapitre difference entre bien tres plus moins donne donner dire dis svp stp merci bonjour salut").split(" "));
+  "ca cela ceci donc alors aussi voila sais savoir sait cours lecon chapitre difference entre bien tres plus moins donne donner dire dis svp stp merci bonjour salut").split(" "));
 
 const normA = (s) => String(s).normalize("NFD").replace(/[̀-ͯ⃗]/g, "").toLowerCase();
 const stem = (w) => (w.length >= 6 ? w.slice(0, 5) : w);
@@ -45,7 +45,7 @@ function score(ix, d, qt) {
 // les mots rares de la question (« Sartre », « pKa ») pèsent plus que les mots du titre, présents partout dans le chapitre
 const overlap = (ix, text, qt) => { const t = new Set(tokens(text)); return qt.filter((w) => t.has(w)).reduce((a, w) => a + Math.log(1 + ix.n / (ix.df.get(w) || 1)), 0); };
 
-function answer(question) {
+function answer(question, force) {
   if (!ASSIST.index || ASSIST.level !== S.level) { ASSIST.index = buildIndex(S.level); ASSIST.level = S.level; }
   const ix = ASSIST.index, qt = [...new Set(tokens(question))];
   if (!qt.length) return { empty: true };
@@ -54,7 +54,7 @@ function answer(question) {
     (/\b(physique|chimie|pc)\b/.test(nq) && /-pc$/.test(s.id)) || (/\bmaths?\b/.test(nq) && /maths/.test(s.id)) || (/\bsvt\b|biologie/.test(nq) && /svt/.test(s.id)) || (/\bphilo/.test(nq) && /philo/.test(s.id))).map((s) => s.id);
   const ranked = ix.docs.map((d) => [score(ix, d, qt) * (hint.length && !hint.includes(d.sid) ? 0.4 : 1) * (d.kind === "qcm" ? 0.8 : 1), d]).filter(([sc]) => sc > 0.5).sort((a, b) => b[0] - a[0]);
   const fiches = ranked.filter(([, d]) => d.kind === "fiche"), notions = ranked.filter(([, d]) => d.kind === "notion"), qcms = ranked.filter(([, d]) => d.kind === "qcm");
-  const main = (fiches[0] && (!notions[0] || fiches[0][0] >= notions[0][0] * 0.7)) ? fiches[0][1] : notions[0] ? notions[0][1] : null;
+  const main = force || ((fiches[0] && (!notions[0] || fiches[0][0] >= notions[0][0] * 0.7)) ? fiches[0][1] : notions[0] ? notions[0][1] : null);
   if (!main) return { none: true, qcm: qcms.slice(0, 1).map(([, d]) => d.q) };
   // dans le chapitre trouvé, les passages qui répondent le mieux à la question
   const best = main.lines.map((l, k) => [overlap(ix, [l[1], ...(Array.isArray(l[2]) ? l[2] : [])].join(" "), qt) + (l[0] === "cle" || l[0] === "cours" ? (k < 2 ? 1 : 0.3) : 0), l]).sort((a, b) => b[0] - a[0]);
@@ -63,7 +63,10 @@ function answer(question) {
   const sameSubj = qcms.filter(([, d]) => d.sid === main.sid && (main.kind !== "fiche" || main.p === undefined || d.q.ch === main.p));
   const others = [...fiches, ...notions].map(([, d]) => d).filter((d) => d !== main && d.title !== main.title).slice(0, 2);
   const notion = main.kind === "fiche" ? ((DATA.notions || {})[main.sid] || []).find((n) => main.p !== undefined && n.pch === main.p) : main;
-  return { main, keys, meth: meth && meth[1], ex: ex && ex[1], trap: trap && trap[1], notion, qcm: (sameSubj.length ? sameSubj : qcms).slice(0, 1).map(([, d]) => d.q), others };
+  // confiance : combien de mots de la question le chapitre contient, et les autres chapitres possibles (un par titre)
+  const hits = qt.filter((w) => main.tf && main.tf.get(w)).length, vus = new Set(), cands = [];
+  for (const [, d] of [...fiches, ...notions].sort((a, b) => b[0] - a[0])) { const k = d.sid + d.title; if (!vus.has(k) && cands.length < 3) { vus.add(k); cands.push(d); } }
+  return { hits, nq: qt.length, cands, main, keys, meth: meth && meth[1], ex: ex && ex[1], trap: trap && trap[1], notion, qcm: (sameSubj.length ? sameSubj : qcms).slice(0, 1).map(([, d]) => d.q), others };
 }
 
 function renderAnswer(r) {

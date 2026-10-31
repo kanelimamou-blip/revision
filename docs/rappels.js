@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-10-31g", "🎤 Dictée et 🆘 aide plus fiables", ["Avec « 🎤 Dicter », tu peux dicter un long énoncé : l'écoute continue phrase après phrase jusqu'à « ⏹️ Arrêter ».", "Si ton exercice n'est pas assez clair, l'appli te propose les chapitres possibles au lieu de deviner."]],
     ["2026-10-31f", "💳 Premium sans code", ["Après ton paiement Wave ou Orange Money, envoie la capture directement dans l'appli (page Premium).", "Dès que le paiement est vérifié, l'appli se débloque toute seule, là où tu étais : plus besoin d'attendre un code.", "Active la notification : ton téléphone te prévient dès la validation, même appli fermée."]],
     ["2026-10-31e", "📒 Mes notes et 🆘 Je bloque sur un exercice", ["« Mes notes » : note tes devoirs et compositions ; l'appli calcule ta moyenne avec les coefficients officiels de ta série (modifiables), prévoit ta fin de trimestre et te donne des pistes d'orientation.", "Ta trajectoire se réajuste à chaque note : les matières où tu gagnes le plus de points passent en tête.", "« Je bloque sur un exercice » : écris, dicte ou photographie l'énoncé, et reçois un indice, puis la méthode, puis un exercice semblable corrigé."]],
     ["2026-10-31d", "🧭 Ma trajectoire et emploi du temps en 2 minutes", ["« 🧭 Ma trajectoire » : ton objectif, ta courbe jusqu'à l'examen comparée à une base de parcours, et ta semaine séance par séance.", "Le plan suit le chapitre que ta classe est en train de voir : tu peux le corriger matière par matière.", "Emploi du temps : saisie guidée (tu choisis la matière, puis tu places toutes ses heures d'un coup).", "Ou importe-le : photo, capture d'écran ou texte collé. Tu vérifies avant d'enregistrer."]],
@@ -117,8 +118,13 @@
       if (S.micKo >= 2) mic.remove();
       if (typeof Compte !== "undefined" && Compte.logError && code !== "no-speech") Compte.logError("Dictée : " + code);
     };
+    let fini = true, deja = false;
     mic.onclick = () => {
-      if (r) { r.stop(); return; }
+      if (r) { fini = true; r.stop(); return; }
+      fini = false; deja = false; ecoute();
+    };
+    // une écoute par phrase, relancée tant que l'élève parle : il peut dicter un long énoncé avec des pauses
+    const ecoute = () => {
       try { r = new Rec(); } catch (e) { r = null; fail("service-not-allowed"); return; }
       r.lang = "fr-FR"; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
       base = input.value.trim(); heard = "";
@@ -129,10 +135,13 @@
         for (let i = 0; i < ev.results.length; i++) { const t = ev.results[i][0].transcript; if (ev.results[i].isFinal) fin += t; else tmp += t; }
         heard = (fin + tmp).trim(); show(heard);
       };
-      r.onerror = (ev) => { const c = ev.error || "inconnue"; if (c !== "aborted") fail(c); };
+      r.onerror = (ev) => { const c = ev.error || "inconnue"; if (c !== "aborted" && !(c === "no-speech" && deja)) fail(c); };
       r.onend = () => {
-        r = null; idle();
-        if (heard) { S.micKo = 0; store.save(); show(heard); tell("Relis le texte dicté et corrige les mots mal compris avant d'envoyer."); input.focus(); }
+        r = null;
+        if (heard) deja = true;
+        if (heard && !fini) { show(heard); try { ecoute(); return; } catch (e) {} }
+        idle(); fini = true;
+        if (deja) { S.micKo = 0; store.save(); if (heard) show(heard); tell("Relis le texte dicté et corrige les mots mal compris avant d'envoyer."); input.focus(); }
         else if (note.textContent.startsWith("Je t'écoute")) tell(MIC_ERR["no-speech"], true);
       };
       try { r.start(); } catch (e) { r = null; idle(); fail("service-not-allowed"); }
