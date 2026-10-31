@@ -91,6 +91,11 @@ input.code{font:inherit;font-size:1.2rem;letter-spacing:.12em;text-transform:upp
 .grid.rub .tile .ico{font-size:1.7rem;line-height:1}
 .grid.rub .tile b{font-family:var(--f-body,inherit);font-size:.78rem;font-weight:700;line-height:1.15}
 @media (max-width:340px){.grid.rub{grid-template-columns:repeat(3,1fr)}}
+.rubwrap .rubh{font-size:1rem;margin:14px 2px 6px}
+.sosbig{display:flex;gap:12px;align-items:center;background:#d93636;color:#fff;border-radius:18px;padding:14px 16px;margin:6px 0 4px;text-decoration:none;box-shadow:0 3px 0 #a72525}
+.sosbig .ico{font-size:2.2rem;line-height:1}.sosbig b{display:block;font-size:1.08rem;line-height:1.2}.sosbig small{display:block;opacity:.92;margin-top:3px;font-size:.82rem}
+.outilsbox{background:#fff4d6;border:2px solid #f2c94c;border-radius:18px;padding:10px 10px 0;margin:10px 0 4px}
+.outilsbox .grid.rub{margin-bottom:10px}.outilsbox .tile{background:#fff}
 .hello h2{margin:0 0 4px}
 .lib-card{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit}
 .btn .small{display:block;font-weight:400;opacity:.85}

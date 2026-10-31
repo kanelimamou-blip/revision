@@ -132,13 +132,34 @@ function homePrefs() {
   return h;
 }
 const RUB_COURT = { annales: null, aide: "Je bloque", devoir: "Préparer un devoir", qcm: "QCM", exercices: "Exercices", notions: "Cours", fiches: "Synthèses", notes: "Mes notes", trajectoire: "Ma trajectoire",
-  agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Outils", challenge: "Challenge", duo: "En groupe", examen: null, vie: "Dans la vie" };
+  agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Tous mes outils", challenge: "Challenge", duo: "En groupe", examen: null, vie: "Dans la vie" };
+// rubriques rangées par besoin (demande d'Est) : bloqué → devoirs → cours → outils → suivi
+const RUB_GROUPES = [
+  ["📝", "Devoirs et entraînement", ["annales", "devoir", "exercices", "qcm", "examen", "challenge", "duo"]],
+  ["📖", "Apprendre le cours", ["notions", "fiches", "assistant", "apprendre", "vie"]],
+  ["📊", "Mon suivi", ["notes", "trajectoire", "agenda"]],
+];
+const OUTILS_ACCUEIL = [["formules", "📐", "Formulaire"], ["flash", "🃏", "Fiches flash"], ["moyenne", "🧮", "Ma moyenne"], ["minuteur", "⏲️", "Minuteur"]];
 function rubriques() {
   const h = homePrefs(), tile = ([k, href, icon, title], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${esc(RUB_COURT[k] || title)}</b></a>`;
-  const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0]));
-  const pinned = h.pins.map((k) => list.find((r) => r[0] === k)).filter(Boolean), rest = list.filter((r) => !h.pins.includes(r[0]));
-  // toutes les rubriques visibles d'un coup (choix d'Est), les épinglées en tête
-  return [...pinned, ...rest].map((r) => tile(r, h.pins.includes(r[0]))).join("");
+  const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0])), get = (k) => list.find((r) => r[0] === k);
+  const titre = (i, t) => `<h3 class="rubh">${i} ${t}</h3>`, grille = (rs) => rs.length ? `<div class="grid rub">${rs.map((r) => tile(r, false)).join("")}</div>` : "";
+  let out = "";
+  const pinned = h.pins.map(get).filter(Boolean);
+  if (pinned.length) out += titre("⭐", "Mes favoris") + grille(pinned);
+  if (get("aide")) out += `<a class="sosbig" href="#aide"><span class="ico">🆘</span><span><b>Je bloque sur un exercice ou un devoir</b><small>Écris, dicte ou prends en photo l'énoncé : indice, méthode puis corrigé</small></span></a>`;
+  const vus = new Set(["aide", "outils", ...h.pins]);
+  for (const [i, t, ks] of RUB_GROUPES) {
+    const rs = ks.filter((k) => !vus.has(k)).map(get).filter(Boolean);
+    ks.forEach((k) => vus.add(k));
+    out += rs.length ? titre(i, t) + grille(rs) : "";
+    // les outils juste après les devoirs, bien visibles : on s'en sert pendant les exercices
+    if (ks[0] === "annales" && get("outils")) out += `<div class="outilsbox"><div class="row" style="justify-content:space-between;align-items:center"><b>🧰 Mes outils</b><a href="#outils" class="small">Tous mes outils ›</a></div>
+      <div class="grid rub">${OUTILS_ACCUEIL.map(([id, ic, t]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${ic}</span><b>${t}</b></a>`).join("")}</div></div>`;
+  }
+  const reste = list.filter((r) => !vus.has(r[0]));
+  if (reste.length) out += titre("➕", "Autres") + grille(reste);
+  return out;
 }
 
 // ---------- Parcours de départ : les premières étapes conseillées selon la classe, cochées automatiquement
@@ -254,7 +275,7 @@ function viewHome() {
     trajectoire: () => (typeof trajCard === "function" ? trajCard() : ""),
     notes: () => (typeof notesCard === "function" ? notesCard() : ""),
     programme: () => tutoCard() + programme(),
-    rubriques: () => `<div class="grid rub">${rubriques()}</div>`,
+    rubriques: () => `<div class="rubwrap">${rubriques()}</div>`,
     matieres: () => `<h2 id="qcm">QCM corrigés : choisis une matière</h2><div class="grid">${subs}</div>`,
     agenda: () => agendaCard(),
     profil: () => (typeof profilCard === "function" ? profilCard() : ""),
