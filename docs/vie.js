@@ -184,13 +184,25 @@
     $view.innerHTML = `<h1>Les cours dans la vie</h1><p class="muted">Des problèmes du quotidien sénégalais avec les maths et la physique de l'école. Les nombres changent à chaque fois.</p>
       <div class="grid rub">${THEMES.map((t) => `<a class="subj tile" href="#vie/${t.id}"><span class="ico">${t.i}</span><b>${t.t}</b><span class="small muted">${t.d}</span></a>`).join("")}</div>
       <h2>Mes outils</h2>
-      <div class="grid rub">${[["flash", "🃏", "Fiches flash", "Retourne les cartes, révise l'essentiel"], ["formules", "📐", "Formulaire", "Toutes les formules, chapitre par chapitre"], ["moyenne", "🧮", "Simulateur de moyenne", "Combien me faut-il pour avoir mon examen ?"], ["minuteur", "⏲️", "Minuteur Pomodoro", "25 min de travail, 5 min de pause"], ["journal", "📓", "Mon journal", "Ce que j'ai compris aujourd'hui"], ["stress", "🌬️", "Gérer le stress", "Respiration, sommeil, jour J"]].map(([id, i, t, d]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${i}</span><b>${t}</b><span class="small muted">${d}</span></a>`).join("")}</div>`;
+      <div class="grid rub">${outilsTuiles()}</div>`;
   }
 
+  const outilsTuiles = () => [["flash", "🃏", "Fiches flash", "Retourne les cartes, révise l'essentiel"], ["formules", "📐", "Formulaire", "Toutes les formules, chapitre par chapitre"], ["moyenne", "🧮", "Simulateur de moyenne", "Combien me faut-il pour avoir mon examen ?"], ["minuteur", "⏲️", "Minuteur Pomodoro", "25 min de travail, 5 min de pause"], ["journal", "📓", "Ma fiche perso", "Écris ta propre fiche : ce que j'ai compris aujourd'hui"], ["stress", "🌬️", "Gérer le stress", "Respiration, sommeil, jour J"]].map(([id, i, t, d]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${i}</span><b>${t}</b><span class="small muted">${d}</span></a>`).join("");
   let pomo = null;
   function viewOutils(arg) {
     clearInterval(pomo);
-    const back = `<a class="btn alt" href="#vie">Retour aux outils</a>`;
+    const back = `<a class="btn alt" href="#outils">Retour aux outils</a>`;
+    // page d'accueil des outils : ce qu'ils apportent, puis les tuiles
+    if (!arg) {
+      $view.innerHTML = `<h1>🧰 Mes outils</h1><div class="card" style="background:#fff4d6;border:2px solid #f2c94c"><p><b>Ton arme secrète pour le ${examOf() ? examOf()[0] : "contrôle"}.</b></p>
+        <ul class="steps"><li>📐 Le formulaire : toutes les formules et repères de chaque matière, chapitre par chapitre. Garde-le ouvert pendant tes exercices.</li>
+        <li>🃏 Les fiches flash : l'essentiel de chaque chapitre à retourner, pour mémoriser en 5 minutes.</li>
+        <li>📓 Ta fiche perso : écris avec tes mots ce que tu as compris. C'est ce qui fixe le mieux le cours.</li>
+        <li>🧮 Ta moyenne : sais exactement quelle note il te faut, matière par matière.</li></ul>
+        <p class="small">La base est dans les cours et les exercices ; les outils t'aident à t'organiser et à aller plus loin.</p></div>
+        <div class="grid rub">${outilsTuiles()}</div><a class="btn alt" href="#accueil">Retour à l'accueil</a>`;
+      return;
+    }
     // formulaire et fiches flash : même logique que le reste de l'appli, matière par matière et chapitre par chapitre
     const pick = (sids, cur, base) => sids.length > 1 ? `<div class="row onglets">${sids.map((s) => `<a class="btn alt small${s.id === cur ? " on" : ""}" href="#outils/${base}/${s.id}">${esc(s.name)}</a>`).join("")}</div>` : "";
     const nota = (sid, p) => ((DATA.notions || {})[sid] || []).find((n) => n.pch === p);
@@ -228,7 +240,7 @@
     if (arg === "journal") {
       S.journal = S.journal || {};
       const days = Object.keys(S.journal).sort().reverse().filter((d) => d !== today()).slice(0, 14);
-      $view.innerHTML = `<h1>Mon journal</h1><div class="card"><label for="jr"><b>Aujourd'hui, j'ai compris…</b></label><textarea id="jr" rows="5" style="width:100%;margin-top:8px" placeholder="Ex. : en maths, j'ai enfin compris le discriminant. Demain je revois les suites.">${esc(S.journal[today()] || "")}</textarea><p class="small muted" id="ok">Enregistré automatiquement.</p></div>
+      $view.innerHTML = `<h1>📓 Ma fiche perso</h1><div class="card"><label for="jr"><b>Aujourd'hui, j'ai compris… (écris avec tes mots)</b></label><textarea id="jr" rows="5" style="width:100%;margin-top:8px" placeholder="Ex. : en maths, j'ai enfin compris le discriminant. Demain je revois les suites.">${esc(S.journal[today()] || "")}</textarea><p class="small muted" id="ok">Enregistré automatiquement.</p></div>
         ${days.map((d) => `<div class="card"><p class="small muted">${d}</p><p>${esc(S.journal[d])}</p></div>`).join("")}${back}`;
       document.getElementById("jr").oninput = (e) => { S.journal[today()] = e.target.value; store.save(); };
       return;

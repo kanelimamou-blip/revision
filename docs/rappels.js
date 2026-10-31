@@ -4,7 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
-    ["2026-10-31i", "🗂️ Accueil rangé par besoin", ["Un gros bouton rouge « 🆘 Je bloque sur un exercice ou un devoir » tout en haut.", "Les rubriques sont rangées : Devoirs et entraînement, Apprendre le cours, Mon suivi.", "🧰 Mes outils bien en vue : formulaire, fiches flash, ma moyenne et minuteur en un clic.", "Terminale : 36 nouvelles notions de philosophie avec exercice noté."]],
+    ["2026-10-31i", "🗂️ Accueil rangé par besoin", ["En haut, d'un coup d'œil : le nombre de sujets, exercices, QCM, cours et synthèses corrigés pour ta classe.", "🏆 Le challenge du jour est à côté de la cloche : un point rouge tant que tu ne l'as pas fait.", "Un gros bouton rouge « 🆘 Je bloque sur un exercice ou un devoir ».", "Les rubriques sont rangées : Devoirs et entraînement, Apprendre le cours, Mon suivi.", "🧰 Mes outils, ton arme secrète, bien en vue : formulaire, fiches flash, ta fiche perso et ta moyenne en un clic.", "Terminale : 36 nouvelles notions de philosophie avec exercice noté."]],
     ["2026-10-31h", "🏠 Nouvel accueil, plus simple", ["En haut : bonjour, le compte à rebours, ta série et un gros bouton vers ce qu'il faut faire maintenant.", "Juste en dessous, toutes les rubriques d'un coup d'œil, en petites icônes.", "Les autres blocs (notes, trajectoire, agenda…) restent dans les rubriques ; tu peux les remettre sur l'accueil avec « Organiser mon accueil »."]],
     ["2026-10-31g", "🎤 Dictée et 🆘 aide plus fiables", ["Avec « 🎤 Dicter », tu peux dicter un long énoncé : l'écoute continue phrase après phrase jusqu'à « ⏹️ Arrêter ».", "Si ton exercice n'est pas assez clair, l'appli te propose les chapitres possibles au lieu de deviner."]],
     ["2026-10-31f", "💳 Premium sans code", ["Après ton paiement Wave ou Orange Money, envoie la capture directement dans l'appli (page Premium).", "Dès que le paiement est vérifié, l'appli se débloque toute seule, là où tu étais : plus besoin d'attendre un code.", "Active la notification : ton téléphone te prévient dès la validation, même appli fermée."]],
@@ -23,6 +23,12 @@
     }
     const n = unread();
     a.innerHTML = `🔔${n ? `<i class="dot">${n}</i>` : ""}`;
+    // challenge du jour : icône à côté de la cloche, point rouge tant qu'il n'est pas fait aujourd'hui
+    let c = document.getElementById("chal");
+    if (!c) { c = document.createElement("a"); c.id = "chal"; c.href = "#challenge"; c.className = "news-btn"; c.setAttribute("aria-label", "Challenge du jour"); a.before(c); }
+    const fait = typeof doneToday === "function" && doneToday("challenge");
+    c.innerHTML = `🏆${fait ? "" : '<i class="dot pt"></i>'}`;
+    c.title = fait ? "Challenge du jour fait ✔" : "Challenge du jour à faire";
   }
   function viewNouveautes() {
     const n = unread();

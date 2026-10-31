@@ -139,7 +139,7 @@ const RUB_GROUPES = [
   ["📖", "Apprendre le cours", ["notions", "fiches", "assistant", "apprendre", "vie"]],
   ["📊", "Mon suivi", ["notes", "trajectoire", "agenda"]],
 ];
-const OUTILS_ACCUEIL = [["formules", "📐", "Formulaire"], ["flash", "🃏", "Fiches flash"], ["moyenne", "🧮", "Ma moyenne"], ["minuteur", "⏲️", "Minuteur"]];
+const OUTILS_ACCUEIL = [["formules", "📐", "Formulaire"], ["flash", "🃏", "Fiches flash"], ["journal", "📓", "Ma fiche"], ["moyenne", "🧮", "Moyenne"]];
 function rubriques() {
   const h = homePrefs(), tile = ([k, href, icon, title], pin) => `<a class="subj tile" href="${href}"><span class="ico">${icon}</span><b>${pin ? "⭐ " : ""}${esc(RUB_COURT[k] || title)}</b></a>`;
   const list = rubriqueList().filter((r) => !h.hiddenRub.includes(r[0])), get = (k) => list.find((r) => r[0] === k);
@@ -154,7 +154,8 @@ function rubriques() {
     ks.forEach((k) => vus.add(k));
     out += rs.length ? titre(i, t) + grille(rs) : "";
     // les outils juste après les devoirs, bien visibles : on s'en sert pendant les exercices
-    if (ks[0] === "annales" && get("outils")) out += `<div class="outilsbox"><div class="row" style="justify-content:space-between;align-items:center"><b>🧰 Mes outils</b><a href="#outils" class="small">Tous mes outils ›</a></div>
+    if (ks[0] === "annales" && get("outils")) out += `<div class="outilsbox"><div class="row" style="justify-content:space-between;align-items:center"><b>🧰 Mes outils : ton arme secrète</b><a href="#outils" class="small">Tout voir ›</a></div>
+      <p class="small" style="margin:4px 2px 8px">Formules et fiches de chaque matière, ta propre fiche, ta moyenne : avec ces outils tu révises plus vite et tu sais toujours où tu en es.</p>
       <div class="grid rub">${OUTILS_ACCUEIL.map(([id, ic, t]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${ic}</span><b>${t}</b></a>`).join("")}</div></div>`;
   }
   const reste = list.filter((r) => !vus.has(r[0]));
@@ -247,6 +248,13 @@ function programme() {
     ${done === 3 ? `<p class="msg-ok small">Bravo, journée réussie ! Reviens demain pour garder ta série 🔥</p>` : `<p class="small muted">3 missions par jour, environ 20 minutes.</p>`}</div>`;
 }
 // le bouton principal de l'accueil : la prochaine mission du jour pas encore faite
+// tout ce que l'appli contient pour la classe, d'un coup d'œil (chaque chiffre ouvre la rubrique)
+function dispo() {
+  const L = S.level, ann = annalesOf(L).length + genSujetsOf(L).length, ex = exercisesOf(L).length + annalesOf(L).filter((a) => a.guided).length + genExosOf(L).length;
+  const qcm = subjectsOf(L).reduce((n, s) => n + s.count, 0), cours = notionsOf(L).length, fi = subjectsOf(L).reduce((n, s) => n + ((DATA.fiches || {})[s.id] || []).length, 0);
+  const c = (n, ico, t, href) => n ? `<a href="${href}" class="dispo-i"><b>${ico} ${n.toLocaleString("fr-FR")}</b><span>${t}</span></a>` : "";
+  return `<p class="small" style="margin:10px 0 6px"><b>Tout est corrigé pas à pas :</b></p><div class="dispo">${c(ann, "📚", examOf() ? `sujets du ${examOf()[0]}` : "devoirs types", "#annales")}${c(ex, "✏️", "exercices", "#exercices")}${c(qcm, "✅", "QCM", "#qcm-list")}${c(cours, "📖", "cours", "#notions")}${c(fi, "📝", "synthèses", "#fiches")}</div>`;
+}
 function suite() {
   if (!programme.missions) programme();
   const m = (programme.missions || []).find(([t]) => !doneToday(t));
@@ -269,7 +277,7 @@ function viewHome() {
       const nom = myName(), next = suite();
       return `<div class="card hello"><h2>${nom ? `Bonjour ${esc(nom)} 👋` : "Bonjour 👋"}</h2>
         <p class="small muted">${ex ? `<b>J−${days}</b> avant le ${ex[0]}` : `<b>${answered}</b> réponses données`} · Série : <b>${streak()} 🔥</b></p>
-        <a class="btn" href="${next[0]}" style="display:block;text-align:center;margin-top:10px">▶️ ${esc(next[1])}</a></div>`;
+        ${dispo()}</div>`;
     },
     parcours: parcoursCard,
     trajectoire: () => (typeof trajCard === "function" ? trajCard() : ""),
