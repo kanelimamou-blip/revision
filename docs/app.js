@@ -133,9 +133,11 @@ function homePrefs() {
 }
 const RUB_COURT = { annales: null, aide: "Je bloque", devoir: "Préparer un devoir", qcm: "QCM", exercices: "Exercices", notions: "Cours", fiches: "Synthèses", notes: "Mes notes", trajectoire: "Ma trajectoire",
   agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Tous mes outils", challenge: "Challenge", duo: "En groupe", examen: null, vie: "Dans la vie" };
-// rubriques rangées par besoin (demande d'Est) : bloqué → devoirs → cours → outils → suivi
+// rubriques rangées par besoin (demande d'Est) : bloqué → outils → s'entraîner → cours → suivi
+// sujets, exercices, QCM, cours et synthèses sont déjà dans les chiffres de la carte Bonjour, le challenge près de la cloche
+const RUB_EN_HAUT = ["annales", "exercices", "qcm", "notions", "fiches", "challenge"];
 const RUB_GROUPES = [
-  ["📝", "Devoirs et entraînement", ["annales", "devoir", "exercices", "qcm", "examen", "challenge", "duo"]],
+  ["📝", "S'entraîner", ["annales", "devoir", "exercices", "qcm", "examen", "challenge", "duo"]],
   ["📖", "Apprendre le cours", ["notions", "fiches", "assistant", "apprendre", "vie"]],
   ["📊", "Mon suivi", ["notes", "trajectoire", "agenda"]],
 ];
@@ -148,15 +150,15 @@ function rubriques() {
   const pinned = h.pins.map(get).filter(Boolean);
   if (pinned.length) out += titre("⭐", "Mes favoris") + grille(pinned);
   if (get("aide")) out += `<a class="sosbig" href="#aide"><span class="ico">🆘</span><span><b>Je bloque sur un exercice ou un devoir</b><small>Écris, dicte ou prends en photo l'énoncé : indice, méthode puis corrigé</small></span></a>`;
-  const vus = new Set(["aide", "outils", ...h.pins]);
+  // les outils juste après « Je bloque », bien visibles : on s'en sert pendant les exercices
+  if (get("outils")) out += `<div class="outilsbox"><div class="row" style="justify-content:space-between;align-items:center"><b>🧰 Mes outils : ton arme secrète</b><a href="#outils" class="small">Tout voir ›</a></div>
+      <p class="small" style="margin:4px 2px 8px">Formules et fiches de chaque matière, ta propre fiche, ta moyenne : avec ces outils tu révises plus vite et tu sais toujours où tu en es.</p>
+      <div class="grid rub">${OUTILS_ACCUEIL.map(([id, ic, t]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${ic}</span><b>${t}</b></a>`).join("")}</div></div>`;
+  const vus = new Set(["aide", "outils", ...h.pins, ...(h.hidden.includes("compteur") ? [] : RUB_EN_HAUT)]);
   for (const [i, t, ks] of RUB_GROUPES) {
     const rs = ks.filter((k) => !vus.has(k)).map(get).filter(Boolean);
     ks.forEach((k) => vus.add(k));
     out += rs.length ? titre(i, t) + grille(rs) : "";
-    // les outils juste après les devoirs, bien visibles : on s'en sert pendant les exercices
-    if (ks[0] === "annales" && get("outils")) out += `<div class="outilsbox"><div class="row" style="justify-content:space-between;align-items:center"><b>🧰 Mes outils : ton arme secrète</b><a href="#outils" class="small">Tout voir ›</a></div>
-      <p class="small" style="margin:4px 2px 8px">Formules et fiches de chaque matière, ta propre fiche, ta moyenne : avec ces outils tu révises plus vite et tu sais toujours où tu en es.</p>
-      <div class="grid rub">${OUTILS_ACCUEIL.map(([id, ic, t]) => `<a class="subj tile" href="#outils/${id}"><span class="ico">${ic}</span><b>${t}</b></a>`).join("")}</div></div>`;
   }
   const reste = list.filter((r) => !vus.has(r[0]));
   if (reste.length) out += titre("➕", "Autres") + grille(reste);
