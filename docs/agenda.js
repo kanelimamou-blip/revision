@@ -43,7 +43,9 @@ function suggestions() {
   const vus = new Set();
   for (const c of slots) {
     if (!c.sid || vus.has(c.sid)) continue; vus.add(c.sid);
-    const ch = chapitreConseille(c.sid);
+    const ch = chapitreConseille(c.sid), enc = typeof chEnCours === "function" && (DATA.programmes || {})[c.sid] ? chEnCours(c.sid) : null;
+    // pas d'erreur à corriger : on prépare le chapitre que la classe est en train de voir
+    if (enc !== null && !(ch && ch.raison.includes("erreur"))) { out.push({ ico: "📘", txt: `${soir ? "Demain" : "Aujourd'hui"} à ${hh(c.d)} : <b>${esc(subjName(c.sid))}</b>. Chapitre en cours : ${esc(DATA.programmes[c.sid][enc])}.`, href: `#quiz/${c.sid}/${enc}`, btn: "Préparer" }); continue; }
     out.push({ ico: "📘", txt: `${soir ? "Demain" : "Aujourd'hui"} à ${hh(c.d)} : <b>${esc(subjName(c.sid))}</b>.${ch ? ` À revoir : ${esc(ch.c.t)} (${ch.raison}).` : ""}`,
       href: ch ? `#fiche/${c.sid}~${ch.i}` : `#quiz/${c.sid}`, btn: ch ? "Réviser" : "QCM" });
   }
@@ -67,6 +69,8 @@ function matiereSelect(id, withOther = true) {
 
 function viewAgenda(arg) {
   S.edt = S.edt || {}; S.todo = S.todo || [];
+  if (arg === "importer") return EDT_IMPORT.viewImport();
+  if (arg && arg.startsWith("guide")) return EDT_IMPORT.viewGuide(arg.split("/")[1]);
   const onglet = arg === "todo" ? "todo" : "edt";
   const head = `<h1>🗓️ Mon agenda</h1>
     <div class="row onglets"><a class="btn alt small${onglet === "edt" ? " on" : ""}" href="#agenda">Emploi du temps</a><a class="btn alt small${onglet === "todo" ? " on" : ""}" href="#agenda/todo">À rendre (${S.todo.filter((t) => !t.done).length})</a></div>
@@ -74,7 +78,11 @@ function viewAgenda(arg) {
   if (onglet === "todo") return viewTodo(head);
   const jour = agendaJour ?? new Date().getDay();
   const slots = slotsOf(jour);
+  const vide = !Object.values(S.edt).some((l) => l.length);
   $view.innerHTML = `${head}
+    <div class="card${vide ? " prog" : ""}"><h2>${vide ? "Remplis ton emploi du temps en 2 minutes" : "Modifier toute la semaine"}</h2>
+      <a class="btn" href="#agenda/guide">🪄 Saisie guidée${vide ? " (conseillé)" : ""}</a>
+      <a class="btn alt" href="#agenda/importer">📷 Importer une photo, une capture ou un texte</a></div>
     <div class="row days">${ORDRE_JOURS.map((d) => `<button class="btn alt small day${d === jour ? " on" : ""}" data-d="${d}">${JOURS[d].slice(0, 3)}${(S.edt[d] || []).length ? " •" : ""}</button>`).join("")}</div>
     <div class="card"><h2>${JOURS[jour]}</h2>
       ${slots.length ? slots.map((c) => `<div class="row slot"><span><b>${hh(c.d)}${c.f ? " – " + hh(c.f) : ""}</b> ${esc(slotName(c))}</span><button class="btn alt small del" data-k="${(S.edt[jour] || []).indexOf(c)}">✕</button></div>`).join("") : `<p class="small muted">Aucun cours noté pour ce jour.</p>`}
