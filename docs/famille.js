@@ -241,7 +241,7 @@
   }
 
   function viewAjouter(err = "") {
-    const lv = DATA.levels;
+    const lv = DATA.levels.filter((l) => subjectsOf(l).length); // classes sans contenu cachées (comme le choix de classe)
     $view.innerHTML = `<h1>➕ Ajouter un enfant</h1>
       <div class="card" style="gap:12px"><input class="field" id="enom" maxlength="40" placeholder="Prénom et nom de l'enfant">
       <label class="small">Sa classe</label><select class="field" id="elvl">${lv.map((l) => `<option>${esc(l)}</option>`).join("")}</select>
@@ -409,7 +409,7 @@
 
   function viewModifier(e) {
     $view.innerHTML = `<h1>✏️ ${esc(e.nom)}</h1><div class="card" style="gap:10px"><input class="field" id="enom" maxlength="40" value="${esc(e.nom)}">
-      ${e.type === "local" ? `<label class="small">Classe</label><select class="field" id="elvl">${DATA.levels.map((l) => `<option${l === e.level ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>` : `<p class="small muted">Sa classe se change dans son appli (elle est reprise ici automatiquement).</p>`}
+      ${e.type === "local" ? `<label class="small">Classe</label><select class="field" id="elvl">${DATA.levels.filter((l) => subjectsOf(l).length).map((l) => `<option${l === e.level ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>` : `<p class="small muted">Sa classe se change dans son appli (elle est reprise ici automatiquement).</p>`}
       <button class="btn" id="eok">Enregistrer</button></div>
       <button class="btn alt" id="edel">🗑️ Retirer ${prenom(e)} de mon compte</button><a class="btn alt" href="#famille/enfant/${e.id}">Retour</a>`;
     document.getElementById("eok").onclick = () => {
