@@ -26,12 +26,12 @@
     },
   };
   // domaines communs à toutes les classes : toute la matière
-  const TOUT = { ecrite: "francais", orale: "francais", ist: "sciences", hist: "histoire", geo: "geo", vdm: "geo", ve: "civique" };
+  const TOUT = { ecrite: "francais", orale: "francais", ist: "sciences", hist: "histoire", geo: "geo", vdm: "geo", ve: "civique", ang: "anglais" };
   const LIB = { num: "Activités numériques", mes: "Activités de mesure", geom: "Activités géométriques", pb: "Résolution de problèmes", lect: "Lecture", voc: "Vocabulaire",
     gram: "Grammaire", orth: "Orthographe", conj: "Conjugaison", ecr: "Écriture", ecrite: "Communication écrite", orale: "Communication orale", poesie: "Poésie / récitation",
     ist: "Initiation scientifique et technologique", hist: "Histoire", geo: "Géographie", vdm: "Vivre dans son milieu", ve: "Vivre ensemble",
     ang: "Anglais", ar: "Arabe", rel: "Éducation religieuse", eps: "Éducation physique et sportive", art: "Arts plastiques", mus: "Éducation musicale", scen: "Arts scéniques", remed: "Remédiation" };
-  const HORS = ["ang", "ar", "rel", "eps", "art", "mus", "scen", "poesie"];
+  const HORS = ["ar", "rel", "eps", "art", "mus", "scen", "poesie"];
 
   // emploi du temps de l'étape 2 (CE1/CE2), lu sur le document de l'école : 9 créneaux de 30 min, récréation de 11 h à 11 h 30,
   // remédiation l'après-midi. Les horaires exacts se corrigent dans l'agenda.

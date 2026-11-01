@@ -9,13 +9,17 @@
   const petit = () => ["CE1", "CE2"].includes(S.level);
 
   // ---------- lecture à voix haute
-  const voix = () => (window.speechSynthesis ? speechSynthesis.getVoices().find((v) => /^fr/i.test(v.lang)) : null);
-  const parler = (txt) => {
+  const voix = (l) => (window.speechSynthesis ? speechSynthesis.getVoices().find((v) => (l === "en" ? /^en[-_](GB|US)/i : /^fr/i).test(v.lang)) || speechSynthesis.getVoices().find((v) => new RegExp("^" + l, "i").test(v.lang)) : null);
+  const nettoie = (t) => String(t).replace(/___/g, "…").replace(/×/g, " fois ").replace(/÷/g, " divisé par ").replace(/−/g, " moins ");
+  // segments : [[texte, "fr"|"en"]] ; en anglais, ce qui est entre « » est lu avec la voix anglaise
+  const parler = (txt, en = false) => {
     if (!window.speechSynthesis) return false;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(String(txt).replace(/___/g, "…").replace(/×/g, " fois ").replace(/÷/g, " divisé par ").replace(/−/g, " moins "));
-    u.lang = "fr-FR"; u.rate = petit() ? 0.85 : 0.95; const v = voix(); if (v) u.voice = v;
-    setTimeout(() => { speechSynthesis.speak(u); speechSynthesis.resume(); }, 80); return true;
+    const segs = Array.isArray(txt) ? txt : en ? String(txt).split(/«\s*|\s*»/).map((x, i) => [x, i % 2 ? "en" : "fr"]) : [[txt, "fr"]];
+    setTimeout(() => { for (const [t, l] of segs) { if (!String(t).trim()) continue;
+      const u = new SpeechSynthesisUtterance(l === "en" ? t : nettoie(t)); u.lang = l === "en" ? "en-GB" : "fr-FR"; u.rate = l === "en" ? 0.8 : petit() ? 0.85 : 0.95;
+      const v = voix(l); if (v) u.voice = v; speechSynthesis.speak(u); } speechSynthesis.resume(); }, 80);
+    return true;
   };
   if (window.speechSynthesis) { speechSynthesis.getVoices(); if (speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices()); }
   globalThis.kidParler = parler;
@@ -28,7 +32,11 @@
     const ctx = prev && prev.classList.contains("card") && !prev.querySelector(".choice") ? prev.innerText.replace(/\n+/g, ". ") + ". " : "";
     const q = (card.querySelector(".q") || {}).innerText || "";
     const ch = [...card.querySelectorAll(".choice")].map((c) => { const l = c.querySelector(".l"), t = c.innerText.replace(l ? l.innerText : "", "").trim(); return `${l ? l.innerText : ""} : ${t}`; }).join(". ");
-    if (!parler(`${ctx}${q}. ${ch}`)) alert("La lecture à voix haute n'est pas disponible sur ce téléphone.");
+    const en = /anglais|#jeux\/en/.test(location.hash) || card.dataset.en === "1";
+    let dit = `${ctx}${q}. ${ch}`;
+    if (en) { const repEn = /en anglais|se dit|Pluriel de|Passé de|Comparatif de|English/.test(q);
+      dit = [...String(ctx + q).split(/«\s*|\s*»/).map((x, i) => [x, i % 2 ? "en" : "fr"]), ...[...card.querySelectorAll(".choice")].flatMap((c) => { const l = c.querySelector(".l"), t = c.innerText.replace(l ? l.innerText : "", "").trim(); return [[`${l ? l.innerText : ""} :`, "fr"], [t, repEn ? "en" : "fr"]]; })]; }
+    if (!parler(dit)) alert("La lecture à voix haute n'est pas disponible sur ce téléphone.");
   });
 
   // ---------- encouragements
@@ -46,7 +54,7 @@
   globalThis.kidQuizLen = 10;
 
   // ---------- matières en couleurs
-  const ICO = { maths: ["🔢", "#ffe9a8"], francais: ["📚", "#d9e6ff"], sciences: ["🌱", "#d6f2dc"], histoire: ["🏛️", "#f6dccb"], geo: ["🌍", "#d4eef4"], civique: ["🤝", "#efdaf3"] };
+  const ICO = { maths: ["🔢", "#ffe9a8"], francais: ["📚", "#d9e6ff"], sciences: ["🌱", "#d6f2dc"], histoire: ["🏛️", "#f6dccb"], geo: ["🌍", "#d4eef4"], civique: ["🤝", "#efdaf3"], anglais: ["🇬🇧", "#fde2e2"] };
   const ico = (sid) => ICO[sid.split("-").slice(1).join("-")] || ["📘", "#eee"];
   const etoiles = () => Object.values(S.stats || {}).reduce((n, s) => n + (s.ok || 0), 0);
 

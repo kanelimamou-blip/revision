@@ -10,6 +10,7 @@ METH = {
   "sciences": ("Répondre en sciences", ["Observer le dessin, l'objet ou l'expérience.", "Utiliser les mots de la leçon.", "Expliquer en une ou deux phrases : ce que l'on voit, puis pourquoi."]),
   "histoire": ("Répondre en histoire", ["Repérer la date, le lieu et les personnages.", "Raconter les faits dans l'ordre.", "Dire pourquoi c'est important."]),
   "geo": ("Répondre en géographie", ["Situer le lieu (carte, points cardinaux).", "Décrire avec les mots justes.", "Expliquer le lien entre la nature et les activités des hommes."]),
+  "anglais": ("Apprendre l'anglais", ["Écouter le mot (bouton 🔊) et le répéter à voix haute.", "Retenir le mot avec une image ou un geste.", "Réutiliser le mot dans une petite phrase.", "Revoir les mots le lendemain."]),
   "civique": ("Répondre en vivre ensemble", ["Lire la situation.", "Dire ce qui est bien ou mal et pourquoi (règle, droit, devoir).", "Proposer le bon comportement."]),
 }
 
