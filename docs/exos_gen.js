@@ -352,6 +352,6 @@ function genSujet(sid, r = Math.random) {
   parts.forEach((p) => p.steps.forEach((s) => (s.pts = Math.round(((s.pts * 20) / tot) * 4) / 4)));
   const last = parts[parts.length - 1].steps, sum = parts.reduce((x, p) => x + p.steps.reduce((y, s) => y + s.pts, 0), 0);
   last[last.length - 1].pts = Math.round((last[last.length - 1].pts + 20 - sum) * 100) / 100;
-  const exam = sid.startsWith("3e") ? "BFEM" : sid.startsWith("tle") ? "BAC" : "Devoir";
-  return { id: `gs-${sid}`, levels: subj.levels, exam, year: "type", subject: subj.name, modele: exam !== "Devoir", gen: true, duration: exam === "Devoir" ? "2 h" : exam === "BFEM" ? "2 h" : "4 h", guided: parts };
+  const exam = sid.startsWith("3e") ? "BFEM" : sid.startsWith("tle") ? "BAC" : sid.startsWith("cm2") ? "CFEE" : "Devoir", prim = /^(ce|cm)/.test(sid);
+  return { id: `gs-${sid}`, levels: subj.levels, exam, year: "type", subject: subj.name, modele: exam !== "Devoir", gen: true, duration: prim ? (exam === "CFEE" ? "1 h 30" : "1 h") : exam === "Devoir" ? "2 h" : exam === "BFEM" ? "2 h" : "4 h", guided: parts };
 }

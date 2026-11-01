@@ -817,7 +817,7 @@ function viewPremium(reason = "", pay = "wave") {
     ${S.premium ? `<div class="card"><p class="msg-ok">Ton pack premium est actif. Toutes les questions et les examens blancs sont débloqués.</p><a class="btn" href="#accueil">Réviser</a></div>` : `
     <div class="card">
       <p class="count">${fcfa(CFG.price_fcfa)}</p><p class="muted">Payé une seule fois, valable jusqu'à l'examen. <a href="#comment">Comment ça marche ?</a></p>
-      <ul class="steps"><li>Les <b>${total}</b> questions de la 6e à la Terminale, toutes corrigées</li><li>Les examens et devoirs blancs chronométrés, notés sur 20</li><li>Les nouvelles questions ajoutées pendant l'année</li></ul>
+      <ul class="steps"><li>Les <b>${total}</b> questions du CE1 à la Terminale, toutes corrigées</li><li>Les examens et devoirs blancs chronométrés, notés sur 20</li><li>Les nouvelles questions ajoutées pendant l'année</li></ul>
     </div>
     ${globalThis.accordRequis && accordRequis() ? `<div id="accordbox"></div>` : `<div class="card"><h2>Comment payer</h2>
       ${wave || om ? `<p class="small muted">Choisis ton moyen de paiement :</p>

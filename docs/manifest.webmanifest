@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Révision BAC BFEM",
   "short_name": "Révision",
-  "description": "Quiz de révision de la 6e à la Terminale, avec corrections expliquées.",
+  "description": "Quiz de révision du CE1 à la Terminale, avec corrections expliquées.",
   "lang": "fr",
   "start_url": "./#accueil",
   "scope": "./",

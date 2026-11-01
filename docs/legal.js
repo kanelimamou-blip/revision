@@ -14,7 +14,7 @@
   const PAGES = {
     cgu: ["Conditions d'utilisation", () => `
       <p class="small muted">Version du ${CGU_V}</p>
-      <h2>1. L'appli</h2><p>Révision est une appli de révision scolaire pour les élèves du Sénégal, de la 6e à la Terminale. Elle suit les programmes officiels. Elle aide à réviser, mais ne remplace ni les cours ni les professeurs.</p>
+      <h2>1. L'appli</h2><p>Révision est une appli de révision scolaire pour les élèves du Sénégal, du CE1 à la Terminale. Elle suit les programmes officiels. Elle aide à réviser, mais ne remplace ni les cours ni les professeurs.</p>
       <h2>2. Le compte</h2><p>Le compte se crée avec un prénom, un nom, un numéro de téléphone et un code secret à 6 chiffres. Le code est personnel : ne le donne à personne. Un compte sert à un seul élève.</p>
       <p><b>Élève de moins de 18 ans :</b> un parent ou un tuteur doit être d'accord pour la création du compte et pour le paiement. Avant de payer, l'élève envoie un lien à son parent, qui donne son accord depuis son propre téléphone ; l'accord est enregistré avec son nom, son numéro et la date. En 1re et en Terminale, un élève de 18 ans ou plus peut déclarer sa date de naissance à la place : une fausse déclaration est de sa seule responsabilité.</p>
       <h2>3. Essai et prix</h2><p>L'essai gratuit dure ${essai()} jours, avec tout débloqué. Ensuite, le pack premium coûte <b>${prix()}</b>, payé une seule fois par Wave ou Orange Money, et reste valable jusqu'à l'examen de l'année scolaire en cours. Le prix est affiché avant tout paiement.</p>
