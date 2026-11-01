@@ -64,6 +64,8 @@ from catalogue import LIBRARY, LIB_HOST
 from catalogue_devoirs import DEVOIRS
 from ressources import RESSOURCES
 from exercices import EXERCISES
+from exercices_plus_6e import EX6
+EXERCISES = EXERCISES + EX6
 from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
 from programmes import PROGRAMMES
