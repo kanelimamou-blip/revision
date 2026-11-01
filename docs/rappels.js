@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-11-01t", "📚 18 devoirs types en 6e", ["Chaque matière de 6e a 3 devoirs types, un par trimestre : 3 exercices, notés sur 20, corrigés étape par étape.", "Rédigés pour l'appli sur le modèle des devoirs de classe (ce ne sont pas des sujets officiels). La 5e suit."]],
     ["2026-11-01s", "✅ Plus de 10 000 QCM par classe, synthèses enrichies", ["Le compteur de QCM compte maintenant aussi les questions à nombres nouveaux, qui étaient déjà dans tes quiz : plus de 10 000 QCM différents par classe.", "De la 6e à la 3e, chaque synthèse contient en plus la méthode pas à pas, les pièges fréquents et deux exercices corrigés de plus.", "Les devoirs types arrivent ensuite."]],
     ["2026-11-01r", "✍️ 64 exercices type devoir en 3e", ["64 nouveaux exercices guidés en 3e pour préparer le BFEM, un par chapitre (deux en maths) : PGCD et carrelage, hauteur du baobab avec Thalès, facture Senelec, paludisme, tirailleurs, Grande Muraille verte…", "Rédigés pour l'appli (ce ne sont pas des sujets officiels). Toutes les classes de la 6e à la 3e sont enrichies."]],
     ["2026-11-01q", "✍️ 53 exercices type devoir en 4e", ["53 nouveaux exercices guidés en 4e, un par chapitre (deux en maths), y compris en sciences physiques et en espagnol : échelle contre le mur, trajet Dakar – Touba, commerce triangulaire, résistants…", "Rédigés pour l'appli (ce ne sont pas des sujets officiels). La 3e suit."]],
