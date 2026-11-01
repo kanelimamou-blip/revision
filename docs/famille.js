@@ -475,7 +475,7 @@
     globalThis.payExtra = () => ({ formule: avecSuivi ? "suivi" : "parent", montant: total, enfants: nb });
     const prix = CFG.price_fcfa; CFG.price_fcfa = total; dedans = true;
     try { viewPremium(reason, pay); } finally { CFG.price_fcfa = prix; dedans = false; }
-    $view.insertAdjacentHTML("afterbegin", `<h1>👨‍👩‍👧 Formule parent répétiteur</h1><div class="card"><h2>Les formules</h2>
+    $view.insertAdjacentHTML("afterbegin", `<h1>👨‍👩‍👧 Formule parent répétiteur</h1><div class="card"><h2>Les formules${CFG.promo ? ` <span class="small">🔥 −${CFG.promo.pct} %</span>` : ""}</h2>
       <ul class="steps"><li>🎒 Élève seul : <b>${fcfa(t.eleve)}</b></li><li>👨‍👩‍👧 Parent répétiteur, 1 enfant (missions, séances, suivi) : <b>${fcfa(t.parent)}</b></li><li>➕ Chaque enfant en plus : <b>${fcfa(t.enfant_sup)}</b></li><li>🎯 Suivi spécifique par la plateforme : <b>${fcfa(t.suivi)}</b> par enfant</li></ul>
       ${S.premium ? "" : `<p>Ta famille : <b>${nb} enfant${nb > 1 ? "s" : ""}</b>. Suivis spécifiques : <select id="nsuivi">${[...Array(nb + 1)].map((_, i) => `<option${i === avecSuivi ? " selected" : ""}>${i}</option>`).join("")}</select></p><p class="count">Total : ${fcfa(total)}</p><p class="small muted">Payé une fois, valable jusqu'aux examens, pour tous les enfants de ton compte (ceux reliés avec leur propre compte aussi).</p>`}</div>`);
     const h = $view.querySelectorAll("h1")[1]; if (h) h.remove();

@@ -9,9 +9,9 @@
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords", "ventes", "societe", "parents"].includes(arg) ? arg : "paiements";
+    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords", "ventes", "societe", "parents", "prix"].includes(arg) ? arg : "paiements";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["paiements", "💰 Paiements"], ["ventes", "🧾 Ventes"], ["societe", "🏢 Société"], ["parents", "👨‍👩‍👧 Modes & parents"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["paiements", "💰 Paiements"], ["ventes", "🧾 Ventes"], ["societe", "🏢 Société"], ["prix", "💲 Prix"], ["parents", "👨‍👩‍👧 Modes & parents"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
     document.getElementById("reload").onclick = () => { users = errors = pays = accs = ventes = societe = suivis = null; partages = {}; viewAdmin(arg); };
     const box = document.getElementById("adm");
@@ -39,6 +39,7 @@
       try { if (!pays) pays = await Compte.adminPays(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
       return paiements(box);
     }
+    if (onglet === "prix") { document.getElementById("reload").hidden = true; return prix(box, await Compte.getTarifs().catch(() => null)); }
     if (onglet === "parents") {
       try { if (!users) { users = await Compte.adminUsers(); partages = await Compte.adminDevices().catch(() => ({})); } if (!suivis) suivis = await Compte.adminSuivis().catch(() => []); }
       catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore.</p></div>`; return; }
@@ -245,9 +246,7 @@
     const st = { attente: "⏳ en attente", en_cours: "🟢 en cours", termine: "✅ terminé" };
     box.innerHTML = `<div class="grid">${tile(seuls.length, "🎒 comptes élève seul")}${tile(par.length, "👨‍👩‍👧 comptes parent")}${tile(enf.length, "enfants suivis par un parent")}${tile(enf.filter((e) => e.type === "local").length, "sur le téléphone du parent")}${tile(relies.length, "élèves reliés à un parent")}${tile(par.filter((u) => u.premium).length, "parents premium")}${tile((suivis || []).filter((x) => x.statut === "attente").length, "suivis à traiter")}${tile((suivis || []).length, "suivis demandés")}</div>
       <div class="card"><h2>👁 Voir l'appli comme…</h2><p class="small muted">Ton propre compte passe dans le mode choisi (rien ne change pour les clients).</p><div class="row"><button class="btn alt" style="flex:1" data-voir="eleve">🎒 Élève seul</button><button class="btn alt" style="flex:1" data-voir="parent">👨‍👩‍👧 Parent répétiteur</button></div></div>
-      <div class="card"><h2>💲 Tarifs (modulables)</h2><p class="small muted">Changés ici, ils s'appliquent tout de suite dans l'appli de chacun (au prochain lancement).</p>
-        ${[["eleve", "🎒 Élève seul"], ["parent", "👨‍👩‍👧 Parent répétiteur (1 enfant)"], ["enfant_sup", "➕ Par enfant en plus"], ["suivi", "🎯 Suivi spécifique (par enfant)"]].map(([k, l]) => `<label class="small">${l}</label><input class="field" inputmode="numeric" data-tarif="${k}" value="${t[k]}">`).join("")}
-        <button class="btn" id="tsave">Enregistrer les tarifs</button><p class="small" id="tmsg"></p></div>
+      <a class="btn alt" href="#admin/prix">💲 Changer les prix et les promotions</a>
       <div class="card"><h2>🎯 Suivis spécifiques</h2>${(suivis || []).length ? suivis.sort((a, b) => (a.statut === "attente" ? -1 : 1) - (b.statut === "attente" ? -1 : 1) || (b.at || 0) - (a.at || 0)).map((x) => `<div class="card"><p><b>${esc(x.enfant || "")}</b> · ${esc(x.level || "")} · ${st[x.statut] || esc(x.statut || "")}</p>
           <p class="small muted">Parent : ${esc(x.pnom || "")} · 📱 ${esc(x.tel || "")} · ${fmt(x.at)}</p><p class="small"><b>Objectif :</b> ${esc(x.objectif || "")}</p>
           ${x.dispo ? `<p class="small"><b>Disponibilités :</b> ${esc(x.dispo)}</p>` : ""}${(x.matieres || []).length ? `<p class="small"><b>Matières :</b> ${esc(x.matieres.map(subjName).join(", "))}</p>` : ""}
@@ -259,18 +258,39 @@
       <div class="card"><h2>👨‍👩‍👧 Comptes parent</h2>${par.length ? par.map((u) => `<div style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><p class="small"><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""} · ${esc(u.phone ? "📱 " + u.phone : u.email)}${meme(u)}</p>
           <p class="small muted">${((u.famille && u.famille.enfants) || []).map((e) => `${e.type === "compte" ? "📱" : "👦"} ${esc(e.nom)} (${esc(e.level)}${e.type === "compte" && !e.uid ? ", code non tapé" : ""}) · ${(e.missions || []).length} missions · ${(e.seances || []).length} séances`).join("<br>") || "aucun enfant ajouté"}</p></div>`).join("") : `<p class="small muted">Aucun compte parent pour l'instant.</p>`}</div>`;
     box.querySelectorAll("[data-voir]").forEach((b) => (b.onclick = () => { S.mode = b.dataset.voir; store.save(); Compte.setFamille(S.mode, S.famille || null); go(S.mode === "parent" ? "famille" : "accueil"); }));
-    document.getElementById("tsave").onclick = async () => {
-      const rec = {}; box.querySelectorAll("[data-tarif]").forEach((i) => { const v = parseInt(i.value.replace(/\D/g, ""), 10); if (v >= 0) rec[i.dataset.tarif] = v; });
-      const m = document.getElementById("tmsg");
-      try { await Compte.setTarifs(rec); CFG.formules = { ...(CFG.formules || {}), ...rec }; if (rec.eleve) CFG.price_fcfa = rec.eleve; m.className = "msg-ok small"; m.textContent = "Tarifs enregistrés ✓"; }
-      catch (e) { m.className = "msg-ko small"; m.textContent = "Refusé : " + (e.code || e.message); }
-    };
     box.querySelectorAll("[data-envoi]").forEach((b) => (b.onclick = async () => {
       const id = b.dataset.envoi, txt = box.querySelector(`[data-cons="${id}"]`).value.trim(), statut = box.querySelector(`[data-st="${id}"]`).value, r = box.querySelector(`[data-res="${id}"]`);
       b.disabled = true;
       try { await Compte.adminConseil(id, txt, statut); suivis = null; r.className = "msg-ok small"; r.textContent = "Envoyé ✓ : le parent le voit dans la fiche de l'enfant."; }
       catch (e) { b.disabled = false; r.className = "msg-ko small"; r.textContent = "Refusé : " + (e.code || e.message); }
     }));
+  }
+
+  // Prix modulables : enregistrés dans config/tarifs, appliqués à chaque ouverture de l'appli (sans republier)
+  function prix(box, t) {
+    const b = CFG.prixBase || {}, cur = { ...b, ...(t || {}) };
+    const L = [["eleve", "🎒 Élève seul"], ["parent", "👨‍👩‍👧 Parent répétiteur (1 enfant)"], ["enfant_sup", "➕ Chaque enfant en plus"], ["suivi", "🎯 Suivi spécifique (par enfant)"]];
+    box.innerHTML = `<div class="card" style="gap:8px"><h2>💲 Prix de base</h2><p class="small muted">En FCFA. Ils s'appliquent à l'appli de chacun à sa prochaine ouverture, sans republier.</p>
+        ${L.map(([k, l]) => `<label class="small">${l}</label><input class="field" inputmode="numeric" data-p="${k}" value="${cur[k] ?? ""}">`).join("")}</div>
+      <div class="card" style="gap:8px"><h2>🔥 Promotion</h2><p class="small muted">Réduction sur toutes les formules (arrondie à 50 F). Mets 0 pour l'arrêter.</p>
+        <label class="small">Réduction (%)</label><input class="field" inputmode="numeric" id="ppct" value="${cur.promo || 0}">
+        <label class="small">Jusqu'au (inclus, vide = sans fin)</label><input class="field" type="date" id="pfin" value="${esc(cur.promoFin || "")}">
+        <label class="small">Message affiché (facultatif)</label><input class="field" id="ptxt" maxlength="80" value="${esc(cur.promoTexte || "")}" placeholder="Ex. rentrée scolaire, Tabaski, 100 premiers inscrits">
+        <div id="papercu"></div></div>
+      <button class="btn hi-btn" id="psave">Enregistrer les prix</button><p class="small" id="pmsg"></p>`;
+    const lire = () => { const r = {}; box.querySelectorAll("[data-p]").forEach((i) => { const v = parseInt(i.value.replace(/\D/g, ""), 10); if (Number.isFinite(v)) r[i.dataset.p] = v; });
+      r.promo = Math.min(90, Math.max(0, parseInt(document.getElementById("ppct").value.replace(/\D/g, ""), 10) || 0)); r.promoFin = document.getElementById("pfin").value || ""; r.promoTexte = document.getElementById("ptxt").value.trim().slice(0, 80); return r; };
+    const apercu = () => { const r = lire(), on = r.promo > 0 && (!r.promoFin || today() <= r.promoFin), px = (v) => (on ? Math.round((v * (100 - r.promo)) / 100 / 50) * 50 : v);
+      document.getElementById("papercu").innerHTML = `<p class="small"><b>Ce que voient les clients${on ? "" : " (sans promo)"} :</b></p><ul class="steps small">${L.map(([k, l]) => `<li>${l} : ${on ? `<s>${fcfa(r[k] || 0)}</s> ` : ""}<b>${fcfa(px(r[k] || 0))}</b></li>`).join("")}</ul>${r.promo > 0 && !on ? `<p class="small msg-ko">La date de fin est passée : la promo ne s'affiche pas.</p>` : ""}`; };
+    box.querySelectorAll("input").forEach((i) => (i.oninput = apercu)); apercu();
+    document.getElementById("psave").onclick = async (ev) => {
+      const r = lire(), m = document.getElementById("pmsg");
+      if (L.some(([k]) => !(r[k] >= 0))) { m.className = "msg-ko small"; m.textContent = "Remplis tous les prix (en chiffres)."; return; }
+      ev.target.disabled = true;
+      try { await Compte.setTarifs(r); appliquerTarifs(r); m.className = "msg-ok small"; m.textContent = "Prix enregistrés ✓ Les clients les verront à leur prochaine ouverture de l'appli."; }
+      catch (e) { m.className = "msg-ko small"; m.textContent = "Refusé : " + (e.code || e.message); }
+      ev.target.disabled = false;
+    };
   }
 
   globalThis.viewAdmin = viewAdmin;

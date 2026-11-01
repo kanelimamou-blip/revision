@@ -790,6 +790,17 @@ async function sha256(s) {
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
+// Prix modulables par l'admin (#admin/prix) : prix de base par formule et promotion en % jusqu'à une date
+function appliquerTarifs(t) {
+  if (!CFG.prixBase) CFG.prixBase = { eleve: CFG.price_fcfa, parent: 1500, enfant_sup: 500, suivi: 2000, ...(CFG.formules || {}) };
+  if (t) CFG.prixBase = { ...CFG.prixBase, ...Object.fromEntries(["eleve", "parent", "enfant_sup", "suivi"].filter((k) => Number.isFinite(t[k])).map((k) => [k, t[k]])) };
+  const pct = t && t.promo > 0 && t.promo < 100 && (!t.promoFin || today() <= t.promoFin) ? t.promo : 0;
+  CFG.promo = pct ? { pct, fin: t.promoFin || "", texte: t.promoTexte || "" } : null;
+  // prix arrondi à 50 F (montant facile à envoyer par Wave ou Orange Money)
+  CFG.formules = Object.fromEntries(Object.entries(CFG.prixBase).map(([k, v]) => [k, pct ? Math.round((v * (100 - pct)) / 100 / 50) * 50 : v]));
+  CFG.price_fcfa = CFG.formules.eleve;
+}
+const promoBandeau = () => CFG.promo ? `<div class="card" style="border:2px solid var(--hi,#f5a623)"><p>🔥 <b>Promo −${CFG.promo.pct} %</b>${CFG.promo.fin ? ` jusqu'au ${new Date(CFG.promo.fin).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : ""}${CFG.promo.texte ? ` : ${esc(CFG.promo.texte)}` : ""}</p><p class="small muted">Élève seul : <s>${fcfa(CFG.prixBase.eleve)}</s> <b>${fcfa(CFG.formules.eleve)}</b></p></div>` : "";
 function viewPremium(reason = "", pay = "wave") {
   if (globalThis.premiumFamille && premiumFamille(reason, pay)) return;
   const total = DATA.questions.length, wa = CFG.whatsapp, wave = CFG.wave_number, om = CFG.om_number;
@@ -801,6 +812,7 @@ function viewPremium(reason = "", pay = "wave") {
   const msg = encodeURIComponent(`Bonjour, j'ai payé ${fcfa(CFG.price_fcfa)} par ${pay === "om" ? "Orange Money" : "Wave"} pour le pack premium Révision BAC BFEM${S.phone ? ` depuis le ${tel}` : ""}. Voici ma capture :`);
   $view.innerHTML = `<h1>Pack premium</h1>
     ${reason ? `<p><b>${esc(reason)}</b></p>` : ""}
+    ${!S.premium ? promoBandeau() : ""}
     ${!S.premium ? `<div class="card"><p>${trialLeft() > 0 ? `🎁 Ton essai gratuit de ${TRIAL_DAYS} jours est en cours : encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b> avec tout débloqué.` : `Ton essai gratuit de ${TRIAL_DAYS} jours est terminé.`}</p></div>` : ""}
     ${S.premium ? `<div class="card"><p class="msg-ok">Ton pack premium est actif. Toutes les questions et les examens blancs sont débloqués.</p><a class="btn" href="#accueil">Réviser</a></div>` : `
     <div class="card">
@@ -1121,6 +1133,6 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
 Promise.all([fetch("data/questions.json", { cache: "no-cache" }).then((r) => r.json()), fetch("data/config.json", { cache: "no-cache" }).then((r) => r.json())])
   .then(async ([d, c]) => { DATA = d; CFG = c; applyProfile(await Compte.start().catch(() => null));
     // tarifs réglés par l'admin dans l'appli (sans republier) : élève seul, parent, enfant en plus, suivi spécifique
-    const t = await Compte.getTarifs().catch(() => null); if (t) { CFG.formules = { ...(CFG.formules || {}), ...t }; if (t.eleve) CFG.price_fcfa = t.eleve; }
+    appliquerTarifs(await Compte.getTarifs().catch(() => null));
     render(); suivrePremium(); })
   .catch(() => { $view.innerHTML = `<div class="card"><p>Impossible de charger les questions. Vérifie ta connexion puis recharge la page.</p></div>`; });
