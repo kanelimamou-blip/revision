@@ -3,6 +3,7 @@
 const $view = document.getElementById("view");
 const LETTERS = "ABCD";
 const QUIZ_LEN = 20, EXAM_LEN = 30, EXAM_MIN = 30;
+const quizLen = () => (globalThis.isKid && isKid() ? kidQuizLen : QUIZ_LEN); // séries plus courtes du CE1 au CM2
 let DATA = null, CFG = null, timer = null;
 
 const store = {
@@ -276,6 +277,7 @@ function suite() {
   return m ? [m[1], m[2]] : ["#challenge", "Le challenge du jour"];
 }
 function viewHome() {
+  if (globalThis.isKid && isKid()) return kidHome();
   const ex = examOf();
   const days = ex ? Math.max(0, Math.ceil((new Date(ex[1]) - new Date(today())) / 864e5)) : 0;
   const answered = Object.values(S.stats).reduce((n, s) => n + s.ok + s.ko, 0);
@@ -329,19 +331,22 @@ const srcLine = (q) => {
   return `<p class="src">✍️ Question de l'équipe Révision, d'après le programme officiel${ch ? ` · chapitre « ${esc(ch)} »` : ""} · <a href="#sources/${q.s}">sources</a></p>`;
 };
 function questionBlock(q) {
-  return `${q.src ? `<p class="tag-src">${esc(q.src)}</p>` : ""}<p class="q">${esc(q.q)}</p><div class="choices">${q.c.map((c, i) =>
+  return `${q.src ? `<p class="tag-src">${esc(q.src)}</p>` : ""}${globalThis.isKid && isKid() ? kidSpeakBtn() : ""}<p class="q">${esc(q.q)}</p><div class="choices">${q.c.map((c, i) =>
     `<button class="choice" data-i="${i}"><span class="l">${LETTERS[i]}</span><span>${esc(c)}</span></button>`).join("")}</div>
     <div class="expl" hidden></div>`;
 }
 function bindQuestion(root, q, done, showExpl = true) {
+  const kid = globalThis.isKid && isKid();
+  if (kid) kidBindSpeak(root, q);
   root.querySelectorAll(".choice").forEach((b) => b.onclick = () => {
     const i = +b.dataset.i, ok = i === q.a;
     root.querySelectorAll(".choice").forEach((x) => { x.disabled = true; if (+x.dataset.i === q.a && showExpl) x.classList.add("ok"); });
     if (showExpl) {
       if (!ok) b.classList.add("ko");
       const ex = root.querySelector(".expl");
-      ex.innerHTML = ok ? `<b class="msg-ok">Bonne réponse !</b> ${esc(q.e)}${srcLine(q)}`
-        : `<b class="msg-ko">Pas tout à fait.</b><br>Tu as répondu : <s>${esc(q.c[i])}</s><br>La bonne réponse est <b>${LETTERS[q.a]} : ${esc(q.c[q.a])}</b>
+      if (kid && ok) kidPop(b);
+      ex.innerHTML = ok ? `<b class="msg-ok">${kid ? kidCheer(true) : "Bonne réponse !"}</b> ${esc(q.e)}${srcLine(q)}`
+        : `<b class="msg-ko">${kid ? kidCheer(false) : "Pas tout à fait."}</b><br>Tu as répondu : <s>${esc(q.c[i])}</s><br>La bonne réponse est <b>${LETTERS[q.a]} : ${esc(q.c[q.a])}</b>
           <p><b>Pourquoi :</b> ${esc(q.e)}</p><p class="small muted">Cette question est gardée dans « Mes erreurs » pour la refaire plus tard.</p>${srcLine(q)}`;
       ex.hidden = false;
     } else b.classList.add("ok");
@@ -384,8 +389,8 @@ function runQuiz(title, qs, back, { exam = false, duo = null, solo = false, onEn
       return `<div class="card"><p class="small muted">${esc(subjName(q.s))}</p><p><b>${esc(q.q)}</b></p>
         <p class="${a && a.ok ? "msg-ok" : "msg-ko"}">${a ? (a.ok ? "✓ " : "✗ Ta réponse : " + esc(q.c[a.i]) + " · ") : "Sans réponse · "}Bonne réponse : ${esc(q.c[q.a])}</p>
         <p class="small muted">${esc(q.e)}</p>${srcLine(q)}</div>`; }).join("")}</div>` : "";
-    $view.innerHTML = `<div class="card" style="text-align:center"><p class="muted">${esc(title)}</p><p class="score">${note} / 20</p>
-      <p>${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} sur ${total}</p><p><b>${mot}</b></p></div>
+    $view.innerHTML = `<div class="card" style="text-align:center"><p class="muted">${esc(title)}</p>${globalThis.isKid && isKid() ? kidScore(score, total) : `<p class="score">${note} / 20</p>
+      <p>${score} bonne${score > 1 ? "s" : ""} réponse${score > 1 ? "s" : ""} sur ${total}</p><p><b>${mot}</b></p>`}</div>
       ${!isPremium() ? `<div class="card"><p>Il y a encore beaucoup de questions dans cette matière, avec l'examen blanc chronométré.</p><a class="btn hi-btn" href="#premium">Débloquer tout pour ${fcfa(CFG.price_fcfa)}</a></div>` : ""}
       ${duo ? `<div class="card"><h2>Classement du groupe ${esc(duo)}</h2><div id="board"><p class="small muted">Chargement du classement…</p></div></div>
         <a class="btn hi-btn" href="https://wa.me/?text=${encodeURIComponent(`Session de groupe ${duo} (${S.level}) : j'ai eu ${note}/20 (${score}/${total}). À toi ! ${duoLink(duo)}`)}" target="_blank" rel="noopener">Envoyer ma note au groupe sur WhatsApp</a>` : ""}
@@ -400,6 +405,7 @@ function runQuiz(title, qs, back, { exam = false, duo = null, solo = false, onEn
 
 // Avant chaque QCM ou exercice, l'élève choisit : avec support (corrigé après chaque réponse) ou tout seul (corrigé à la fin)
 function chooseMode(title, sub, start) {
+  if (globalThis.isKid && isKid()) return start(false); // enfants : toujours avec le corrigé après chaque réponse
   $view.innerHTML = `<div class="card"><h1>${esc(title)}</h1><p class="muted">${esc(sub)}</p>
     <h2>Comment veux-tu travailler ?</h2>
     <button class="btn" id="m-help">🧑‍🏫 Avec support<br><span class="small">Corrigé et explication après chaque réponse</span></button>
@@ -421,10 +427,10 @@ function viewQuiz(arg = "") {
   }
   const ch = theme !== undefined && theme !== "" ? Number(theme) : null;
   if (ch !== null) {
-    const qs = mixQuestions(sid, qsOf(sid).filter((q) => q.ch === ch && open(q)), QUIZ_LEN, [ch, titres[ch]]);
+    const qs = mixQuestions(sid, qsOf(sid).filter((q) => q.ch === ch && open(q)), quizLen(), [ch, titres[ch]]);
     return chooseMode(`QCM · ${titres[ch] || s.name}`, `${qs.length} questions sur ce chapitre`, (solo) => { markDone("qcm"); runQuiz(`${S.level} · ${titres[ch] || s.name}`, qs, `#quiz/${sid}/themes`, { solo }); });
   }
-  const qs = mixQuestions(sid, qsOf(sid).filter(open), QUIZ_LEN);
+  const qs = mixQuestions(sid, qsOf(sid).filter(open), quizLen());
   chooseMode(`QCM · ${s.name}`, `${qs.length} questions de ${S.level}`, (solo) => { markDone("qcm"); runQuiz(`${S.level} · ${s.name}`, qs, "#qcm-list", { solo }); });
 }
 function viewExam() {
@@ -1114,6 +1120,7 @@ function render() {
   if (tab === "admin" && globalThis.viewAdmin) { viewAdmin(arg); window.scrollTo(0, 0); return; }
   if (S.suspended) { $view.innerHTML = `<div class="card"><h1>Compte suspendu</h1><p>Ton compte est suspendu pour le moment. Contacte-nous pour le réactiver.</p>${CFG.wave_number || CFG.whatsapp ? `<p class="small muted">WhatsApp : ${esc(CFG.wave_number || CFG.whatsapp)}</p>` : ""}</div>`; return; }
   document.getElementById("exam-tag").textContent = S.level || "";
+  document.body.classList.toggle("kid", !!(globalThis.isKid && isKid())); // mode enfant CE1–CM2 (enfant.js)
   // mode parent répétiteur (famille.js) : choix du mode, espace parent, bandeau de l'enfant en cours
   if (globalThis.familleAvant && familleAvant(tab, arg)) { window.scrollTo(0, 0); return; }
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
@@ -1124,6 +1131,7 @@ function render() {
   if (tab === "accueil" && arg === "organiser") { viewOrganiser(); window.scrollTo(0, 0); return; }
   ({ comment: () => viewComment(), sources: () => viewSources(arg), bienvenue: viewBienvenue, classe: viewLevel, partager: viewPartager, annales: viewAnnales, exercices: viewExercices, "qcm-list": viewQcmList, devoir: () => viewDevoir(arg), duo: () => viewDuo(arg), challenge: viewChallenge, fiches: viewFiches, fiche: () => viewFiche(arg), assistant: () => viewAssistant(arg), agenda: () => viewAgenda(arg), notions: () => viewNotions(arg), notion: () => viewNotion(arg), sujet: () => viewGuided(arg), quiz: () => viewQuiz(arg), examen: viewExam, vie: () => viewVie(arg), outils: () => viewOutils(arg), erreurs: viewErrors, progres: viewProgress, premium: () => viewPremium() }[tab] || viewHome)();
   window.scrollTo(0, 0);
+  if (globalThis.kidApres) kidApres();
 }
 window.addEventListener("hashchange", render);
 
