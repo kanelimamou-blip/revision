@@ -10,7 +10,7 @@ const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); r
 const daysUntil = (iso) => Math.round((new Date(iso + "T12:00") - new Date(isoDay(new Date()) + "T12:00")) / 864e5);
 const quand = (n) => n < 0 ? `en retard de ${-n} jour${n < -1 ? "s" : ""}` : n === 0 ? "aujourd'hui" : n === 1 ? "demain" : n === 2 ? "après-demain" : `dans ${n} jours`;
 const hh = (t) => t.replace(/^0(?=\d)/, "").replace(":", " h ").replace(/ h 00$/, " h");
-const slotName = (c) => c.sid ? subjName(c.sid) : c.nom;
+const slotName = (c) => c.lib || (c.sid ? subjName(c.sid) : c.nom);
 const slotsOf = (day) => ((S.edt || {})[day] || []).slice().sort((a, b) => a.d.localeCompare(b.d));
 
 // Chapitre à revoir en priorité dans une matière : celui où l'élève a le plus d'erreurs, sinon le moins travaillé

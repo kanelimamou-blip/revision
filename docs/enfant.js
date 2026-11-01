@@ -52,10 +52,11 @@
       <div class="card kid-hello"><div class="kid-mascotte">🦁</div><div><h1>${nom ? `Bonjour ${esc(nom)} !` : "Bonjour !"}</h1>
         <p>Tu as gagné <b>${etoiles().toLocaleString("fr-FR")} ⭐</b> · Série : <b>${streak()} 🔥</b></p></div></div>
       <a class="kid-go" href="${href}">▶️ <span>On continue !<small>${esc(label)}</small></span></a>
+      ${typeof planSoirCard === "function" ? planSoirCard(true) : ""}
       <h2 class="kid-h">Mes matières</h2>
       <div class="kid-grille">${subs.map((s) => { const [i, c] = ico(s.id); return tuile(`#matiere/${s.id}`, i, esc(s.name), c); }).join("")}</div>
       <h2 class="kid-h">Je m'entraîne</h2>
-      <div class="kid-grille">${tuile("#annales", "📝", examOf() ? `Sujets du ${examOf()[0]}` : "Devoirs types")}${tuile("#exercices", "✏️", "Exercices")}${tuile("#erreurs", "🔁", "Mes erreurs")}${tuile("#aide", "🆘", "Je bloque")}</div>
+      <div class="kid-grille">${tuile("#annales", "📝", examOf() ? `Sujets du ${examOf()[0]}` : "Devoirs types")}${tuile("#exercices", "✏️", "Exercices")}${tuile("#erreurs", "🔁", "Mes erreurs")}${tuile("#aide", "🆘", "Je bloque")}${tuile("#pilotage", "📅", "Mon emploi du temps")}${tuile("#progres", "📈", "Mes progrès")}</div>
       ${daily ? `<div class="card" id="daily"><h2>❓ La question du jour</h2><p class="small muted">${esc(subjName(daily.s))}</p>${questionBlock(daily)}</div>` : ""}
       ${globalThis.legalFooter ? legalFooter() : ""}`;
     if (daily) bindQuestion($view.querySelector("#daily"), daily, () => {});
