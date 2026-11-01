@@ -1109,7 +1109,7 @@ function applyProfile(p) {
 
 function render() {
   clearInterval(timer);
-  document.body.classList.remove("ins-mode");
+  document.body.classList.remove("ins-mode", "enq-mode");
   if (location.hash.startsWith("#installer") && globalThis.viewInstaller) return viewInstaller();
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (location.hash.startsWith("#legal") && globalThis.viewLegal) return viewLegal(location.hash.split("/")[1]);

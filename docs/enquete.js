@@ -9,7 +9,10 @@
   const BUDGET = ["Rien", "Moins de 10 000 F", "10 000 à 25 000 F", "25 000 à 50 000 F", "Plus de 50 000 F"];
   const DIFF = ["Maths", "Français", "Sciences", "Anglais", "Méthode de travail", "Préparer un examen (CFEE, BFEM, BAC)", "Je n'ai pas le temps de suivre"];
   // prix proposés dans le questionnaire (à tester auprès des parents ; les prix de l'appli se règlent dans l'admin, onglet 💲 Prix)
-  const T = () => ({ eleve: 1000, parent: 3000, suivi: 5000 });
+  // ils se règlent dans l'admin (onglet 📋 Enquête), enregistrés dans config/enquete
+  const DEF = { eleve: 1000, parent: 3000, suivi: 5000 };
+  let PRIX = null;
+  const T = () => ({ ...DEF, ...(PRIX || {}) });
   const radio = (n, opts) => opts.map((o, i) => `<label class="row chk"><span><input type="radio" name="${n}" value="${esc(o)}"${i === -1 ? " checked" : ""}> ${esc(o)}</span></label>`).join("");
   const cases = (n, opts) => opts.map((o) => `<label class="chip-c"><input type="checkbox" name="${n}" value="${esc(o)}"> ${esc(o)}</label>`).join("");
   const val = (f, n) => (f.querySelector(`[name="${n}"]:checked`) || {}).value || "";
@@ -18,6 +21,7 @@
   globalThis.viewEnquete = (src) => {
     src = String(src || "lien").replace(/[^\w-]/g, "").slice(0, 40) || "lien";
     document.getElementById("exam-tag").textContent = "";
+    document.body.classList.add("enq-mode"); // le questionnaire seul : pas d'onglets ni de menu
     if (S.enqueteFaite) return merci(true);
     const t = T();
     $view.innerHTML = `<div class="card enq-hero"><h1>👋 2 minutes pour la réussite de vos enfants</h1>
@@ -32,10 +36,24 @@
         <h2>6. Un répétiteur sur téléphone vous intéresserait-il ?</h2>
         <p class="small muted">Leçons, exercices corrigés et devoirs types de leur classe, disponibles le soir et le week-end, avec le suivi des progrès.</p>
         ${radio("interet", ["Oui", "Peut-être, je veux d'abord essayer", "Non"])}
+        <div class="enq-plus"><h2>💡 Ce que l'appli apporte à votre enfant</h2>
+          <ul class="steps">
+            <li><b>Tout le programme officiel sénégalais</b>, du CE1 à la Terminale, chapitre par chapitre : la leçon en court, puis des questions corrigées et expliquées.</li>
+            <li><b>Des exercices corrigés étape par étape</b> et des devoirs types, avec des sujets types du CFEE, du BFEM et du BAC.</li>
+            <li><b>Des exercices nouveaux à chaque fois</b> : l'enfant ne peut pas apprendre les réponses par cœur.</li>
+            <li><b>« Je bloque »</b> : un indice, puis la méthode, puis un exercice semblable corrigé, au lieu de donner directement la réponse.</li>
+            <li><b>Pour les petits</b> (CE1 à CM2) : gros boutons, leçons lues à voix haute, étoiles et jeux sur le programme de la classe.</li>
+            <li><b>Pour vous, parent</b> : vous voyez ses progrès et ses erreurs, vous lui donnez des missions, et l'appli suit l'emploi du temps de l'école.</li></ul>
+          <h2>🤝 La différence avec un répétiteur classique</h2>
+          <ul class="steps">
+            <li><b>Disponible tous les jours, à toute heure</b>, même le soir et le week-end, et même sans connexion une fois chargée.</li>
+            <li><b>Beaucoup moins cher</b> qu'un répétiteur chaque mois, et un seul paiement couvre toutes les matières.</li>
+            <li><b>Vous savez ce qui a été travaillé</b> : chaque séance et chaque note sont gardées.</li>
+            <li><b>Ce n'est pas l'un ou l'autre</b> : l'appli peut aussi aider le répétiteur. Et avec la formule « suivi personnalisé », une personne de l'équipe suit votre enfant avec l'appli.</li></ul></div>
         <h2>7. Quelle formule vous conviendrait ?</h2>
-        <label class="row chk"><span><input type="radio" name="formule" value="eleve"> 🎒 <b>L'enfant révise seul</b> : ${fcfa(t.eleve)}</span></label>
-        <label class="row chk"><span><input type="radio" name="formule" value="parent"> 👨‍👩‍👧 <b>Je suis son répétiteur</b> avec l'espace parent (missions, séances, suivi) : ${fcfa(t.parent)}</span></label>
-        <label class="row chk"><span><input type="radio" name="formule" value="suivi"> 🧑‍🏫 <b>Un suivi personnalisé</b> par notre équipe, avec l'appli : ${fcfa(t.suivi)}</span></label>
+        <label class="row chk"><span><input type="radio" name="formule" value="eleve"> 🎒 <b>L'enfant révise seul</b> : <b data-px="eleve">${fcfa(t.eleve)}</b></span></label>
+        <label class="row chk"><span><input type="radio" name="formule" value="parent"> 👨‍👩‍👧 <b>Je suis son répétiteur</b> avec l'espace parent (missions, séances, suivi) : <b data-px="parent">${fcfa(t.parent)}</b></span></label>
+        <label class="row chk"><span><input type="radio" name="formule" value="suivi"> 🧑‍🏫 <b>Un suivi personnalisé</b> par notre équipe, avec l'appli : <b data-px="suivi">${fcfa(t.suivi)}</b></span></label>
         <label class="row chk"><span><input type="radio" name="formule" value="aucune"> Aucune pour le moment</span></label>
         <h2>8. Voulez-vous être recontacté ?</h2>
         <label class="row chk"><span><input type="checkbox" name="contact" id="contact"> Oui, j'accepte d'être contacté par l'équipe Révision au sujet de l'appli</span></label>
@@ -44,6 +62,7 @@
         <h2>Une remarque ? (facultatif)</h2><textarea class="field" name="remarque" rows="2" maxlength="500"></textarea>
         <p class="small" id="enq-msg"></p>
         <button class="btn" type="submit">Envoyer mes réponses</button></form>`;
+    if (!PRIX) Compte.getEnquetePrix().then((p) => { if (!p) return; PRIX = p; const t2 = T(); $view.querySelectorAll("[data-px]").forEach((b) => (b.textContent = fcfa(t2[b.dataset.px] || 0))); }).catch(() => {});
     const f = $view.querySelector("#enq");
     f.querySelector("#contact").onchange = (e) => (f.querySelector("#coord").hidden = !e.target.checked);
     f.onsubmit = async (e) => {
@@ -71,8 +90,14 @@
     const n = rs.length, cnt = (k, multi) => { const o = {}; rs.forEach((r) => (multi ? r[k] || [] : [r[k] || "—"]).forEach((x) => (o[x] = (o[x] || 0) + 1))); return Object.entries(o).sort((a, b) => b[1] - a[1]); };
     const bloc = (titre, k, multi) => `<div class="card"><h2>${titre}</h2>${cnt(k, multi).map(([x, c]) => `<div class="row"><span>${esc(x)}</span><b>${c} · ${n ? Math.round((100 * c) / n) : 0} %</b></div>`).join("") || "<p class='muted'>Aucune réponse.</p>"}</div>`;
     const NOMS = { eleve: "🎒 Élève seul", parent: "👨‍👩‍👧 Parent répétiteur", suivi: "🧑‍🏫 Suivi par l'équipe", aucune: "Aucune" };
-    const lien = location.origin + location.pathname + "#enquete/bureau";
-    box.innerHTML = `<div class="card"><h2>📋 Questionnaire parents</h2><p><b>${n}</b> réponse${n > 1 ? "s" : ""} · ${rs.filter((r) => r.contact).length} à recontacter</p>
+    const lien = location.origin + location.pathname + "#enquete/bureau"; // le QR code mène à #enquete/qr
+    const px = { ...DEF, ...((await Compte.getEnquetePrix().catch(() => null)) || {}) };
+    box.innerHTML = `<div class="card" style="text-align:center"><h2>📷 QR code du questionnaire</h2><img src="icons/qr-enquete.png" alt="QR code du questionnaire" style="width:100%;max-width:300px;background:#fff;padding:10px;border-radius:12px">
+        <p class="small muted">Le parent vise le code avec l'appareil photo : il arrive directement sur le questionnaire, qu'il ait un compte ou non, sans les menus de l'appli.</p></div>
+      <div class="card" style="gap:8px"><h2>💲 Prix proposés dans le questionnaire</h2><p class="small muted">En FCFA. Ils ne changent que le questionnaire, pas les prix de l'appli (onglet 💲 Prix).</p>
+        ${[["eleve", "🎒 L'enfant révise seul"], ["parent", "👨‍👩‍👧 Le parent est le répétiteur"], ["suivi", "🧑‍🏫 Suivi personnalisé par l'équipe"]].map(([k, l]) => `<label class="small">${l}</label><input class="field" inputmode="numeric" data-ep="${k}" value="${px[k]}">`).join("")}
+        <button class="btn" id="epsave">Enregistrer ces prix</button><p class="small" id="epmsg"></p></div>
+      <div class="card"><h2>📋 Questionnaire parents</h2><p><b>${n}</b> réponse${n > 1 ? "s" : ""} · ${rs.filter((r) => r.contact).length} à recontacter</p>
       <p class="small">Lien à envoyer (le mot après « enquete/ » dit d'où vient la réponse : bureau, whatsapp, ecole…) :</p><p><code>${esc(lien)}</code></p>
       <button class="btn alt small" id="cp">Copier le lien</button></div>
       ${bloc("Intérêt pour un répétiteur sur téléphone", "interet")}
@@ -80,6 +105,10 @@
       ${bloc("Aide actuelle", "repet")}${bloc("Budget mensuel actuel", "budget")}${bloc("Classes", "classes", true)}${bloc("Difficultés", "diff", true)}${bloc("Source", "src")}
       <div class="card"><h2>À recontacter</h2>${rs.filter((r) => r.contact).map((r) => `<p><b>${esc(r.prenom || "—")}</b> · ${esc(r.tel)} · ${esc((r.classes || []).join(", "))} · ${esc(NOMS[r.formule] || "")}${r.remarque ? `<br><span class="small muted">« ${esc(r.remarque)} »</span>` : ""}<br><span class="small muted">${r.at ? r.at.toLocaleString("fr-FR") : ""}</span></p>`).join("") || "<p class='muted'>Personne pour le moment.</p>"}</div>
       <div class="card"><h2>Remarques</h2>${rs.filter((r) => r.remarque && !r.contact).map((r) => `<p class="small">« ${esc(r.remarque)} »</p>`).join("") || "<p class='muted'>Aucune.</p>"}</div>`;
+    box.querySelector("#epsave").onclick = async (ev) => { const r = {}, m = box.querySelector("#epmsg");
+      box.querySelectorAll("[data-ep]").forEach((i) => (r[i.dataset.ep] = parseInt(i.value.replace(/\D/g, ""), 10)));
+      if (Object.values(r).some((v) => !(v >= 0))) { m.textContent = "Remplis les trois prix en chiffres."; return; }
+      ev.target.disabled = true; try { await Compte.setEnquetePrix(r); PRIX = r; m.textContent = "Prix enregistrés ✓ Le questionnaire les affiche dès maintenant."; } catch (e) { m.textContent = "Refusé : " + (e.code || e.message); } ev.target.disabled = false; };
     box.querySelector("#cp").onclick = () => navigator.clipboard && navigator.clipboard.writeText(lien).then(() => (box.querySelector("#cp").textContent = "Copié ✔"));
   };
 })();

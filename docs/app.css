@@ -258,3 +258,6 @@ body.kid{font-size:18px}
 .chip-c{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:999px;padding:8px 12px;background:var(--surface);cursor:pointer}
 .chip-c:has(input:checked){border-color:var(--accent,#2563eb);background:#e8efff;font-weight:700}
 #enq textarea{width:100%;box-sizing:border-box}
+body.enq-mode .tabs,body.enq-mode .top-r{display:none}body.enq-mode main{padding-bottom:24px}
+.enq-plus{background:#f3f7ff;border-radius:14px;padding:4px 14px 10px;margin:14px 0;border:1.5px solid #c9d8ff}
+body.enq-mode .brand,body.enq-mode .tag{pointer-events:none}
