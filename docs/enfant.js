@@ -15,11 +15,21 @@
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(txt).replace(/___/g, "…").replace(/×/g, " fois ").replace(/÷/g, " divisé par ").replace(/−/g, " moins "));
     u.lang = "fr-FR"; u.rate = petit() ? 0.85 : 0.95; const v = voix(); if (v) u.voice = v;
-    speechSynthesis.speak(u); return true;
+    setTimeout(() => { speechSynthesis.speak(u); speechSynthesis.resume(); }, 80); return true;
   };
+  if (window.speechSynthesis) { speechSynthesis.getVoices(); if (speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices()); }
   globalThis.kidParler = parler;
   globalThis.kidSpeakBtn = () => (window.speechSynthesis ? `<button class="kid-voix" type="button" aria-label="Écouter">🔊 Écouter</button>` : "");
-  globalThis.kidBindSpeak = (root, q) => { const b = root.querySelector(".kid-voix"); if (b) b.onclick = () => parler(`${q.q}. ${q.c.map((c, i) => `${LETTERS[i]} : ${c}`).join(". ")}`); };
+  // un seul écouteur pour tous les boutons 🔊 (QCM, question du jour, exercices et sujets guidés)
+  globalThis.kidBindSpeak = () => {};
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest(".kid-voix"); if (!b) return;
+    const card = b.closest(".card") || $view, prev = card.previousElementSibling;
+    const ctx = prev && prev.classList.contains("card") && !prev.querySelector(".choice") ? prev.innerText.replace(/\n+/g, ". ") + ". " : "";
+    const q = (card.querySelector(".q") || {}).innerText || "";
+    const ch = [...card.querySelectorAll(".choice")].map((c) => { const l = c.querySelector(".l"), t = c.innerText.replace(l ? l.innerText : "", "").trim(); return `${l ? l.innerText : ""} : ${t}`; }).join(". ");
+    if (!parler(`${ctx}${q}. ${ch}`)) alert("La lecture à voix haute n'est pas disponible sur ce téléphone.");
+  });
 
   // ---------- encouragements
   const BRAVO = ["Bravo ! 🎉", "Super ! ⭐", "Génial ! 🥳", "Excellent ! 🏆", "Tu es fort ! 💪", "Bien joué ! 👏", "Champion ! 🦁"];
