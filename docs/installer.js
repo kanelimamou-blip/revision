@@ -111,9 +111,9 @@ if (location.hash.startsWith("#installer")) viewInstaller();
 // ---------- « Comment ça marche » : très court, montré une fois après le choix de la classe, puis depuis Premium et Partager
 function viewComment() {
   const lv = S.level, subs = subjectsOf(lv), ids = new Set(subs.map((s) => s.id));
-  const nq = DATA.questions.filter((q) => ids.has(q.s)).length;
+  const nq = DATA.questions.filter((q) => ids.has(q.s)).length + (typeof genN === "function" ? subs.reduce((a, s) => a + genN(s), 0) : 0);
   const nn = subs.reduce((a, s) => a + ((DATA.notions || {})[s.id] || []).length, 0);
-  const ns = annalesOf(lv).length + exercisesOf(lv).length;
+  const ns = annalesOf(lv).length + exercisesOf(lv).length + (typeof genExosOf === "function" ? genExosOf(lv).length : 0);
   const nf = subs.reduce((a, s) => a + ((DATA.formules || {})[s.id] || []).reduce((b, c) => b + c.f.length, 0), 0);
   const nb = (x) => x.toLocaleString("fr-FR");
   const prix = typeof fcfa === "function" ? fcfa(CFG.price_fcfa) : "1 000 FCFA";

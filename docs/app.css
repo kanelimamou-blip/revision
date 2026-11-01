@@ -223,3 +223,31 @@ body.kid{font-size:18px}
 .plan-l>div:first-child{display:flex;flex-direction:column}
 .plan-l.fait{opacity:.6}
 .tbl{overflow-x:auto}.tbl table{width:100%;border-collapse:collapse;font-size:.92rem}.tbl th,.tbl td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+/* espace Jeux (jeux.js) */
+.kid-jeux{background:linear-gradient(135deg,#ffb703,#fb8500);color:#1b2333}
+.jeu-tuile small{font-size:.78rem;color:#4a5568;font-weight:500}
+.jeu-tuile .jeu-best{color:#b45309;font-weight:700}
+.jeu-haut{display:flex;align-items:center;gap:10px;margin:6px 0 10px;font-size:1.1rem}
+.jeu-haut b{flex:1}.btn.petit{padding:6px 10px;min-height:0}
+.jeu-chrono{font-weight:800;background:#eef2ff;border-radius:12px;padding:4px 10px}
+.jeu-chrono.urgent{background:#fee2e2;color:#b91c1c;animation:pulse 1s infinite}
+.jeu-score{font-weight:800;background:#fef3c7;border-radius:12px;padding:4px 10px}
+.jeu-q{font-size:1.6rem;font-weight:800;text-align:center;margin:12px 0}
+.jeu-choix{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jeu-choix .choice,.jeu-ordre .choice{font-size:1.25rem;font-weight:700;justify-content:center;text-align:center;min-height:64px}
+.jeu-ordre{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}.jeu-ordre .choice{min-width:40%}
+.jeu-ordre .ok{background:#d6f2dc;border-color:#22c55e}.jeu-ordre .ko{background:#fee2e2;border-color:#ef4444}
+.jeu-vf{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.jeu-v,.jeu-f{font-size:1.4rem;font-weight:800;border:0;border-radius:18px;padding:22px 8px;color:#fff}
+.jeu-v{background:#16a34a}.jeu-f{background:#dc2626}
+.jeu-ecoute{display:block;width:100%;font-size:1.5rem;font-weight:800;border:0;border-radius:18px;padding:22px;background:#2563eb;color:#fff;margin:8px 0}
+.memory{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mem{min-height:84px;border-radius:14px;border:0;background:#6366f1;color:transparent;font-weight:700;font-size:.9rem;padding:6px;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.mem span{visibility:hidden}.mem.vu{background:#fff;color:#1b2333;border:2px solid #6366f1}.mem.vu span{visibility:visible}
+.mem.ok{background:#d6f2dc;border-color:#22c55e}
+.jeu-flash{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:5rem;font-weight:900;pointer-events:none;animation:jf .45s ease-out forwards;z-index:99}
+.jeu-flash.ok{color:#16a34a}.jeu-flash.ko{color:#dc2626}
+@keyframes jf{from{opacity:1;transform:translate(-50%,-50%) scale(.6)}to{opacity:0;transform:translate(-50%,-70%) scale(1.3)}}
+@keyframes pulse{50%{opacity:.6}}
+.jeu-fin{text-align:center}.jeu-record{font-size:1.3rem;font-weight:800;color:#b45309}
+.jeu-chrono:empty{display:none}
