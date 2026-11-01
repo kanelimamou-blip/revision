@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-11-01p", "✍️ 41 exercices type devoir en 5e", ["41 nouveaux exercices guidés en 5e, un par chapitre (deux en maths) : soldes, héritage du troupeau, empires du Ghana, du Mali et songhaï, caravanes…", "Rédigés pour l'appli (ce ne sont pas des sujets officiels). La 4e suit."]],
     ["2026-11-01o", "✍️ 43 exercices type devoir en 6e", ["43 nouveaux exercices guidés en 6e, un par chapitre (deux en maths), avec des situations de la vie courante : marché, champ, voyage, conte…", "Rédigés pour l'appli (ce ne sont pas des sujets officiels). La 5e suit."]],
     ["2026-11-01n", "🧭 Fiches méthode en 3e", ["Chaque chapitre de 3e a maintenant une fiche « Méthode et pièges » orientée BFEM : étapes, erreurs fréquentes, deux exemples corrigés et un exercice guidé.", "Toutes les classes de la 6e à la 3e ont leurs fiches méthode."]],
     ["2026-11-01m", "🧭 Fiches méthode en 4e", ["Chaque chapitre de 4e a maintenant une fiche « Méthode et pièges » : étapes, erreurs fréquentes, deux exemples corrigés et un exercice guidé.", "La 3e suit."]],
