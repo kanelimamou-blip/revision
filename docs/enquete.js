@@ -49,7 +49,18 @@
             <li><b>Disponible tous les jours, à toute heure</b>, même le soir et le week-end, et même sans connexion une fois chargée.</li>
             <li><b>Beaucoup moins cher</b> qu'un répétiteur chaque mois, et un seul paiement couvre toutes les matières.</li>
             <li><b>Vous savez ce qui a été travaillé</b> : chaque séance et chaque note sont gardées.</li>
-            <li><b>Ce n'est pas l'un ou l'autre</b> : l'appli peut aussi aider le répétiteur. Et avec la formule « suivi personnalisé », une personne de l'équipe suit votre enfant avec l'appli.</li></ul></div>
+            <li><b>Ce n'est pas l'un ou l'autre</b> : l'appli peut aussi aider le répétiteur. Et avec la formule « suivi personnalisé », une personne de l'équipe suit votre enfant avec l'appli.</li></ul>
+          <h2>📚 D'où vient le contenu</h2>
+          <ul class="steps">
+            <li>Il suit le <b>programme officiel du ministère de l'Éducation nationale du Sénégal</b>, classe par classe et chapitre par chapitre.</li>
+            <li>Il utilise uniquement des <b>documents officiels et publics</b>, comme les programmes et les sujets d'examens publiés. Aucun document privé ou payant n'est copié.</li>
+            <li>Les exercices et sujets types sont <b>rédigés pour l'appli</b> sur le modèle des examens, et ils sont présentés comme tels. Les sources sont indiquées dans l'appli.</li></ul>
+          <h2>🔒 Vos données sont protégées</h2>
+          <ul class="steps">
+            <li>Le compte se crée avec <b>un numéro et un code secret</b>. Chacun ne voit que ses propres données, et le parent voit seulement les enfants qu'il a reliés.</li>
+            <li>Les données sont gardées chez <b>Google Firebase</b>, un service sécurisé, sur des serveurs en Europe.</li>
+            <li><b>Pas de publicité</b> dans l'appli. Les données ne sont <b>ni vendues ni partagées</b>.</li>
+            <li>Il suffit de nous écrire pour faire <b>supprimer</b> un compte et ses données.</li></ul></div>
         <h2>7. Quelle formule vous conviendrait ?</h2>
         <label class="row chk"><span><input type="radio" name="formule" value="eleve"> 🎒 <b>L'enfant révise seul</b> : <b data-px="eleve">${fcfa(t.eleve)}</b></span></label>
         <label class="row chk"><span><input type="radio" name="formule" value="parent"> 👨‍👩‍👧 <b>Je suis son répétiteur</b> avec l'espace parent (missions, séances, suivi) : <b data-px="parent">${fcfa(t.parent)}</b></span></label>
