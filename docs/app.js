@@ -1114,6 +1114,7 @@ function render() {
   // hors connexion (Firebase injoignable), l'appli reste utilisable en local
   if (location.hash.startsWith("#legal") && globalThis.viewLegal) return viewLegal(location.hash.split("/")[1]);
   if (location.hash.startsWith("#accord/") && globalThis.viewAccord) return viewAccord(location.hash.split("/")[1]);
+  if (location.hash.startsWith("#enquete") && globalThis.viewEnquete) return viewEnquete(location.hash.split("/")[1]); // questionnaire parents, sans compte
   if (Compte.enabled && Compte.ready && !Compte.user) return viewLogin();
   if (Compte.enabled && Compte.user && !S.phone && !Compte.isAdmin()) return viewTel();
   const [tab, ...rest] = (location.hash.slice(1) || "accueil").split("/"), arg = rest.length ? rest.join("/") : undefined;

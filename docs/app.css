@@ -251,3 +251,10 @@ body.kid{font-size:18px}
 @keyframes pulse{50%{opacity:.6}}
 .jeu-fin{text-align:center}.jeu-record{font-size:1.3rem;font-weight:800;color:#b45309}
 .jeu-chrono:empty{display:none}
+/* questionnaire parents (enquete.js) */
+.enq-hero{border:2px solid var(--hi,#f5a623)}
+#enq h2{font-size:1.05rem;margin:18px 0 6px}
+#enq .row.wrap{flex-wrap:wrap;gap:8px;justify-content:flex-start}
+.chip-c{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:999px;padding:8px 12px;background:var(--surface);cursor:pointer}
+.chip-c:has(input:checked){border-color:var(--accent,#2563eb);background:#e8efff;font-weight:700}
+#enq textarea{width:100%;box-sizing:border-box}

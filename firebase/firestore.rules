@@ -141,6 +141,26 @@ service cloud.firestore {
         && request.resource.data.level is string && request.resource.data.level.size() <= 20
         && request.resource.data.at == request.time;
     }
+    // questionnaire parents (#enquete) : n'importe qui peut répondre (sans compte), seul l'admin lit
+    match /enquetes/{id} {
+      allow read, delete: if isAdmin();
+      allow update: if false;
+      allow create: if request.resource.data.keys().hasOnly(['src', 'enfants', 'classes', 'repet', 'budget', 'diff', 'interet', 'formule', 'contact', 'prenom', 'tel', 'remarque', 'uid', 'at'])
+        && request.resource.data.uid == (request.auth != null ? request.auth.uid : null)
+        && request.resource.data.src is string && request.resource.data.src.size() <= 40
+        && request.resource.data.enfants is string && request.resource.data.enfants.size() <= 20
+        && request.resource.data.classes is list && request.resource.data.classes.size() <= 13
+        && request.resource.data.diff is list && request.resource.data.diff.size() <= 8
+        && request.resource.data.repet is string && request.resource.data.repet.size() <= 80
+        && request.resource.data.budget is string && request.resource.data.budget.size() <= 40
+        && request.resource.data.interet is string && request.resource.data.interet.size() <= 60
+        && request.resource.data.formule is string && request.resource.data.formule.size() <= 20
+        && request.resource.data.contact is bool
+        && request.resource.data.prenom is string && request.resource.data.prenom.size() <= 60
+        && request.resource.data.tel is string && request.resource.data.tel.size() <= 20
+        && request.resource.data.remarque is string && request.resource.data.remarque.size() <= 500
+        && request.resource.data.at == request.time;
+    }
     // paiement déclaré dans l'appli : l'élève envoie sa capture, seul l'admin valide ou refuse
     match /paiements/{uid} {
       allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin();

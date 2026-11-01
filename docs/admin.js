@@ -9,9 +9,9 @@
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords", "ventes", "societe", "parents", "prix"].includes(arg) ? arg : "paiements";
+    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords", "ventes", "societe", "parents", "prix", "enquete"].includes(arg) ? arg : "paiements";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["paiements", "💰 Paiements"], ["ventes", "🧾 Ventes"], ["societe", "🏢 Société"], ["prix", "💲 Prix"], ["parents", "👨‍👩‍👧 Modes & parents"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["paiements", "💰 Paiements"], ["ventes", "🧾 Ventes"], ["societe", "🏢 Société"], ["prix", "💲 Prix"], ["enquete", "📋 Enquête"], ["parents", "👨‍👩‍👧 Modes & parents"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
     document.getElementById("reload").onclick = () => { users = errors = pays = accs = ventes = societe = suivis = null; partages = {}; viewAdmin(arg); };
     const box = document.getElementById("adm");
@@ -39,6 +39,7 @@
       try { if (!pays) pays = await Compte.adminPays(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
       return paiements(box);
     }
+    if (onglet === "enquete" && globalThis.enqueteAdmin) return enqueteAdmin(box);
     if (onglet === "prix") { document.getElementById("reload").hidden = true; return prix(box, await Compte.getTarifs().catch(() => null)); }
     if (onglet === "parents") {
       try { if (!users) { users = await Compte.adminUsers(); partages = await Compte.adminDevices().catch(() => ({})); } if (!suivis) suivis = await Compte.adminSuivis().catch(() => []); }
