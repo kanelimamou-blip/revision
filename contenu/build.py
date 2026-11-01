@@ -108,6 +108,8 @@ ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # sans 0/O ni 1/I
 # Réglages de vente (à remplir par Est : numéro Wave et WhatsApp au format 221XXXXXXXXX)
 CONFIG = {
     "price_fcfa": 1000,
+    # formules par mode (modifiables aussi par l'admin dans l'appli, onglet « Modes & parents », sans republier)
+    "formules": {"eleve": 1000, "parent": 1500, "enfant_sup": 500, "suivi": 2000},
     "wave_number": "78 272 19 20",
     # numéro Orange Money (même numéro que Wave tant qu'Est n'en donne pas un autre)
     "om_number": "78 272 19 20",

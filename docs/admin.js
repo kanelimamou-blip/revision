@@ -4,16 +4,16 @@
 (() => {
   const fmt = (d) => (d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "—");
   const ago = (d, j) => d && Date.now() - d.getTime() < j * 864e5;
-  let users = null, errors = null, pays = null, partages = {}, filtre = "", accs = null, ventes = null, societe = null;
+  let suivis = null, users = null, errors = null, pays = null, partages = {}, filtre = "", accs = null, ventes = null, societe = null;
 
   async function viewAdmin(arg) {
     if (!Compte.user) { $view.innerHTML = `<div class="card"><h1>Espace admin</h1><p>Connecte-toi d'abord avec ton compte Google propriétaire.</p></div>`; return; }
     if (!Compte.isAdmin()) { $view.innerHTML = `<div class="card"><h1>Accès refusé</h1><p>Cet espace est réservé au propriétaire de l'appli.</p><a class="btn alt" href="#accueil">Retour à l'accueil</a></div>`; return; }
-    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords", "ventes", "societe"].includes(arg) ? arg : "paiements";
+    const onglet = ["chiffres", "activite", "erreurs", "comptes", "qr", "accords", "ventes", "societe", "parents"].includes(arg) ? arg : "paiements";
     $view.innerHTML = `<h1>Espace admin</h1><p class="small muted">Connecté en tant que ${esc(Compte.user.email)} · identifiant ${esc(Compte.user.uid)}</p>
-      <div class="row onglets">${[["paiements", "💰 Paiements"], ["ventes", "🧾 Ventes"], ["societe", "🏢 Société"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
+      <div class="row onglets">${[["paiements", "💰 Paiements"], ["ventes", "🧾 Ventes"], ["societe", "🏢 Société"], ["parents", "👨‍👩‍👧 Modes & parents"], ["chiffres", "Chiffres"], ["activite", "Nouveautés"], ["comptes", "Comptes"], ["accords", "👪 Accords"], ["erreurs", "Erreurs"], ["qr", "QR code"]].map(([k, t]) => `<a class="btn alt small${k === onglet ? " on" : ""}" href="#admin/${k}">${t}</a>`).join("")}</div>
       <div id="adm"><p class="muted">Chargement…</p></div><button class="btn alt" id="reload">Actualiser</button>`;
-    document.getElementById("reload").onclick = () => { users = errors = pays = accs = ventes = societe = null; partages = {}; viewAdmin(arg); };
+    document.getElementById("reload").onclick = () => { users = errors = pays = accs = ventes = societe = suivis = null; partages = {}; viewAdmin(arg); };
     const box = document.getElementById("adm");
     if (onglet === "qr") {
       box.innerHTML = `<div class="card" style="text-align:center"><h2>Fais scanner ce code</h2><img src="icons/qr.png" alt="QR code de l'appli Révision" style="width:100%;max-width:340px;background:#fff;padding:12px;border-radius:12px">
@@ -38,6 +38,11 @@
       if (!accs) accs = await Compte.adminAccords().catch(() => []);
       try { if (!pays) pays = await Compte.adminPays(); } catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore (fichier firestore.rules).</p></div>`; return; }
       return paiements(box);
+    }
+    if (onglet === "parents") {
+      try { if (!users) { users = await Compte.adminUsers(); partages = await Compte.adminDevices().catch(() => ({})); } if (!suivis) suivis = await Compte.adminSuivis().catch(() => []); }
+      catch (e) { box.innerHTML = `<div class="card"><p>Lecture refusée (${esc(e.code || e.message)}). Publie les nouvelles règles Firestore.</p></div>`; return; }
+      return parents(box);
     }
     try {
       if (!users) { users = await Compte.adminUsers(); partages = await Compte.adminDevices().catch(() => ({})); }
@@ -123,7 +128,7 @@
     document.getElementById("acc-csv").onclick = () => { const b = new Blob(["\ufeff" + csv()], { type: "text/csv" }), u = URL.createObjectURL(b), x = document.createElement("a"); x.href = u; x.download = "accords-parents.csv"; x.click(); setTimeout(() => URL.revokeObjectURL(u), 2000); };
   }
   // ---------- Registre des ventes : une ligne par paiement reçu, numéro de reçu, export tableur
-  const venteDe = (p, d) => ({ uid: p.uid || "", nom: (p.name || "").slice(0, 60), tel: (p.phone || "").slice(0, 20), classe: (p.level || "").slice(0, 30), via: p.via || "", montant: CFG.price_fcfa, ms: d ? d.getTime() : Date.now(), source: p.source || "capture" });
+  const venteDe = (p, d) => ({ uid: p.uid || "", nom: (p.name || "").slice(0, 60), tel: (p.phone || "").slice(0, 20), classe: (p.level || "").slice(0, 30), via: p.via || "", montant: p.montant || CFG.price_fcfa, formule: p.formule || "eleve", ms: d ? d.getTime() : Date.now(), source: p.source || "capture" });
   const VIA = { wave: "Wave", om: "Orange Money", especes: "Espèces", code: "Code", autre: "Autre" };
   const telf = (t) => (t || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4");
   const numeros = (l) => { const parAn = {}; return l.slice().sort((a, b) => (a.at || 0) - (b.at || 0)).map((v) => { const an = v.at ? v.at.getFullYear() : "????"; parAn[an] = (parAn[an] || 0) + 1; return { ...v, recu: `R-${an}-${String(parAn[an]).padStart(4, "0")}` }; }); };
@@ -195,7 +200,7 @@
     const tel = (t) => (t || "").replace(/^(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1 $2 $3 $4");
     box.innerHTML = pays.length ? `<p class="small muted">${pays.length} paiement${pays.length > 1 ? "s" : ""} à vérifier (le plus ancien d'abord). Compare le numéro, le montant (${fcfa(CFG.price_fcfa)}) et l'heure avec ton relevé ${"Wave"} ou Orange Money.</p>
       ${pays.map((p) => `<div class="card"><p><b>${esc(p.name || "Sans nom")}</b> · 📱 ${esc(tel(p.phone) || "numéro inconnu")} · ${p.via === "om" ? "Orange Money" : "Wave"}</p>
-        <p class="small muted">${esc(p.level || "")} · envoyé ${fmt(p.at)}</p>${accordDe(p.uid)}
+        <p class="small muted">${esc(p.level || "")} · envoyé ${fmt(p.at)}</p>${p.formule && p.formule !== "eleve" ? `<p class="small" style="background:var(--hi);color:var(--hi-ink);padding:2px 6px;border-radius:6px">👨‍👩‍👧 Formule parent${p.formule === "suivi" ? " + suivi spécifique" : ""} · ${p.enfants || 1} enfant${(p.enfants || 1) > 1 ? "s" : ""} · montant attendu ${fcfa(p.montant || 0)}</p>` : ""}${accordDe(p.uid)}
         <img src="${esc(p.img)}" alt="Capture du paiement" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:8px 0">
         <div class="row"><button class="btn" style="flex:1" data-ok="${esc(p.uid)}">✅ Valider : passer premium</button><button class="btn alt" style="flex:1" data-ko="${esc(p.uid)}">❌ Refuser</button></div>
         <div data-motif="${esc(p.uid)}" hidden><input class="field" placeholder="Motif (ex. capture illisible, montant incomplet)" maxlength="200"><button class="btn alt small" data-kosend="${esc(p.uid)}">Envoyer le refus</button></div>
@@ -205,7 +210,10 @@
     box.querySelectorAll("[data-ok]").forEach((b) => (b.onclick = async () => {
       b.disabled = true; b.textContent = "Validation…";
       const pv = pays.find((x) => x.uid === b.dataset.ok);
-      try { await Compte.adminValidate(b.dataset.ok); if (pv) Compte.adminAddVente(`${pv.uid}-${Date.now()}`, venteDe(pv, new Date())).then(() => { ventes = null; }).catch(() => {}); if (users) { const u = users.find((x) => x.uid === b.dataset.ok); if (u) u.premium = true; } fin(b.dataset.ok, "Validé : l'élève est premium, son appli se débloque."); }
+      try { await Compte.adminValidate(b.dataset.ok);
+        // formule parent : les enfants reliés avec leur propre compte passent aussi premium
+        if (pv && pv.formule && pv.formule !== "eleve") { if (!users) users = await Compte.adminUsers().catch(() => null); const u = (users || []).find((x) => x.uid === pv.uid);
+          for (const e of ((u && u.famille && u.famille.enfants) || []).filter((e) => e.uid)) await Compte.adminSetPremium(e.uid).catch(() => {}); } if (pv) Compte.adminAddVente(`${pv.uid}-${Date.now()}`, venteDe(pv, new Date())).then(() => { ventes = null; }).catch(() => {}); if (users) { const u = users.find((x) => x.uid === b.dataset.ok); if (u) u.premium = true; } fin(b.dataset.ok, "Validé : l'élève est premium, son appli se débloque."); }
       catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
     }));
     box.querySelectorAll("[data-ko]").forEach((b) => (b.onclick = () => { box.querySelector(`[data-motif="${b.dataset.ko}"]`).hidden = false; }));
@@ -225,6 +233,44 @@
       <button class="btn alt" id="clr">Vider le journal</button>` : `<div class="card"><p>Aucune erreur enregistrée. 👍</p></div>`;
     const c = document.getElementById("clr");
     if (c) c.onclick = async () => { if (!confirmer(c, "Tout effacer ?")) return; c.disabled = true; await Compte.adminClearErrors(errors.map((e) => e.id)).catch(() => {}); errors = null; viewAdmin("erreurs"); };
+  }
+
+  // Les deux modes de l'appli : élève seul et parent répétiteur ; tarifs modulables ; suivis spécifiques demandés
+  function parents(box) {
+    const par = users.filter((u) => u.mode === "parent"), seuls = users.filter((u) => u.mode !== "parent");
+    const enf = par.flatMap((u) => ((u.famille && u.famille.enfants) || []).map((e) => ({ ...e, p: u })));
+    const relies = users.filter((u) => (u.parents || []).length);
+    const tile = (v, t) => `<div class="card" style="text-align:center"><p class="score">${v}</p><p class="small muted">${t}</p></div>`;
+    const t = { eleve: CFG.price_fcfa, parent: 1500, enfant_sup: 500, suivi: 2000, ...(CFG.formules || {}) };
+    const st = { attente: "⏳ en attente", en_cours: "🟢 en cours", termine: "✅ terminé" };
+    box.innerHTML = `<div class="grid">${tile(seuls.length, "🎒 comptes élève seul")}${tile(par.length, "👨‍👩‍👧 comptes parent")}${tile(enf.length, "enfants suivis par un parent")}${tile(enf.filter((e) => e.type === "local").length, "sur le téléphone du parent")}${tile(relies.length, "élèves reliés à un parent")}${tile(par.filter((u) => u.premium).length, "parents premium")}${tile((suivis || []).filter((x) => x.statut === "attente").length, "suivis à traiter")}${tile((suivis || []).length, "suivis demandés")}</div>
+      <div class="card"><h2>👁 Voir l'appli comme…</h2><p class="small muted">Ton propre compte passe dans le mode choisi (rien ne change pour les clients).</p><div class="row"><button class="btn alt" style="flex:1" data-voir="eleve">🎒 Élève seul</button><button class="btn alt" style="flex:1" data-voir="parent">👨‍👩‍👧 Parent répétiteur</button></div></div>
+      <div class="card"><h2>💲 Tarifs (modulables)</h2><p class="small muted">Changés ici, ils s'appliquent tout de suite dans l'appli de chacun (au prochain lancement).</p>
+        ${[["eleve", "🎒 Élève seul"], ["parent", "👨‍👩‍👧 Parent répétiteur (1 enfant)"], ["enfant_sup", "➕ Par enfant en plus"], ["suivi", "🎯 Suivi spécifique (par enfant)"]].map(([k, l]) => `<label class="small">${l}</label><input class="field" inputmode="numeric" data-tarif="${k}" value="${t[k]}">`).join("")}
+        <button class="btn" id="tsave">Enregistrer les tarifs</button><p class="small" id="tmsg"></p></div>
+      <div class="card"><h2>🎯 Suivis spécifiques</h2>${(suivis || []).length ? suivis.sort((a, b) => (a.statut === "attente" ? -1 : 1) - (b.statut === "attente" ? -1 : 1) || (b.at || 0) - (a.at || 0)).map((x) => `<div class="card"><p><b>${esc(x.enfant || "")}</b> · ${esc(x.level || "")} · ${st[x.statut] || esc(x.statut || "")}</p>
+          <p class="small muted">Parent : ${esc(x.pnom || "")} · 📱 ${esc(x.tel || "")} · ${fmt(x.at)}</p><p class="small"><b>Objectif :</b> ${esc(x.objectif || "")}</p>
+          ${x.dispo ? `<p class="small"><b>Disponibilités :</b> ${esc(x.dispo)}</p>` : ""}${(x.matieres || []).length ? `<p class="small"><b>Matières :</b> ${esc(x.matieres.map(subjName).join(", "))}</p>` : ""}
+          ${x.resume ? `<details class="small"><summary>Résultats de l'enfant</summary><pre style="white-space:pre-wrap">${esc(x.resume)}</pre></details>` : ""}
+          ${(x.conseils || []).map((c) => `<p class="small" style="border-left:3px solid var(--accent);padding-left:6px">${esc(c.t)}<br><span class="muted">${new Date(c.at).toLocaleDateString("fr-FR")}</span></p>`).join("")}
+          <textarea class="field" rows="3" maxlength="1500" data-cons="${esc(x.id)}" placeholder="Plan ou conseil pour ce parent (il le voit dans la fiche de l'enfant)"></textarea>
+          <div class="row"><select class="field" data-st="${esc(x.id)}" style="flex:1">${Object.entries(st).map(([k, v]) => `<option value="${k}"${k === (x.statut === "attente" ? "en_cours" : x.statut) ? " selected" : ""}>${v}</option>`).join("")}</select><button class="btn small" data-envoi="${esc(x.id)}">Envoyer</button></div>
+          ${x.tel ? `<a class="small" target="_blank" rel="noopener" href="https://wa.me/221${esc(String(x.tel).replace(/\D/g, "").slice(-9))}">Écrire sur WhatsApp</a>` : ""}<p class="small" data-res="${esc(x.id)}"></p></div>`).join("") : `<p class="small muted">Aucune demande pour le moment.</p>`}</div>
+      <div class="card"><h2>👨‍👩‍👧 Comptes parent</h2>${par.length ? par.map((u) => `<div style="padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)"><p class="small"><b>${esc(u.name || "Sans nom")}</b>${u.premium ? " ⭐" : ""} · ${esc(u.phone ? "📱 " + u.phone : u.email)}${meme(u)}</p>
+          <p class="small muted">${((u.famille && u.famille.enfants) || []).map((e) => `${e.type === "compte" ? "📱" : "👦"} ${esc(e.nom)} (${esc(e.level)}${e.type === "compte" && !e.uid ? ", code non tapé" : ""}) · ${(e.missions || []).length} missions · ${(e.seances || []).length} séances`).join("<br>") || "aucun enfant ajouté"}</p></div>`).join("") : `<p class="small muted">Aucun compte parent pour l'instant.</p>`}</div>`;
+    box.querySelectorAll("[data-voir]").forEach((b) => (b.onclick = () => { S.mode = b.dataset.voir; store.save(); Compte.setFamille(S.mode, S.famille || null); go(S.mode === "parent" ? "famille" : "accueil"); }));
+    document.getElementById("tsave").onclick = async () => {
+      const rec = {}; box.querySelectorAll("[data-tarif]").forEach((i) => { const v = parseInt(i.value.replace(/\D/g, ""), 10); if (v >= 0) rec[i.dataset.tarif] = v; });
+      const m = document.getElementById("tmsg");
+      try { await Compte.setTarifs(rec); CFG.formules = { ...(CFG.formules || {}), ...rec }; if (rec.eleve) CFG.price_fcfa = rec.eleve; m.className = "msg-ok small"; m.textContent = "Tarifs enregistrés ✓"; }
+      catch (e) { m.className = "msg-ko small"; m.textContent = "Refusé : " + (e.code || e.message); }
+    };
+    box.querySelectorAll("[data-envoi]").forEach((b) => (b.onclick = async () => {
+      const id = b.dataset.envoi, txt = box.querySelector(`[data-cons="${id}"]`).value.trim(), statut = box.querySelector(`[data-st="${id}"]`).value, r = box.querySelector(`[data-res="${id}"]`);
+      b.disabled = true;
+      try { await Compte.adminConseil(id, txt, statut); suivis = null; r.className = "msg-ok small"; r.textContent = "Envoyé ✓ : le parent le voit dans la fiche de l'enfant."; }
+      catch (e) { b.disabled = false; r.className = "msg-ko small"; r.textContent = "Refusé : " + (e.code || e.message); }
+    }));
   }
 
   globalThis.viewAdmin = viewAdmin;

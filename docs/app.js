@@ -118,6 +118,7 @@ function rubriqueList() {
     ["duo", "#duo", "👥", "Session de groupe", "De 2 à 10 élèves, classement en direct"],
     ["examen", "#examen", "⏱️", blancName(), `${EXAM_LEN} questions en ${EXAM_MIN} min${isPremium() ? "" : " 🔒"}`],
     ["vie", "#vie", "🌍", "Les cours dans la vie", "Marché, factures Senelec et eau, solaire, route"],
+    S.actif ? null : ["parent", "#famille/relier", "👨‍👩", "Mon parent", "Relie ton compte : ton parent suit tes progrès et te donne des missions"],
   ].filter(Boolean);
 }
 // préférences d'accueil, complétées sur place (même objet partout, pour que chaque clic soit bien enregistré)
@@ -133,14 +134,14 @@ function homePrefs() {
   return h;
 }
 const RUB_COURT = { examen: "Examen blanc", annales: null, aide: "Je bloque", devoir: "Préparer un devoir", qcm: "QCM", exercices: "Exercices", notions: "Cours", fiches: "Synthèses", notes: "Mes notes", trajectoire: "Ma trajectoire",
-  agenda: "Agenda", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Tous mes outils", challenge: "Challenge", duo: "En groupe", vie: "Dans la vie" };
+  agenda: "Agenda", parent: "Mon parent", assistant: "Poser une question", apprendre: "Mieux apprendre", outils: "Tous mes outils", challenge: "Challenge", duo: "En groupe", vie: "Dans la vie" };
 // rubriques rangées par besoin (demande d'Est) : bloqué → outils → s'entraîner → cours → suivi
 // sujets, exercices, QCM, cours et synthèses sont déjà dans les chiffres de la carte Bonjour, le challenge près de la cloche
 const RUB_EN_HAUT = ["annales", "exercices", "qcm", "notions", "fiches", "challenge", "devoir", "examen", "duo", "apprendre"];
 const RUB_GROUPES = [
   ["📝", "S'entraîner", ["annales", "devoir", "exercices", "qcm", "examen", "challenge", "duo"]],
   ["📖", "Apprendre le cours", ["notions", "fiches", "assistant", "apprendre", "vie"]],
-  ["📊", "Mon suivi", ["notes", "trajectoire", "agenda"]],
+  ["📊", "Mon suivi", ["notes", "trajectoire", "agenda", "parent"]],
 ];
 const OUTILS_ACCUEIL = [["formules", "📐", "Formulaire"], ["flash", "🃏", "Fiches flash"], ["journal", "📓", "Ma fiche"], ["moyenne", "🧮", "Moyenne"]];
 function rubriques() {
@@ -310,6 +311,7 @@ function viewHome() {
   const h = homePrefs();
   $view.innerHTML = `
     ${Compte.isAdmin && Compte.isAdmin() ? `<a class="btn" href="#admin/activite">🛠️ Espace admin : inscrits, connexions, erreurs</a>` : ""}
+    ${typeof missionsCard === "function" ? missionsCard() : ""}
     ${isIOS && !standalone ? `<div class="card small"><b>Installer sur iPhone :</b> ouvre ce lien dans Safari, appuie sur Partager (carré avec une flèche) puis sur « Sur l'écran d'accueil ».</div>` : ""}
     ${!S.premium && trialLeft() > 0 ? `<a class="trial" href="#premium">🎁 Essai gratuit : tout est débloqué encore <b>${trialLeft()} jour${trialLeft() > 1 ? "s" : ""}</b></a>` : ""}
     ${!isPremium() ? `<a class="trial" href="#premium">🔒 Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour tout retrouver, avec tes progrès.</a>` : ""}
@@ -789,6 +791,7 @@ async function sha256(s) {
   return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 function viewPremium(reason = "", pay = "wave") {
+  if (globalThis.premiumFamille && premiumFamille(reason, pay)) return;
   const total = DATA.questions.length, wa = CFG.whatsapp, wave = CFG.wave_number, om = CFG.om_number;
   if (!wave) pay = "om";
   // numéro du compte, affiché « 77 123 45 67 » : c'est avec lui que l'élève doit payer
@@ -902,7 +905,7 @@ async function payBox(via) {
       document.getElementById("paysend").onclick = async (ev) => {
         ev.target.disabled = true; ev.target.textContent = "Envoi…";
         try {
-          await Compte.declarePay({ name: (Compte.user.displayName || "").slice(0, 60), phone: (S.phone || "").slice(0, 20), level: (S.level || "").slice(0, 30), via: via === "om" ? "om" : "wave", img });
+          await Compte.declarePay({ name: (Compte.user.displayName || "").slice(0, 60), phone: (S.phone || "").slice(0, 20), level: (S.level || "").slice(0, 30), via: via === "om" ? "om" : "wave", img, ...(globalThis.payExtra ? payExtra() : {}) });
           payBox(via);
         } catch (err) { ev.target.disabled = false; ev.target.textContent = "Envoyer la capture"; m.className = "msg-ko"; m.textContent = "L'envoi n'a pas abouti. Vérifie ta connexion et réessaie."; }
       };
@@ -1071,7 +1074,11 @@ function applyProfile(p) {
   S.premium = p.premium;
   S.suspended = p.suspended;
   S.phone = p.phone || "";
-  const d = p.data || {};
+  // mode parent répétiteur : fiche famille gardée dans le compte du parent
+  if (p.mode && !S.mode) S.mode = p.mode;
+  if (p.famille && !(S.famille && (S.famille.enfants || []).length)) S.famille = p.famille;
+  // quand un enfant révise sur le téléphone du parent, les progrès du compte (ceux du parent) ne remplacent pas les siens
+  const d = S.actif ? {} : p.data || {};
   if (Object.keys(d.stats || {}).length > Object.keys(S.stats).length) Object.assign(S, { stats: d.stats, sessions: d.sessions || [], days: d.days || [], daily: d.daily || {}, challenges: d.challenges || {}, done: d.done || {} });
   if (!S.level && d.level) S.level = d.level;
   // emploi du temps et devoirs : retrouvés en se connectant sur un autre téléphone
@@ -1093,6 +1100,8 @@ function render() {
   if (tab === "admin" && globalThis.viewAdmin) { viewAdmin(arg); window.scrollTo(0, 0); return; }
   if (S.suspended) { $view.innerHTML = `<div class="card"><h1>Compte suspendu</h1><p>Ton compte est suspendu pour le moment. Contacte-nous pour le réactiver.</p>${CFG.wave_number || CFG.whatsapp ? `<p class="small muted">WhatsApp : ${esc(CFG.wave_number || CFG.whatsapp)}</p>` : ""}</div>`; return; }
   document.getElementById("exam-tag").textContent = S.level || "";
+  // mode parent répétiteur (famille.js) : choix du mode, espace parent, bandeau de l'enfant en cours
+  if (globalThis.familleAvant && familleAvant(tab, arg)) { window.scrollTo(0, 0); return; }
   if ((!S.level || !DATA.levels.includes(S.level)) && tab !== "classe" && tab !== "partager") { S.level = null; return viewLevel(); }
   // après l'essai, l'appli est la même pour tous mais réservée aux abonnés : seuls l'accueil, la classe et les progrès restent visibles
   if (!isPremium() && !["accueil", "classe", "premium", "progres", "partager", "bienvenue", "nouveautes", "comment", "sources", "legal"].includes(tab)) return viewPremium(`Ton essai gratuit de ${TRIAL_DAYS} jours est terminé. Abonne-toi pour continuer à réviser.`);
@@ -1110,5 +1119,8 @@ document.getElementById("install").onclick = () => { if (deferred) { deferred.pr
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 Promise.all([fetch("data/questions.json", { cache: "no-cache" }).then((r) => r.json()), fetch("data/config.json", { cache: "no-cache" }).then((r) => r.json())])
-  .then(async ([d, c]) => { DATA = d; CFG = c; applyProfile(await Compte.start().catch(() => null)); render(); suivrePremium(); })
+  .then(async ([d, c]) => { DATA = d; CFG = c; applyProfile(await Compte.start().catch(() => null));
+    // tarifs réglés par l'admin dans l'appli (sans republier) : élève seul, parent, enfant en plus, suivi spécifique
+    const t = await Compte.getTarifs().catch(() => null); if (t) { CFG.formules = { ...(CFG.formules || {}), ...t }; if (t.eleve) CFG.price_fcfa = t.eleve; }
+    render(); suivrePremium(); })
   .catch(() => { $view.innerHTML = `<div class="card"><p>Impossible de charger les questions. Vérifie ta connexion puis recharge la page.</p></div>`; });

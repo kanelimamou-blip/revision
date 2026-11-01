@@ -48,7 +48,7 @@ const Compte = (() => {
     const created = doc.created ? doc.created.toDate() : new Date(), first = await device();
     // numéro de téléphone : celui du compte (connexion par numéro) ou celui ajouté par un ancien compte
     if (!doc.phone && telOf(user.email)) { doc.phone = telOf(user.email); ref.update({ phone: doc.phone }).catch(() => {}); }
-    return { phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, premiumAt: doc.premiumAt && doc.premiumAt.toDate ? doc.premiumAt.toDate().getTime() : 0, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+    return { mode: doc.mode || "", famille: doc.famille || null, phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, premiumAt: doc.premiumAt && doc.premiumAt.toDate ? doc.premiumAt.toDate().getTime() : 0, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
   }
 
   // Identifiant secret du téléphone, tiré au hasard au premier lancement (gardé aussi dans le cache de l'appli)
@@ -167,7 +167,10 @@ const Compte = (() => {
     const state = pending; pending = null; clearTimeout(timer); timer = null;
     const last = (o, n) => Object.fromEntries(Object.entries(o || {}).sort().slice(-n));
     const data = { level: state.level || null, stats: state.stats, sessions: state.sessions.slice(-50), days: state.days.slice(-120), daily: last(state.daily, 60), challenges: last(state.challenges, 60), done: last(state.done, 14), edt: state.edt || {}, todo: (state.todo || []).slice(-100) };
-    db.collection("users").doc(user.uid).update({ data }).catch((e) => logError("Sauvegarde des progrès refusée : " + (e.code || e.message)));
+    // mode parent : les progrès d'un enfant qui révise sur le téléphone du parent vont dans sa propre fiche
+    const ref = db.collection("users").doc(user.uid);
+    (state.actif ? ref.collection("enfants").doc(state.actif).set({ data, level: data.level, at: SRV() }, { merge: true }) : ref.update({ data }))
+      .catch((e) => logError("Sauvegarde des progrès refusée : " + (e.code || e.message)));
   }
   function save(state) {
     if (!user || !db) return;
@@ -175,6 +178,43 @@ const Compte = (() => {
     if (!timer) timer = setTimeout(flush, 60000);
   }
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+
+  // ---------- Mode parent répétiteur : enfants, missions, suivi spécifique, tarifs
+  // fiche famille et mode gardés dans le compte du parent (petits objets, une écriture à chaque changement)
+  const setFamille = (mode, famille) => (user && db ? db.collection("users").doc(user.uid).update({ mode, famille: JSON.parse(JSON.stringify(famille || null)) }).catch((e) => logError("Famille non enregistrée : " + (e.code || e.message))) : Promise.resolve());
+  async function lireEnfant(eid) { if (!user || !db) return null; const d = await db.collection("users").doc(user.uid).collection("enfants").doc(eid).get().catch(() => null); return d && d.exists ? d.data() : null; }
+  // enfant qui a son propre compte : le parent lit sa fiche (règle : le parent figure dans « parents »)
+  async function lireEleve(uid) { const d = await db.collection("users").doc(uid).get(); if (!d.exists) return null; const x = d.data(); return { uid, name: x.name || "", phone: x.phone || telOf(x.email), lastSeen: ts(x.lastSeen), premium: !!x.premium, data: x.data || {} }; }
+  // code de liaison : le parent le crée, l'enfant le tape dans son appli, le parent retrouve ainsi le compte de l'enfant
+  const liens = () => db.collection("liens");
+  const creerLien = (code, pnom) => liens().doc(code).set({ parent: user.uid, pnom: String(pnom || "").slice(0, 60), at: SRV() });
+  async function lireLien(code) { const d = await liens().doc(code).get(); return d.exists ? d.data() : null; }
+  async function accepterLien(code, enom, level) {
+    const l = await lireLien(code);
+    if (!l) throw { msg: "Code inconnu. Vérifie les 8 caractères donnés par ton parent." };
+    if (l.enfant && l.enfant !== user.uid) throw { msg: "Ce code a déjà servi. Demande un nouveau code à ton parent." };
+    if (l.parent === user.uid) throw { msg: "C'est ton propre code : il faut le taper sur le téléphone de l'enfant." };
+    const b = db.batch();
+    b.update(db.collection("users").doc(user.uid), { parents: firebase.firestore.FieldValue.arrayUnion(l.parent) });
+    b.update(liens().doc(code), { enfant: user.uid, enom: String(enom || "").slice(0, 60), level: String(level || "").slice(0, 30), okAt: SRV() });
+    await b.commit();
+    return l;
+  }
+  const retirerParent = (puid) => db.collection("users").doc(user.uid).update({ parents: firebase.firestore.FieldValue.arrayRemove(puid) });
+  // missions données par le parent à un enfant qui a son propre compte
+  async function lireMissions(uid) { if (!db) return null; const d = await db.collection("missions").doc(uid).get().catch(() => null); return d && d.exists ? d.data() : null; }
+  const ecrireMissions = (uid, rec) => db.collection("missions").doc(uid).set({ ...JSON.parse(JSON.stringify(rec)), at: SRV() }, { merge: true });
+  // suivi spécifique demandé par le parent : l'équipe (admin) répond par des conseils
+  const suivis = () => db.collection("suivis");
+  const demanderSuivi = (id, rec) => suivis().doc(id).set({ ...rec, parent: user.uid, statut: "attente", conseils: [], at: SRV() });
+  const majSuivi = (id, rec) => suivis().doc(id).update({ ...rec, maj: SRV() });
+  async function lireSuivis() { if (!user || !db) return []; const q = await suivis().where("parent", "==", user.uid).limit(20).get().catch(() => null); return q ? q.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at) })) : []; }
+  async function adminSuivis() { const q = await suivis().limit(2000).get(); return q.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at) })); }
+  const adminConseil = (id, texte, statut) => suivis().doc(id).update(texte ? { conseils: firebase.firestore.FieldValue.arrayUnion({ t: String(texte).slice(0, 1500), at: Date.now() }), statut } : { statut });
+  async function adminEnfants(uid) { const q = await db.collection("users").doc(uid).collection("enfants").limit(20).get(); return q.docs.map((d) => ({ id: d.id, ...d.data() })); }
+  // tarifs modulables : réglés par l'admin dans l'appli (config/tarifs), lus par tous
+  async function getTarifs() { if (!db) return null; const d = await db.collection("config").doc("tarifs").get().catch(() => null); return d && d.exists ? d.data() : null; }
+  const setTarifs = (rec) => db.collection("config").doc("tarifs").set(rec);
 
   // Session de groupe : chaque élève publie sa note, tout le groupe voit le classement se remplir en direct
   function postScore(code, rec) {
@@ -206,7 +246,7 @@ const Compte = (() => {
   const ts = (v) => (v && v.toDate ? v.toDate() : null);
   async function adminUsers() {
     const snap = await db.collection("users").limit(5000).get();
-    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), avis: x.avis || [], suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
+    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), mode: x.mode || "", famille: x.famille || null, parents: x.parents || [], avis: x.avis || [], suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
   }
   async function adminErrors() {
     const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();
@@ -252,5 +292,5 @@ const Compte = (() => {
   async function adminAccords() { const snap = await accords().limit(5000).get(); return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at), okAt: ts(d.data().okAt) })); }
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, adminVentes, adminAddVente, adminDelVente, adminPaysValides, getSociete, getSocietePrivee, setSociete, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, flush, setFamille, lireEnfant, lireEleve, creerLien, lireLien, accepterLien, retirerParent, lireMissions, ecrireMissions, demanderSuivi, majSuivi, lireSuivis, adminSuivis, adminConseil, adminEnfants, getTarifs, setTarifs, adminVentes, adminAddVente, adminDelVente, adminPaysValides, getSociete, getSocietePrivee, setSociete, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

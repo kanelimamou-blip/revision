@@ -186,3 +186,8 @@ details summary { cursor: pointer; color: var(--accent); font-weight: 600; margi
 @keyframes inspulse{0%,100%{box-shadow:0 0 0 0 rgba(255,140,0,.9)}50%{box-shadow:0 0 0 7px rgba(255,140,0,0)}}
 body.ins-mode .tabs,body.ins-mode .top-r{display:none}body.ins-mode main{padding-bottom:24px}
 .ins-phone{height:250px}
+/* mode parent répétiteur : l'espace parent n'a pas d'onglets « Mes erreurs » et « Progrès » */
+body.mode-parent .tabs a[data-tab="erreurs"], body.mode-parent .tabs a[data-tab="progres"] { display: none; }
+#fambtn { text-decoration: none; white-space: nowrap; margin-right: 6px; }
+.modechoix { width: 100%; text-align: left; cursor: pointer; border: 2px solid transparent; }
+.modechoix:hover { border-color: var(--accent); }

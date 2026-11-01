@@ -11,8 +11,13 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email == 'kanelimamou@gmail.com'
         && request.auth.token.email_verified == true;
     }
+    // mode parent répétiteur : le parent relié par l'enfant (champ « parents » écrit par l'enfant lui-même)
+    function isParentOf(uid) {
+      return request.auth != null && request.auth.uid in get(/databases/$(db)/documents/users/$(uid)).data.get('parents', []);
+    }
     match /users/{uid} {
-      allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin();
+      allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin()
+        || (request.auth != null && request.auth.uid in resource.data.get('parents', []));
       // l'admin ne peut changer que la suspension et le premium (paiement validé)
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['suspended', 'premium', 'premiumAt'])
@@ -30,6 +35,62 @@ service cloud.firestore {
         && (request.resource.data.premium == resource.data.premium
           || (request.resource.data.premium == true
             && getAfter(/databases/$(db)/documents/claims/$(request.resource.data.code)).data.uid == uid));
+    }
+    // enfants qui révisent sur le téléphone du parent : une fiche de progrès par enfant, dans le compte du parent
+    match /users/{uid}/enfants/{eid} {
+      allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin();
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid && eid.size() <= 20
+        && request.resource.data.keys().hasOnly(['data', 'level', 'nom', 'at'])
+        && request.resource.data.at == request.time;
+    }
+    // code de liaison parent → enfant (8 caractères) : le parent le crée, l'enfant l'accepte une seule fois depuis son compte
+    match /liens/{code} {
+      allow get: if request.auth != null && code.size() == 8;
+      allow list: if isAdmin();
+      allow delete: if isAdmin() || (request.auth != null && resource.data.parent == request.auth.uid);
+      allow create: if request.auth != null && code.size() == 8
+        && request.resource.data.keys().hasOnly(['parent', 'pnom', 'at'])
+        && request.resource.data.parent == request.auth.uid
+        && request.resource.data.pnom is string && request.resource.data.pnom.size() <= 60
+        && request.resource.data.at == request.time;
+      allow update: if request.auth != null && !('enfant' in resource.data)
+        && resource.data.parent != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enfant', 'enom', 'level', 'okAt'])
+        && request.resource.data.enfant == request.auth.uid
+        && request.resource.data.enom is string && request.resource.data.enom.size() <= 60
+        && request.resource.data.level is string && request.resource.data.level.size() <= 30
+        && request.resource.data.okAt == request.time;
+    }
+    // missions et séances données par le parent à un enfant qui a son propre compte ; l'enfant les coche
+    match /missions/{uid} {
+      allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin() || isParentOf(uid);
+      allow create, update: if ((request.auth != null && request.auth.uid == uid) || isParentOf(uid))
+        && request.resource.data.keys().hasOnly(['items', 'seances', 'pnom', 'at'])
+        && request.resource.data.get('items', []) is list && request.resource.data.get('items', []).size() <= 60
+        && request.resource.data.get('seances', []) is list && request.resource.data.get('seances', []).size() <= 120
+        && request.resource.data.at == request.time;
+      allow delete: if isAdmin();
+    }
+    // suivi spécifique demandé par un parent : l'équipe répond par des conseils, le parent les lit
+    match /suivis/{id} {
+      allow read: if isAdmin() || (request.auth != null && resource.data.parent == request.auth.uid);
+      allow delete: if isAdmin() || (request.auth != null && resource.data.parent == request.auth.uid);
+      allow create: if request.auth != null && id.matches(request.auth.uid + '_[a-z0-9]{1,20}')
+        && request.resource.data.parent == request.auth.uid
+        && request.resource.data.keys().hasOnly(['parent', 'pnom', 'tel', 'enfant', 'level', 'objectif', 'matieres', 'dispo', 'resume', 'statut', 'conseils', 'at'])
+        && request.resource.data.statut == 'attente' && request.resource.data.conseils == []
+        && request.resource.data.objectif is string && request.resource.data.objectif.size() <= 600
+        && request.resource.data.get('resume', '') is string && request.resource.data.get('resume', '').size() <= 3000
+        && request.resource.data.at == request.time;
+      allow update: if request.auth != null && resource.data.parent == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['objectif', 'matieres', 'dispo', 'resume', 'level', 'tel', 'maj'])
+        && request.resource.data.objectif is string && request.resource.data.objectif.size() <= 600
+        && request.resource.data.get('resume', '') is string && request.resource.data.get('resume', '').size() <= 3000
+        && request.resource.data.maj == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['conseils', 'statut'])
+        && request.resource.data.statut in ['attente', 'en_cours', 'termine'];
     }
     // sessions de groupe : chaque élève connecté écrit seulement sa propre note, le groupe lit le classement
     match /sessions/{code}/scores/{uid} {
@@ -81,7 +142,10 @@ service cloud.firestore {
       allow list, delete: if isAdmin();
       allow create, update: if request.auth != null && request.auth.uid == uid
         && (resource == null || resource.data.statut != 'valide')
-        && request.resource.data.keys().hasOnly(['uid', 'name', 'phone', 'level', 'via', 'img', 'statut', 'at'])
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'phone', 'level', 'via', 'img', 'statut', 'at', 'formule', 'montant', 'enfants'])
+        && request.resource.data.get('formule', 'eleve') in ['eleve', 'parent', 'suivi']
+        && request.resource.data.get('montant', 0) is int && request.resource.data.get('montant', 0) <= 200000
+        && request.resource.data.get('enfants', 0) is int && request.resource.data.get('enfants', 0) <= 10
         && request.resource.data.uid == uid
         && request.resource.data.statut == 'attente'
         && request.resource.data.img is string && request.resource.data.img.size() <= 450000
