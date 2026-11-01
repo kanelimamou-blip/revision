@@ -17,3 +17,7 @@ Pendant les 10 premiers jours (essai gratuit, `TRIAL_DAYS` dans `docs/app.js`), 
 ## Comptes
 
 `docs/compte.js` : connexion Google (Firebase Auth) et profil Firestore (date de création fixée par le serveur pour l'essai, premium accordé seulement si le code est réclamé une seule fois, progrès sauvegardés). Tant que `FIREBASE_CONFIG` est vide, l'appli fonctionne sans compte.
+
+## Commandes Firebase
+
+Le workflow « Commandes Firebase » (onglet Actions, lancement manuel) utilise le secret `FIREBASE_SA` : `comparer` / `verifier` / `regles` pour les règles Firestore de `firebase/firestore.rules` (le sel des codes y est écrit `__SEL_CODES__` et repris des règles en ligne), `script` pour lancer `firebase/commandes/<nom>.mjs`, `cli` pour une commande `firebase`.

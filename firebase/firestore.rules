@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function validCode(code) {
+      let p = code.split('-');
+      return p.size() == 2 && p[0].size() == 5
+        && hashing.sha256('__SEL_CODES__' + p[0]).toHexString().lower()[0:6] == p[1].lower();
+    }
+    // propriétaire de l'appli : seul ce compte Google ouvre l'espace admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'kanelimamou@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+    match /users/{uid} {
+      allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin();
+      // l'admin ne peut changer que la suspension et le premium (paiement validé)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['suspended', 'premium', 'premiumAt'])
+        && request.resource.data.get('suspended', false) is bool
+        && request.resource.data.premium is bool;
+      // création : date fixée par le serveur et sans premium
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.created == request.time
+        && request.resource.data.premium == false
+        && !('suspended' in request.resource.data);
+      // la date de création ne change jamais ; le premium ne s'obtient qu'avec un code réclamé par cet élève
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.created == resource.data.created
+        && request.resource.data.get('suspended', false) == resource.data.get('suspended', false)
+        && (request.resource.data.premium == resource.data.premium
+          || (request.resource.data.premium == true
+            && getAfter(/databases/$(db)/documents/claims/$(request.resource.data.code)).data.uid == uid));
+    }
+    // sessions de groupe : chaque élève connecté écrit seulement sa propre note, le groupe lit le classement
+    match /sessions/{code}/scores/{uid} {
+      allow read: if request.auth != null && code.size() <= 12;
+      allow create, update: if request.auth != null && request.auth.uid == uid && code.size() <= 12
+        && request.resource.data.keys().hasOnly(['name', 'note', 'score', 'total', 'level', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && request.resource.data.note is number && request.resource.data.note >= 0 && request.resource.data.note <= 20
+        && request.resource.data.score is int && request.resource.data.total is int
+        && request.resource.data.score >= 0 && request.resource.data.score <= request.resource.data.total && request.resource.data.total <= 50
+        && request.resource.data.level is string && request.resource.data.level.size() <= 20
+        && request.resource.data.at == request.time;
+      allow delete: if false;
+    }
+    // téléphones : un seul essai gratuit par téléphone ; chaque compte ne peut que s'ajouter à la liste
+    match /devices/{id} {
+      allow get: if request.auth != null && id.size() == 20;
+      allow list: if isAdmin();
+      allow create: if request.auth != null && id.size() == 20
+        && request.resource.data.keys().hasOnly(['first', 'uids'])
+        && request.resource.data.first == request.time
+        && request.resource.data.uids == [request.auth.uid];
+      allow update: if request.auth != null
+        && request.resource.data.keys().hasOnly(['first', 'uids'])
+        && request.resource.data.first == resource.data.first
+        && !(request.auth.uid in resource.data.uids)
+        && request.resource.data.uids.hasAll(resource.data.uids)
+        && request.resource.data.uids.hasAll([request.auth.uid])
+        && request.resource.data.uids.size() == resource.data.uids.size() + 1
+        && request.resource.data.uids.size() <= 50;
+      allow delete: if false;
+    }
+    // journal des erreurs : chaque client connecté ou non peut signaler une erreur, seul l'admin la lit
+    match /errors/{id} {
+      allow read, delete: if isAdmin();
+      allow update: if false;
+      allow create: if request.resource.data.keys().hasOnly(['uid', 'email', 'page', 'msg', 'ua', 'level', 'at'])
+        && request.resource.data.uid == (request.auth != null ? request.auth.uid : null)
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 500
+        && request.resource.data.page is string && request.resource.data.page.size() <= 100
+        && request.resource.data.email is string && request.resource.data.email.size() <= 100
+        && request.resource.data.ua is string && request.resource.data.ua.size() <= 200
+        && request.resource.data.level is string && request.resource.data.level.size() <= 20
+        && request.resource.data.at == request.time;
+    }
+    // paiement déclaré dans l'appli : l'élève envoie sa capture, seul l'admin valide ou refuse
+    match /paiements/{uid} {
+      allow read: if (request.auth != null && request.auth.uid == uid) || isAdmin();
+      allow list, delete: if isAdmin();
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && (resource == null || resource.data.statut != 'valide')
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'phone', 'level', 'via', 'img', 'statut', 'at'])
+        && request.resource.data.uid == uid
+        && request.resource.data.statut == 'attente'
+        && request.resource.data.img is string && request.resource.data.img.size() <= 450000
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60
+        && request.resource.data.phone is string && request.resource.data.phone.size() <= 20
+        && request.resource.data.level is string && request.resource.data.level.size() <= 30
+        && request.resource.data.via in ['wave', 'om']
+        && request.resource.data.at == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statut', 'motif', 'fin'])
+        && request.resource.data.statut in ['valide', 'refuse'];
+    }
+    // registre des ventes : réservé à l'admin
+    match /ventes/{id} {
+      allow read, write: if isAdmin();
+    }
+    // fiche société (mentions légales, reçus) : lisible par tous, modifiable par l'admin seul
+    match /config/{id} {
+      allow get: if true;
+      allow list, write: if isAdmin();
+    }
+    // accord du parent avant l'abonnement : l'élève crée la demande, le parent (sans compte) l'accepte une fois, l'admin lit la trace
+    match /accords/{token} {
+      allow get: if token.size() >= 20;
+      allow list, delete: if isAdmin();
+      allow create: if request.auth != null && token.size() >= 20 && token.size() <= 40
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'eleve', 'tel', 'level', 'statut', 'v', 'at', 'naissance'])
+        && request.resource.data.statut in ['attente', 'majeur']
+        && request.resource.data.at == request.time
+        && request.resource.data.eleve is string && request.resource.data.eleve.size() <= 60
+        && request.resource.data.tel is string && request.resource.data.tel.size() <= 20
+        && request.resource.data.level is string && request.resource.data.level.size() <= 30
+        && request.resource.data.v is string && request.resource.data.v.size() <= 20
+        && request.resource.data.get('naissance', '') is string && request.resource.data.get('naissance', '').size() <= 10;
+      allow update: if resource.data.statut == 'attente'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statut', 'parent', 'ptel', 'lien', 'okAt'])
+        && request.resource.data.statut == 'ok'
+        && request.resource.data.okAt == request.time
+        && request.resource.data.parent is string && request.resource.data.parent.size() >= 2 && request.resource.data.parent.size() <= 60
+        && request.resource.data.ptel is string && request.resource.data.ptel.size() <= 20
+        && request.resource.data.lien in ['pere', 'mere', 'tuteur'];
+    }
+    // un code ne peut être réclamé qu'une fois (pas de recréation possible)
+    match /claims/{code} {
+      allow read, update, delete: if false;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid && validCode(code);
+    }
+  }
+}

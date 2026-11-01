@@ -1,0 +1,49 @@
+name: Commandes Firebase
+
+# Lancé à la main (ou par Claude) depuis l'onglet Actions : publie les règles Firestore, lance un script
+# de firebase/commandes/ ou une commande du CLI Firebase, avec le secret FIREBASE_SA. Rien à copier-coller.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "comparer, verifier ou regles (publier firebase/firestore.rules), script, cli"
+        type: choice
+        options: [comparer, verifier, regles, script, cli]
+        default: comparer
+      argument:
+        description: "script : nom du fichier de firebase/commandes (ex. infos) ; cli : arguments de firebase (ex. firestore:indexes)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase
+  cancel-in-progress: false
+
+jobs:
+  executer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Exécution
+        working-directory: firebase
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+          ACTION: ${{ inputs.action }}
+          ARGUMENT: ${{ inputs.argument }}
+        run: |
+          npm install --no-audit --no-fund --silent
+          if [ "$ACTION" = "cli" ]; then
+            printf '%s' "$FIREBASE_SA" > "$RUNNER_TEMP/sa.json"
+            export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+            PROJET=$(node -e 'console.log(JSON.parse(process.env.FIREBASE_SA).project_id)')
+            read -ra ARGS <<< "$ARGUMENT"
+            npx --yes firebase-tools@13 --project "$PROJET" --non-interactive "${ARGS[@]}"
+          else
+            node outil.mjs "$ACTION" "$ARGUMENT"
+          fi
