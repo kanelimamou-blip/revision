@@ -352,3 +352,12 @@ MEMO = {
     ],
   },
 }
+
+# Mémo de la 6e à la 1re (2026-11-01) : ajouté chapitre par chapitre au même formulaire
+from formules_memo_6e5e import MEMO_6E5E
+from formules_memo_4e3e import MEMO_4E3E
+from formules_memo_2nde1ere import MEMO_2NDE1ERE
+for _m in (MEMO_6E5E, MEMO_4E3E, MEMO_2NDE1ERE):
+    for _sid, _chs in _m.items():
+        for _t, _l in _chs.items():
+            MEMO.setdefault(_sid, {}).setdefault(_t, []).extend(_l)
