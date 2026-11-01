@@ -291,6 +291,25 @@ def build():
     for a in ANNALES:
         if a.get("sujet") and a["exam"] in ("BAC", "BFEM"):
             sources.append({"k": "Sujet officiel détaillé dans l'appli", "lv": a["levels"], "m": a["subject"], "t": f"{a['exam']} {a['year']} · {a['subject']} · séries {a['series']}", "o": _off(a["exam"])})
+    # synthèses de la 6e à la 3e : on y reprend la fiche méthode du chapitre (étapes, pièges, deux exemples corrigés)
+    import re as _re
+    for sid, chs in FICHES.items():
+        if not _re.match(r"^(6e|5e|4e|3e)-", sid):
+            continue
+        meth = {n["programme"]: n for n in NOTIONS.get(sid, []) if n["id"].startswith("m-") and "programme" in n}
+        titres = [t for t, _ in PROGRAMMES.get(sid, [])]
+        for c in chs:
+            if "p" not in c or c["p"] >= len(titres) or titres[c["p"]] not in meth or c.get("_meth"):
+                continue
+            m = meth[titres[c["p"]]]
+            etapes = [e.split(" : ", 1)[1] for e in m["enonce"] if e.startswith("Étape")]
+            erreurs = [e.split(" : ", 1)[1] for e in m["enonce"] if e.startswith("⚠")]
+            c["methodes"] = list(c.get("methodes") or []) + [["Pas à pas", etapes]]
+            c["pieges"] = list(c.get("pieges") or []) + [e for e in erreurs if e not in (c.get("pieges") or [])]
+            c["exemples"] = list(c.get("exemples") or []) + [list(x) for x in m["exemples"]]
+            c["_meth"] = True
+        for c in chs:
+            c.pop("_meth", None)
     hashes = HASHES.read_text().split() if HASHES.exists() else []
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "questions.json").write_text(json.dumps({"classes": CLASSES, "series": SERIES, "families": FAMILIES, "levels": LEVELS, "subjects": subjects, "questions": questions, "annales": [{k: v for k, v in a.items() if k not in ("sujet", "corrige")} for a in ANNALES], "fiches": FICHES, "exercises": exercises, "notions": notions,  "programmes": {k: [t for t, _ in v] for k, v in PROGRAMMES.items()}, "formules": formulaire(FICHES, notions, PROGRAMMES), "sources": sources}, ensure_ascii=False, separators=(",", ":")))

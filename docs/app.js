@@ -253,10 +253,13 @@ function programme() {
     ${done === 3 ? `<p class="msg-ok small">Bravo, journée réussie ! Reviens demain pour garder ta série 🔥</p>` : `<p class="small muted">3 missions par jour, environ 20 minutes.</p>`}</div>`;
 }
 // le bouton principal de l'accueil : la prochaine mission du jour pas encore faite
+// QCM d'une matière : questions écrites + questions distinctes produites par les générateurs (gen_counts.js)
+const genN = (s) => (typeof GEN_COUNT === "undefined" ? 0 : GEN_COUNT[s.id] || 0);
+const nQcm = (s) => s.count + genN(s);
 // tout ce que l'appli contient pour la classe, d'un coup d'œil (chaque chiffre ouvre la rubrique)
 function dispo() {
   const L = S.level, ann = annalesOf(L).length + genSujetsOf(L).length, ex = exercisesOf(L).length + annalesOf(L).filter((a) => a.guided).length + genExosOf(L).length;
-  const qcm = subjectsOf(L).reduce((n, s) => n + s.count, 0), cours = notionsOf(L).length, fi = subjectsOf(L).reduce((n, s) => n + ((DATA.fiches || {})[s.id] || []).length, 0);
+  const qcm = subjectsOf(L).reduce((n, s) => n + nQcm(s), 0), cours = notionsOf(L).length, fi = subjectsOf(L).reduce((n, s) => n + ((DATA.fiches || {})[s.id] || []).length, 0);
   const c = (n, ico, t, href) => n ? `<a href="${href}" class="dispo-i"><b>${ico} ${n.toLocaleString("fr-FR")}</b><span>${t}</span></a>` : "";
   return `<p class="small" style="margin:10px 0 6px"><b>Tout est corrigé pas à pas :</b></p><div class="dispo">${c(ann, "📚", examOf() ? `sujets du ${examOf()[0]}` : "devoirs types", "#annales")}${c(ex, "✏️", "exercices", "#exercices")}${c(qcm, "✅", "QCM", "#qcm-list")}${c(cours, "📖", "cours", "#notions")}${c(fi, "📝", "synthèses", "#fiches")}</div>`;
 }
@@ -280,7 +283,7 @@ function viewHome() {
   const subs = subjectsOf(S.level).map((s) => `
     <a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit">
       <b>${esc(s.name)}</b>
-      <span class="small muted">${s.count} questions${(GEN[s.id] || []).length ? " + ∞ à nombres nouveaux" : ""}${isPremium() ? "" : ` · <span class="lock">🔒</span>`}</span>
+      <span class="small muted">${nQcm(s).toLocaleString("fr-FR")} questions${genN(s) ? ` dont ${genN(s).toLocaleString("fr-FR")} à nombres nouveaux` : ""}${isPremium() ? "" : ` · <span class="lock">🔒</span>`}</span>
       <span class="bar"><i style="width:${mastery(s.id)}%"></i></span>
     </a>`).join("");
   const blocks = {
@@ -454,7 +457,7 @@ function viewFiche(arg) {
   markDone("fiche");
   if (k === undefined) {
     $view.innerHTML = `<p class="tag-src">Synthèse de cours · ${esc(S.level)}</p><h1>${esc(s.name)}</h1>
-      <p class="muted">${f.length} chapitres. Chaque chapitre : l'essentiel à savoir${f.some((c) => c.methodes) ? ", les méthodes pas à pas, les pièges, un exemple corrigé et ce qui tombe à l'examen" : ""}.</p>
+      <p class="muted">${f.length} chapitres. Chaque chapitre : l'essentiel à savoir${f.some((c) => c.methodes) ? ", les méthodes pas à pas, les pièges, des exemples corrigés et ce qui tombe à l'examen" : ""}.</p>
       <div class="card">${f.map((c, i) => `<a class="row lib" href="#fiche/${sid}~${i}"><span>${i + 1}. ${esc(c.t)}</span><span class="small muted">lire ›</span></a>`).join("")}</div>
       <a class="btn" href="#quiz/${s.id}">M'entraîner sur ${esc(s.name)}</a>
       <a class="btn alt" href="#fiches">Autres synthèses</a>`;
@@ -599,7 +602,7 @@ function viewExercices() {
 function viewQcmList() {
   $view.innerHTML = `<h1>QCM corrigés</h1><p class="muted">Pour chaque question, tu vois si ton choix est juste, la bonne réponse et l'explication. Les erreurs sont gardées pour les revoir.</p>
     <div class="grid">${subjectsOf(S.level).map((s) => `<a class="subj" href="#quiz/${s.id}" style="text-decoration:none;color:inherit"><b>${esc(s.name)}</b>
-      <span class="small muted">${isPremium() ? s.count : s.free} questions${isPremium() && (GEN[s.id] || []).length ? " + ∞" : ""}</span><span class="bar"><i style="width:${mastery(s.id)}%"></i></span></a>`).join("")}</div>
+      <span class="small muted">${isPremium() ? nQcm(s).toLocaleString("fr-FR") : s.free} questions</span><span class="bar"><i style="width:${mastery(s.id)}%"></i></span></a>`).join("")}</div>
     <h2>🎯 Par thème, pour préparer un devoir</h2><p class="small muted">Choisis la matière, puis le chapitre de ton devoir.</p>
     <div class="row onglets">${subjectsOf(S.level).filter((s) => ((DATA.programmes || {})[s.id] || []).length).map((s) => `<a class="btn alt small" href="#quiz/${s.id}/themes">${esc(s.name)}</a>`).join("")}</div>
     <a class="btn alt" href="#erreurs">Revoir mes erreurs</a>`;
