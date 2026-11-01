@@ -99,6 +99,7 @@
       <p class="small muted">${liste.length} compte${liste.length > 1 ? "s" : ""}</p>
       ${liste.slice(0, 300).map((u) => `<div class="card"><p><b>${esc(u.name || "Sans nom")}</b> ${u.suspended ? "🚫 suspendu" : ago(u.lastSeen, 7) ? "🟢 actif" : "⚪ inactif"}${u.premium ? ` · ⭐ premium${u.code ? " (code " + esc(u.code) + ")" : ""}` : ""}</p>
         <p class="small muted">${esc(u.phone ? "📱 " + u.phone : u.email || u.uid)}${u.level ? " · " + esc(u.level) : ""}<br>Inscrit le ${fmt(u.created)} · dernière activité ${fmt(u.lastSeen)}${meme(u)}</p>
+        <p class="small">Vue : <b>${u.mode === "parent" ? "👨‍👩‍👧 parent répétiteur" : "🎒 élève seul"}</b>${u.formule ? ` · formule payée : ${esc({ eleve: "élève seul", parent: "parent", suivi: "parent + suivi" }[u.formule] || u.formule)}` : ""} <button class="linkbtn small" data-mode="${esc(u.uid)}">passer en vue ${u.mode === "parent" ? "élève" : "parent"}</button></p>
         ${u.premium ? "" : `<button class="btn small" data-prem="${esc(u.uid)}">⭐ Passer premium (payé hors appli)</button> `}<button class="btn alt small" data-sus="${esc(u.uid)}" data-on="${u.suspended ? 0 : 1}">${u.suspended ? "Réactiver le compte" : "Suspendre le compte"}</button></div>`).join("")}`;
     const f = document.getElementById("af"); f.oninput = () => { filtre = f.value.trim().toLowerCase(); comptes(box); const g = document.getElementById("af"); g.focus(); g.setSelectionRange(g.value.length, g.value.length); };
     box.querySelectorAll("[data-prem]").forEach((b) => (b.onclick = async () => {
@@ -106,6 +107,12 @@
       if (!confirmer(b, `${u.name || u.phone} premium ?`)) return;
       b.disabled = true;
       try { await Compte.adminSetPremium(u.uid); u.premium = true; comptes(box); } catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
+    }));
+    box.querySelectorAll("[data-mode]").forEach((b) => (b.onclick = async () => {
+      const u = users.find((x) => x.uid === b.dataset.mode), m = u.mode === "parent" ? "eleve" : "parent";
+      if (!confirmer(b, `Vue ${m === "parent" ? "parent" : "élève"} pour ${u.name || u.phone} ?`)) return;
+      b.disabled = true;
+      try { await Compte.adminSetMode(u.uid, m); u.mode = m; comptes(box); } catch (e) { b.disabled = false; b.textContent = "Refusé : " + (e.code || e.message); }
     }));
     box.querySelectorAll("[data-sus]").forEach((b) => (b.onclick = async () => {
       const on = b.dataset.on === "1", u = users.find((x) => x.uid === b.dataset.sus);
@@ -211,7 +218,7 @@
     box.querySelectorAll("[data-ok]").forEach((b) => (b.onclick = async () => {
       b.disabled = true; b.textContent = "Validation…";
       const pv = pays.find((x) => x.uid === b.dataset.ok);
-      try { await Compte.adminValidate(b.dataset.ok);
+      try { await Compte.adminValidate(b.dataset.ok, pv && pv.formule && pv.formule !== "eleve" ? pv.formule : "eleve");
         // formule parent : les enfants reliés avec leur propre compte passent aussi premium
         if (pv && pv.formule && pv.formule !== "eleve") { if (!users) users = await Compte.adminUsers().catch(() => null); const u = (users || []).find((x) => x.uid === pv.uid);
           for (const e of ((u && u.famille && u.famille.enfants) || []).filter((e) => e.uid)) await Compte.adminSetPremium(e.uid).catch(() => {}); } if (pv) Compte.adminAddVente(`${pv.uid}-${Date.now()}`, venteDe(pv, new Date())).then(() => { ventes = null; }).catch(() => {}); if (users) { const u = users.find((x) => x.uid === b.dataset.ok); if (u) u.premium = true; } fin(b.dataset.ok, "Validé : l'élève est premium, son appli se débloque."); }

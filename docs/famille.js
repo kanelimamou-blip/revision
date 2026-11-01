@@ -193,11 +193,12 @@
     const [p, a, b, c] = (arg || "").split("/");
     if (p === "retour") return viewRetour();
     if (p === "relier") return viewRelier(a);
-    if (p === "mode") return viewMode();
+    // changer de vue : réservé à l'admin (un client garde la vue de sa formule ; l'admin la change dans Comptes)
+    if (p === "mode") return S.mode && !Compte.isAdmin() ? go(estParent() ? "famille" : "accueil") : viewMode();
     if (!estParent()) {
       // un élève arrive ici : il peut se relier à son parent ou passer en mode parent
       $view.innerHTML = `<h1>👨‍👩‍👧 Mode parent répétiteur</h1><div class="card"><p>Tu es en mode <b>élève seul</b>.</p>
-        <a class="btn" href="#famille/relier">👨‍👩 Relier mon compte à mon parent</a><a class="btn alt" href="#famille/mode">Je suis parent : passer en mode parent</a></div>`;
+        <a class="btn" href="#famille/relier">👨‍👩 Relier mon compte à mon parent</a>${Compte.isAdmin() ? `<a class="btn alt" href="#famille/mode">Changer de vue (admin)</a>` : `<p class="small muted">Ton parent veut te suivre ? Il crée son propre compte en mode parent, puis te donne un code à taper ici.</p>`}</div>`;
       return;
     }
     if (p === "ajouter") return viewAjouter();
@@ -223,7 +224,7 @@
       <a class="btn hi-btn" href="#famille/ajouter">➕ Ajouter un enfant</a>
       <a class="card lib-card" href="#famille/guide"><b>📘 Guide du parent répétiteur</b><span class="small muted">Comment faire une bonne séance de 20 minutes, même sans être enseignant</span></a>
       <div class="card"><h2>🎯 Suivi spécifique par la plateforme</h2><p class="small">Tu veux que l'équipe Révision suive un enfant de près ? Donne ton objectif (ex. passer de 8 à 12 en maths) : nous t'envoyons un plan et des conseils adaptés à ses résultats. ${fcfa(t.suivi)} par enfant.</p><p class="small muted">Ouvre la fiche d'un enfant puis touche « Demander un suivi spécifique ».</p></div>
-      <div class="row"><a class="btn alt small" style="flex:1" href="#famille/pin">🔐 Code parent${f.pin ? " (activé)" : ""}</a><a class="btn alt small" style="flex:1" href="#famille/mode">Changer de mode</a></div>
+      <div class="row"><a class="btn alt small" style="flex:1" href="#famille/pin">🔐 Code parent${f.pin ? " (activé)" : ""}</a>${Compte.isAdmin() ? `<a class="btn alt small" style="flex:1" href="#famille/mode">Changer de vue (admin)</a>` : ""}</div>
       ${globalThis.legalFooter ? legalFooter() : ""}`;
     const box = document.getElementById("enfants");
     const cartes = await Promise.all(f.enfants.map(async (e) => {

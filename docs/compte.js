@@ -48,7 +48,7 @@ const Compte = (() => {
     const created = doc.created ? doc.created.toDate() : new Date(), first = await device();
     // numéro de téléphone : celui du compte (connexion par numéro) ou celui ajouté par un ancien compte
     if (!doc.phone && telOf(user.email)) { doc.phone = telOf(user.email); ref.update({ phone: doc.phone }).catch(() => {}); }
-    return { mode: doc.mode || "", famille: doc.famille || null, phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, premiumAt: doc.premiumAt && doc.premiumAt.toDate ? doc.premiumAt.toDate().getTime() : 0, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
+    return { mode: doc.mode || "", formule: doc.formule || "", famille: doc.famille || null, phone: doc.phone || "", suspended: !!doc.suspended, created: first && first < created ? first : created, premium: !!doc.premium, premiumAt: doc.premiumAt && doc.premiumAt.toDate ? doc.premiumAt.toDate().getTime() : 0, data: doc.data || {}, name: user.displayName || "", email: user.email || "" };
   }
 
   // Identifiant secret du téléphone, tiré au hasard au premier lancement (gardé aussi dans le cache de l'appli)
@@ -246,7 +246,7 @@ const Compte = (() => {
   const ts = (v) => (v && v.toDate ? v.toDate() : null);
   async function adminUsers() {
     const snap = await db.collection("users").limit(5000).get();
-    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), mode: x.mode || "", famille: x.famille || null, parents: x.parents || [], avis: x.avis || [], suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
+    return snap.docs.map((d) => { const x = d.data(); return { uid: d.id, name: x.name || "", email: x.email || "", created: ts(x.created), lastSeen: ts(x.lastSeen), premium: !!x.premium, code: x.code || "", phone: x.phone || telOf(x.email), mode: x.mode || "", formule: x.formule || "", famille: x.famille || null, parents: x.parents || [], avis: x.avis || [], suspended: !!x.suspended, level: (x.data || {}).level || "" }; });
   }
   async function adminErrors() {
     const snap = await db.collection("errors").orderBy("at", "desc").limit(200).get();
@@ -258,14 +258,16 @@ const Compte = (() => {
     snap.docs.forEach((d) => { const u = d.data().uids || []; if (u.length > 1) u.forEach((x) => { out[x] = [...new Set([...(out[x] || []), ...u.filter((y) => y !== x)])]; }); });
     return out;
   }
+  const adminSetMode = (uid, mode) => db.collection("users").doc(uid).update({ mode });
   const adminSuspend = (uid, on) => db.collection("users").doc(uid).update({ suspended: on });
   async function adminPays() {
     const snap = await db.collection("paiements").where("statut", "==", "attente").limit(200).get();
     return snap.docs.map((d) => ({ ...d.data(), uid: d.id, at: ts(d.data().at) })).sort((a, b) => (a.at || 0) - (b.at || 0));
   }
-  function adminValidate(uid) {
+  // la vue du client suit la formule payée : élève seul → vue élève ; parent (avec ou sans suivi) → vue parent
+  function adminValidate(uid, formule = "eleve") {
     const b = db.batch(), now = firebase.firestore.FieldValue.serverTimestamp();
-    b.update(db.collection("users").doc(uid), { premium: true, premiumAt: now });
+    b.update(db.collection("users").doc(uid), { premium: true, premiumAt: now, formule, mode: formule === "eleve" ? "eleve" : "parent" });
     b.update(db.collection("paiements").doc(uid), { statut: "valide", fin: now });
     return b.commit();
   }
@@ -292,5 +294,5 @@ const Compte = (() => {
   async function adminAccords() { const snap = await accords().limit(5000).get(); return snap.docs.map((d) => ({ id: d.id, ...d.data(), at: ts(d.data().at), okAt: ts(d.data().okAt) })); }
   const adminClearErrors = async (ids) => { const b = db.batch(); ids.slice(0, 450).forEach((id) => b.delete(db.collection("errors").doc(id))); await b.commit(); };
 
-  return { enabled, start, flush, setFamille, lireEnfant, lireEleve, creerLien, lireLien, accepterLien, retirerParent, lireMissions, ecrireMissions, demanderSuivi, majSuivi, lireSuivis, adminSuivis, adminConseil, adminEnfants, getTarifs, setTarifs, adminVentes, adminAddVente, adminDelVente, adminPaysValides, getSociete, getSocietePrivee, setSociete, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
+  return { enabled, start, flush, setFamille, lireEnfant, lireEleve, creerLien, lireLien, accepterLien, retirerParent, lireMissions, ecrireMissions, demanderSuivi, majSuivi, lireSuivis, adminSuivis, adminConseil, adminEnfants, getTarifs, setTarifs, adminVentes, adminAddVente, adminDelVente, adminPaysValides, getSociete, getSocietePrivee, setSociete, demanderAccord, lireAccord, donnerAccord, adminAccords, logError, isAdmin, declarePay, myPay, watchPremium, adminPays, adminValidate, adminRefuse, adminSetPremium, watchPays, adminUsers, adminErrors, adminDevices, adminSuspend, adminSetMode, adminClearErrors, postScore, listenScores, signIn, signInEmail, signInTel, linkTel, normTel, avis, enablePush, resetPassword, signOut, claim, save, get user() { return user; }, get ready() { return ready; } };
 })();

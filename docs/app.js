@@ -1087,7 +1087,9 @@ function applyProfile(p) {
   S.suspended = p.suspended;
   S.phone = p.phone || "";
   // mode parent répétiteur : fiche famille gardée dans le compte du parent
-  if (p.mode && !S.mode) S.mode = p.mode;
+  // la vue (élève seul ou parent) fait foi depuis le compte : elle suit la formule, seul l'admin la change
+  if (p.mode && p.mode !== S.mode) { S.mode = p.mode; if (p.mode !== "parent") S.actif = null; }
+  S.formule = p.formule || "";
   if (p.famille && !(S.famille && (S.famille.enfants || []).length)) S.famille = p.famille;
   // quand un enfant révise sur le téléphone du parent, les progrès du compte (ceux du parent) ne remplacent pas les siens
   const d = S.actif ? {} : p.data || {};

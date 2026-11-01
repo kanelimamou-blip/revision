@@ -20,9 +20,11 @@ service cloud.firestore {
         || (request.auth != null && request.auth.uid in resource.data.get('parents', []));
       // l'admin ne peut changer que la suspension et le premium (paiement validé)
       allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['suspended', 'premium', 'premiumAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['suspended', 'premium', 'premiumAt', 'mode', 'formule'])
         && request.resource.data.get('suspended', false) is bool
-        && request.resource.data.premium is bool;
+        && request.resource.data.premium is bool
+        && request.resource.data.get('mode', 'eleve') in ['eleve', 'parent']
+        && request.resource.data.get('formule', '') in ['', 'eleve', 'parent', 'suivi'];
       // création : date fixée par le serveur et sans premium
       allow create: if request.auth != null && request.auth.uid == uid
         && request.resource.data.created == request.time
@@ -32,6 +34,9 @@ service cloud.firestore {
       allow update: if request.auth != null && request.auth.uid == uid
         && request.resource.data.created == resource.data.created
         && request.resource.data.get('suspended', false) == resource.data.get('suspended', false)
+        // la formule est posée par l'admin ; une fois payée, la vue (élève ou parent) ne change que par l'admin
+        && request.resource.data.get('formule', '') == resource.data.get('formule', '')
+        && (resource.data.get('formule', '') == '' || request.resource.data.get('mode', '') == resource.data.get('mode', ''))
         && (request.resource.data.premium == resource.data.premium
           || (request.resource.data.premium == true
             && getAfter(/databases/$(db)/documents/claims/$(request.resource.data.code)).data.uid == uid));
