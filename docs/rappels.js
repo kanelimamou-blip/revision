@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-11-01w", "📚 21 sujets types BFEM en plus", ["3e : 3 nouveaux sujets types BFEM dans chaque épreuve (maths, français, PC, SVT, histoire-géographie, anglais, espagnol), notés sur 20 et corrigés étape par étape : 28 sujets en tout.", "Ce sont des sujets d'entraînement sur le modèle de l'épreuve, pas des annales officielles."]],
     ["2026-11-01v", "📚 24 devoirs types en 4e", ["Chaque matière de 4e, y compris sciences physiques et espagnol, a 3 devoirs types, un par trimestre : 3 exercices notés sur 20, corrigés étape par étape.", "Rédigés pour l'appli sur le modèle des devoirs de classe (ce ne sont pas des sujets officiels). Les sujets types BFEM de 3e suivent."]],
     ["2026-11-01u", "📚 18 devoirs types en 5e", ["Chaque matière de 5e a 3 devoirs types, un par trimestre : 3 exercices notés sur 20, corrigés étape par étape.", "Rédigés pour l'appli sur le modèle des devoirs de classe (ce ne sont pas des sujets officiels). La 4e suit."]],
     ["2026-11-01t", "📚 18 devoirs types en 6e", ["Chaque matière de 6e a 3 devoirs types, un par trimestre : 3 exercices, notés sur 20, corrigés étape par étape.", "Rédigés pour l'appli sur le modèle des devoirs de classe (ce ne sont pas des sujets officiels). La 5e suit."]],
