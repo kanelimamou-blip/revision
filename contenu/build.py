@@ -66,7 +66,8 @@ from ressources import RESSOURCES
 from exercices import EXERCISES
 from exercices_plus_6e import EX6
 from exercices_plus_5e import EX5
-EXERCISES = EXERCISES + EX6 + EX5
+from exercices_plus_4e import EX4
+EXERCISES = EXERCISES + EX6 + EX5 + EX4
 from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
 from programmes import PROGRAMMES
