@@ -84,7 +84,7 @@ function viewLevel() {
        <a class="btn alt" href="#classe">Retour aux classes</a>`
     : `<h1>Tu es en quelle classe ?</h1>
        <p class="muted">Tu pourras changer plus tard en touchant ta classe en haut de l'écran.</p>
-       <div class="grid">${DATA.classes.map((c) => DATA.series[c]
+       <div class="grid">${DATA.classes.filter((c) => DATA.series[c] || subjectsOf(c).length).map((c) => DATA.series[c]
          ? `<a class="subj lvl" href="#classe/${encodeURIComponent(c)}" style="text-decoration:none;color:inherit"${String(S.level).startsWith(c + " ") ? ' aria-pressed="true"' : ""}><b>${esc(c)}</b><span class="small muted">${CFG.exams[c] ? "Année du " + CFG.exams[c][0] + " · " : ""}séries ${DATA.series[c].join(", ")}</span></a>`
          : pick(c, info(c))).join("")}</div>`;
   $view.querySelectorAll("[data-l]").forEach((b) => b.onclick = () => { const first = !S.level && !S.parcoursVu; S.level = b.dataset.l; S.parcoursVu = true; store.save(); go(first ? "comment/debut" : "accueil"); });

@@ -96,6 +96,15 @@ from formules import formulaire
 for _sid, _chs in auto_synth(NOTIONS, PROGRAMMES).items():
     FICHES[_sid] = _chs + [c for c in FICHES.get(_sid, []) if "p" not in c]
 from questions import CLASSES, FAMILIES, FREE, LEVELS, SERIES, SUBJECTS
+# élémentaire (CE1 à CM2, programme du CEB) : matières placées avant celles de la 6e
+from primaire import SUBJECTS_PRIM, PROG_PRIM, QCM_PRIM, NOTIONS_PRIM, SYNTH_PRIM
+SUBJECTS[0:0] = SUBJECTS_PRIM
+PROGRAMMES.update(PROG_PRIM)
+for _sid, _chs in QCM_PRIM.items():
+    for _t, _qs in _chs.items():
+        QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
+NOTIONS.update(NOTIONS_PRIM)
+FICHES.update(SYNTH_PRIM)
 _i = next(i for i, s in enumerate(SUBJECTS) if "annales" in s[0])
 SUBJECTS[_i:_i] = SUBJECTS_PLUS
 
@@ -115,7 +124,7 @@ CONFIG = {
     "om_number": "78 272 19 20",
     "whatsapp": "221782721920",
     # classes d'examen : nom de l'examen et date indicative
-    "exams": {"3e": ["BFEM", "2027-07-06"], "Tle": ["BAC", "2027-07-01"]},
+    "exams": {"CM2": ["CFEE", "2027-06-22"], "3e": ["BFEM", "2027-07-06"], "Tle": ["BAC", "2027-07-01"]},
     # clé publique des notifications (Firebase > Paramètres du projet > Cloud Messaging > Certificats Web Push) ;
     # vide : le bouton « Recevoir les rappels » reste caché
     # infos de la société pour les pages légales (#legal) : à compléter par Est (vide = « à compléter »)
@@ -287,7 +296,9 @@ def build():
     # Les sites privés (archives, cours en ligne) et les devoirs d'établissement ne sont jamais montrés.
     def _off(exam):
         return "Office du Baccalauréat (UCAD) · sujet officiel public" if exam == "BAC" else "Ministère de l'Éducation nationale · sujet officiel public"
-    sources = [{"k": "Programme officiel", "lv": LEVELS, "m": "Toutes matières", "t": "Programmes officiels de l'enseignement moyen et secondaire du Sénégal, chapitre par chapitre", "o": "Ministère de l'Éducation nationale"}]
+    _prim = [l for l in LEVELS if l in ("CE1", "CE2", "CM1", "CM2")]
+    sources = [{"k": "Programme officiel", "lv": [l for l in LEVELS if l not in _prim], "m": "Toutes matières", "t": "Programmes officiels de l'enseignement moyen et secondaire du Sénégal, chapitre par chapitre", "o": "Ministère de l'Éducation nationale"},
+               {"k": "Programme officiel", "lv": _prim, "m": "Toutes matières", "t": "Curriculum de l'Éducation de Base (CEB) : programme officiel de l'élémentaire, étapes 2 et 3 (CE1 à CM2), domaine par domaine", "o": "Ministère de l'Éducation nationale"}]
     sources += [{"k": "Examen officiel", "lv": e["levels"], "m": e["subject"], "t": f"{e['exam']} {e['year']} · {e['subject']}" + (f" · séries {e['series']}" if e.get("series") else ""), "o": _off(e["exam"])} for e in LIBRARY if e["exam"] in ("BAC", "BFEM")]
     sources += [{"k": "Document officiel", "lv": lv, "m": m, "t": t, "o": "Office du Baccalauréat (UCAD)" if "officedubac" in u else "Ministère de l'Éducation nationale"} for lv, m, k, t, u in RESSOURCES if "officedubac" in u or "education.sn" in u]
     for a in ANNALES:

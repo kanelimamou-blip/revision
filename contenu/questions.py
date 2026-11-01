@@ -252,7 +252,7 @@ from q_lycee import SUBJECTS_G, SUBJECTS_LYCEE
 from annales import SUBJECTS_ANNALES
 
 # Classes et séries ; une matière vise une classe précise (« Tle S2 ») ou une famille de séries (« Tle S »)
-CLASSES = ["6e", "5e", "4e", "3e", "2nde", "1ère", "Tle"]
+CLASSES = ["CE1", "CE2", "CM1", "CM2", "6e", "5e", "4e", "3e", "2nde", "1ère", "Tle"]
 SERIES = {"2nde": ["L", "S"], "1ère": ["L1a", "L1b", "L2", "L'", "S1", "S2", "S3", "S4", "S5", "G"]}
 SERIES["Tle"] = SERIES["1ère"]
 FAMILIES = {"L": "L", "L1a": "L", "L1b": "L", "L2": "L", "L'": "L", "S": "S", "S1": "S", "S2": "S", "S3": "S", "S4": "S", "S5": "S", "G": "G"}
