@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-11-01h", "📚 Cours ×3 en 2nde", ["En 2nde, chaque chapitre a maintenant 3 cours au lieu d'un : maths, PC, SVT, français, histoire-géo, anglais et espagnol.", "Chaque cours a son essentiel, un exemple et un petit exercice guidé.", "Ouvre l'onglet Cours pour les voir."]],
     ["2026-11-01g", "📚 Cours ×3 en 6e", ["En 6e, chaque chapitre a maintenant 3 cours au lieu d'un : maths, français, SVT, histoire, géographie et anglais.", "Chaque cours a son essentiel, un exemple et un petit exercice guidé.", "Ouvre l'onglet Cours pour les voir."]],
     ["2026-11-01f", "📚 Cours ×3 en 3e", ["En 3e, chaque chapitre a maintenant 3 cours au lieu d'un : maths, PC, SVT, français, histoire, géographie, anglais et espagnol.", "Chaque cours a son essentiel, un exemple et un petit exercice guidé.", "Ouvre l'onglet Cours pour les voir. La 6e arrive ensuite."]],
     ["2026-11-01e", "📐 Formulaire complet de la 6e à la 1re", ["Le formulaire couvre maintenant toutes les matières et tous les chapitres, de la 6e à la 1re.", "Sciences : formules et valeurs à connaître ; français, histoire-géo, anglais, espagnol : règles et repères à retenir.", "Ouvre-le depuis l'accueil (📐 Formulaire), matière par matière."]],
