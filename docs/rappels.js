@@ -4,6 +4,7 @@
 (() => {
   // ---------- Nouveautés : ajouter une entrée en tête à chaque changement visible, la pastille se rallume
   const NEWS = [
+    ["2026-11-01m", "🧭 Fiches méthode en 4e", ["Chaque chapitre de 4e a maintenant une fiche « Méthode et pièges » : étapes, erreurs fréquentes, deux exemples corrigés et un exercice guidé.", "La 3e suit."]],
     ["2026-11-01l", "🧭 Fiches méthode en 5e", ["Chaque chapitre de 5e a maintenant une fiche « Méthode et pièges » : étapes, erreurs fréquentes, deux exemples corrigés et un exercice guidé.", "La 4e et la 3e suivent."]],
     ["2026-11-01k", "🧭 Fiches méthode en 6e", ["Chaque chapitre de 6e a maintenant une fiche « Méthode et pièges » : les étapes à suivre, les erreurs fréquentes et deux exemples corrigés.", "Chaque fiche a aussi un exercice guidé de 5 questions.", "La 5e, la 4e et la 3e suivent."]],
     ["2026-11-01j", "📚 Cours ×3 en 5e", ["En 5e, chaque chapitre a maintenant 3 cours au lieu d'un : maths, français, SVT, histoire, géographie et anglais.", "Toutes les classes, de la 6e à la Terminale, ont désormais 3 cours par chapitre.", "Ouvre l'onglet Cours pour les voir."]],
