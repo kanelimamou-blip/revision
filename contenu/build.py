@@ -110,7 +110,8 @@ for _sid, _chs in QCM_PRIM.items():
 NOTIONS.update(NOTIONS_PRIM)
 FICHES.update(SYNTH_PRIM)
 from notions_meth_ce2 import MT_CE2
-for _sid, _ns in MT_CE2.items():
+from notions_x3_ce2 import NX3CE2
+for _sid, _ns in list(NX3CE2.items()) + list(MT_CE2.items()):
     NOTIONS.setdefault(_sid, []).extend(_ns)
 _i = next(i for i, s in enumerate(SUBJECTS) if "annales" in s[0])
 SUBJECTS[_i:_i] = SUBJECTS_PLUS
