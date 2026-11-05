@@ -109,6 +109,9 @@ for _sid, _chs in QCM_PRIM.items():
         QCM_CH.setdefault(_sid, {}).setdefault(_t, []).extend(_qs)
 NOTIONS.update(NOTIONS_PRIM)
 FICHES.update(SYNTH_PRIM)
+from notions_meth_ce2 import MT_CE2
+for _sid, _ns in MT_CE2.items():
+    NOTIONS.setdefault(_sid, []).extend(_ns)
 _i = next(i for i, s in enumerate(SUBJECTS) if "annales" in s[0])
 SUBJECTS[_i:_i] = SUBJECTS_PLUS
 
@@ -311,7 +314,7 @@ def build():
     # synthèses de la 6e à la 3e : on y reprend la fiche méthode du chapitre (étapes, pièges, deux exemples corrigés)
     import re as _re
     for sid, chs in FICHES.items():
-        if not _re.match(r"^(6e|5e|4e|3e|2nde|1ere|g)-", sid):
+        if not _re.match(r"^(ce2|6e|5e|4e|3e|2nde|1ere|g)-", sid):
             continue
         meth = {n["programme"]: n for n in NOTIONS.get(sid, []) if n["id"].startswith("m-") and "programme" in n}
         titres = [t for t, _ in PROGRAMMES.get(sid, [])]

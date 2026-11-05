@@ -58,10 +58,17 @@ const DEVGEN = {};
       // devoirs types ciblés : trois chapitres qui se suivent, puis trimestres, puis composition
       const D = (DEVGEN[sid] = []);
       const ok6 = chs.filter(([, g]) => assez(g, 6));
+      // interrogation écrite par chapitre, puis devoir sur deux chapitres qui se suivent
+      ok6.filter(([, g]) => assez(g, 8)).forEach((c) => D.push({ t: `Interrogation écrite : ${c[0]}`, chs: [c] }));
+      for (let i = 0; i + 1 < ok6.length; i++) D.push({ t: `Devoir sur ${ok6[i][0]} et ${ok6[i + 1][0]}`, chs: ok6.slice(i, i + 2) });
       for (let i = 0; i + 2 < ok6.length; i++) D.push({ t: `Devoir sur ${ok6[i][0]}, ${ok6[i + 1][0]} et ${ok6[i + 2][0]}`, chs: ok6.slice(i, i + 3) });
       if (ok6.length >= 3) {
         const tiers = Math.ceil(ok6.length / 3);
         ["1er", "2e", "3e"].forEach((tri, k) => { const part = ok6.slice(k * tiers, (k + 1) * tiers); if (part.length) D.push({ t: `Devoir du ${tri} trimestre`, chs: part }); });
+        for (let i = 0; i + 3 < ok6.length; i++) D.push({ t: `Devoir surveillé : de ${ok6[i][0]} à ${ok6[i + 3][0]}`, chs: ok6.slice(i, i + 4) });
+        const moitie = Math.ceil(ok6.length / 2);
+        D.push({ t: "Devoir de synthèse du 1er semestre", chs: ok6.slice(0, moitie) });
+        D.push({ t: "Devoir de synthèse du 2nd semestre", chs: ok6.slice(moitie) });
         D.push({ t: "Composition de fin d'année (tout le programme)", chs: ok6 });
       }
     }
@@ -76,7 +83,7 @@ const DEVGEN = {};
     const pris = d.chs.length > 4 ? mix(r, d.chs).slice(0, 4) : d.chs;
     const ordre = (progs()[sid] || []);
     pris.sort((a, b) => ordre.indexOf(a[0]) - ordre.indexOf(b[0]));
-    const nq = pris.length >= 4 ? 4 : pris.length === 3 ? 5 : 6;
+    const nq = pris.length >= 4 ? 4 : pris.length === 3 ? 5 : pris.length === 2 ? 6 : 8;
     const parts = [], v = new Set();
     for (const [ch, gens] of pris) {
       const qs = tirer(r, gens, nq, v);
