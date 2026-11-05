@@ -69,7 +69,9 @@ from exercices_plus_5e import EX5
 from exercices_plus_4e import EX4
 from exercices_plus_3e_sci import EX3S
 from exercices_plus_3e_let import EX3L
-EXERCISES = EXERCISES + EX6 + EX5 + EX4 + EX3S + EX3L
+from exercices_plus_2nde_sci import EX2S
+from exercices_plus_2nde_let import EX2L
+EXERCISES = EXERCISES + EX6 + EX5 + EX4 + EX3S + EX3L + EX2S + EX2L
 from notions import NOTIONS
 from notions_autres import NOTIONS_AUTRES
 from programmes import PROGRAMMES
