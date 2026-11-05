@@ -95,8 +95,8 @@ function viewLevel() {
 const notionsOf = (level) => subjectsOf(level).flatMap((s) => ((DATA.notions || {})[s.id] || []).map((c) => ({ ...c, sid: s.id, sname: s.name })));
 const exercisesOf = (level) => (DATA.exercises || []).filter((e) => matches(e.levels, level));
 // Exercices et sujets types fabriqués à la demande (exos_gen.js) : nombres nouveaux à chaque essai
-const genExosOf = (level) => (typeof EXGEN === "undefined" ? [] : subjectsOf(level).flatMap((s) => (EXGEN[s.id] || []).map((t, k) => ({ id: `gx-${s.id}-${k}`, subject: s.name, title: t.t }))));
-const genSujetsOf = (level) => (typeof EXGEN === "undefined" ? [] : subjectsOf(level).filter((s) => (EXGEN[s.id] || []).length >= 3).map((s) => ({ id: `gs-${s.id}`, subject: s.name })));
+const genExosOf = (level) => (typeof EXGEN === "undefined" ? [] : (globalThis.installerX5 && installerX5(), subjectsOf(level).flatMap((s) => (EXGEN[s.id] || []).map((t, k) => ({ id: `gx-${s.id}-${k}`, subject: s.name, title: t.t })))));
+const genSujetsOf = (level) => (typeof EXGEN === "undefined" ? [] : (globalThis.installerX5 && installerX5(), subjectsOf(level).filter((s) => (EXGEN[s.id] || []).length >= 3).flatMap((s) => [{ id: `gs-${s.id}`, subject: s.name }, ...(globalThis.devoirsX5 ? devoirsX5(s.id).map((d) => ({ id: d.id, subject: s.name, titre: d.t })) : [])])));
 // Rubriques de l'accueil : [clé, lien, icône, titre, sous-titre] ; l'élève peut en épingler et en masquer
 function rubriqueList() {
   const nAnn = annalesOf(S.level).length, nGs = genSujetsOf(S.level).length, nGx = genExosOf(S.level).length, nEx = exercisesOf(S.level).length + annalesOf(S.level).filter((a) => a.guided).length + nGx;
@@ -593,7 +593,7 @@ function viewAnnales() {
       ${a.guided ? `<a class="btn hi-btn" href="#sujet/${a.id}">Faire ce sujet en mode guidé, corrigé à chaque étape${isPremium() ? "" : " 🔒"}</a>` : ""}</div>`).join("")
     : ""}
     ${genSujetsOf(S.level).length ? `<h2>${examOf() ? "Sujets types" : "Devoirs types"} à nombres nouveaux</h2><p class="small muted">4 exercices de chapitres différents, notés sur 20. Un sujet différent à chaque essai.</p>
-      ${genSujetsOf(S.level).map((g) => `<a class="card lib-card" href="#sujet/${g.id}"><b>${esc(g.subject)} : nouveau sujet</b><span class="small muted">${examOf() ? `Sur le modèle du ${esc(examOf()[0])}` : "Devoir de 2 h"} · noté sur 20${isPremium() ? "" : " 🔒"}</span></a>`).join("")}` : ""}
+      ${genSujetsOf(S.level).map((g) => `<a class="card lib-card" href="#sujet/${g.id}"><b>${esc(g.subject)} : ${g.titre ? esc(g.titre) : "nouveau sujet"}</b><span class="small muted">${examOf() ? `Sur le modèle du ${esc(examOf()[0])}` : "Devoir de 2 h"} · noté sur 20${isPremium() ? "" : " 🔒"}</span></a>`).join("")}` : ""}
     ${list.length || genSujetsOf(S.level).length ? "" : `<div class="card"><p>Pas encore d'annales pour ta série. Elles arrivent au fur et à mesure.</p></div>`}`;
 }
 
@@ -703,10 +703,12 @@ function viewChallenge() {
 // ---------- Sujet guidé : un vrai sujet, étape par étape, corrigé tout de suite
 const pts = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
 function viewGuided(id) {
+  if (globalThis.installerX5) installerX5();
   const gid = String(id), cut = gid.lastIndexOf("-");
   const an = [...(DATA.annales || []), ...(DATA.exercises || [])].find((x) => x.id === id && x.guided)
     || (typeof genExercise === "function" && gid.startsWith("gx-") ? genExercise(gid.slice(3, cut), +gid.slice(cut + 1)) : null)
-    || (typeof genSujet === "function" && gid.startsWith("gs-") ? genSujet(gid.slice(3)) : null);
+    || (globalThis.genDevoir && gid.startsWith("gs-") && gid.includes("~") ? genDevoir(gid.slice(3, gid.indexOf("~")), +gid.slice(gid.indexOf("~") + 1)) : null)
+    || (typeof genSujet === "function" && gid.startsWith("gs-") && !gid.includes("~") ? genSujet(gid.slice(3)) : null);
   if (!an) return go("exercices");
   if (!isPremium() && !an.free) return viewPremium("Les sujets guidés et les exercices corrigés font partie du pack premium.");
   const head = an.title ? `${an.subject} · ${an.title}` : `${an.exam} ${an.year} · ${an.subject}`;
