@@ -20,13 +20,13 @@ const instIco = {
 function instEcran(kind) {
   const appIcon = `<span class="ins-app"><img src="icons/icon-192.png" alt=""><small>Révision</small></span>`;
   const screens = {
-    "ios-safari": `<div class="ins-url">kanelimamou-blip.github.io</div><div class="ins-body"><b>Révision</b><span>Ouvre cette page dans <b>Safari</b> 🧭</span></div><div class="ins-bar"><span>‹</span><span>›</span><span class="ins-hl">${instIco.share}</span><span>▢</span><span>⧉</span></div>`,
-    "ios-share": `<div class="ins-url">kanelimamou-blip.github.io</div><div class="ins-body"><b>Révision</b></div><div class="ins-bar"><span>‹</span><span>›</span><span class="ins-hl">${instIco.share}</span><span>▢</span><span>⧉</span></div>`,
+    "ios-safari": `<div class="ins-url">${location.host}</div><div class="ins-body"><b>Révision</b><span>Ouvre cette page dans <b>Safari</b> 🧭</span></div><div class="ins-bar"><span>‹</span><span>›</span><span class="ins-hl">${instIco.share}</span><span>▢</span><span>⧉</span></div>`,
+    "ios-share": `<div class="ins-url">${location.host}</div><div class="ins-body"><b>Révision</b></div><div class="ins-bar"><span>‹</span><span>›</span><span class="ins-hl">${instIco.share}</span><span>▢</span><span>⧉</span></div>`,
     "ios-menu": `<div class="ins-sheet"><div class="ins-row">Copier</div><div class="ins-row">Ajouter aux favoris</div><div class="ins-row ins-hl-row">Sur l'écran d'accueil <span>${instIco.plus}</span></div><div class="ins-row">Imprimer</div></div>`,
     "ios-add": `<div class="ins-top"><span>Annuler</span><b>Ajouter à l'écran</b><span class="ins-hl-txt">Ajouter</span></div><div class="ins-body">${appIcon}<span>Révision</span></div>`,
     "home": `<div class="ins-home">${["📷", "💬", "🎵", "📞", "⚙️"].map((e) => `<span class="ins-app"><i>${e}</i><small>&nbsp;</small></span>`).join("")}<span class="ins-app ins-hl-app"><img src="icons/icon-192.png" alt=""><small>Révision</small></span></div>`,
-    "and-chrome": `<div class="ins-url">kanelimamou-blip.github.io <span class="ins-hl">${instIco.dots}</span></div><div class="ins-body"><b>Révision</b><span>Ouvre cette page dans <b>Chrome</b></span></div>`,
-    "and-menu": `<div class="ins-url">kanelimamou-blip.github.io <span>${instIco.dots}</span></div><div class="ins-sheet ins-sheet-top"><div class="ins-row">Nouvel onglet</div><div class="ins-row">Favoris</div><div class="ins-row ins-hl-row">Installer l'application <span>📲</span></div><div class="ins-row">Partager…</div></div>`,
+    "and-chrome": `<div class="ins-url">${location.host} <span class="ins-hl">${instIco.dots}</span></div><div class="ins-body"><b>Révision</b><span>Ouvre cette page dans <b>Chrome</b></span></div>`,
+    "and-menu": `<div class="ins-url">${location.host} <span>${instIco.dots}</span></div><div class="ins-sheet ins-sheet-top"><div class="ins-row">Nouvel onglet</div><div class="ins-row">Favoris</div><div class="ins-row ins-hl-row">Installer l'application <span>📲</span></div><div class="ins-row">Partager…</div></div>`,
     "and-ok": `<div class="ins-dialog"><b>Installer l'application ?</b>${appIcon}<div class="ins-dlg-btns"><span>Annuler</span><span class="ins-hl-txt">Installer</span></div></div>`,
   };
   return `<div class="ins-phone" aria-hidden="true">${screens[kind] || ""}</div>`;
