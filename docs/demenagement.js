@@ -3,7 +3,7 @@
 // Sur l'ancienne adresse (github.io), un bandeau propose d'aller à la nouvelle en emportant les progrès du téléphone.
 // Sur la nouvelle adresse, les progrès reçus sont rangés dans le téléphone, puis l'appli redémarre.
 // NOUVELLE_ADRESSE vide = rien ne change (le bandeau n'apparaît pas).
-const NOUVELLE_ADRESSE = "";
+const NOUVELLE_ADRESSE = "https://revision-49v.pages.dev/";
 
 (() => {
   const b64 = {
