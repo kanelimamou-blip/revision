@@ -53,7 +53,12 @@
     ["2026-10-31a", "📱 Connexion par numéro", ["Tu te connectes avec ton numéro de téléphone et un code de 6 chiffres, sur iPhone comme sur Android.", "Pour le premium, paie avec le numéro de ton compte : c'est ta preuve de paiement."]],
     ["2026-10-30", "📚 Terminale : 5 fois plus de contenu", ["39 sujets du BAC corrigés pas à pas, pour toutes les séries.", "Des dizaines de nouvelles notions de cours avec exercice corrigé.", "Des centaines de nouveaux QCM, à faire aussi par thème pour préparer un devoir."]],
   ];
-  const unread = () => NEWS.findIndex((n) => n[0] === S.newsSeen) === -1 ? NEWS.length : NEWS.findIndex((n) => n[0] === S.newsSeen);
+  // un nouvel élève part de zéro : les nouveautés d'avant son installation ne sont pas « nouvelles » pour lui
+  const unread = () => {
+    if (!S.newsSeen) { S.newsSeen = NEWS[0][0]; store.save(); return 0; }
+    const i = NEWS.findIndex((n) => n[0] === S.newsSeen);
+    return i === -1 ? NEWS.length : i;
+  };
   function badge() {
     let a = document.getElementById("news");
     if (!a) {
